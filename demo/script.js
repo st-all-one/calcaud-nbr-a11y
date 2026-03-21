@@ -1,11 +1,12 @@
+// deno-lint-ignore-file
 // Função para carregar exemplos via API
 async function loadExamples() {
     const grid = document.getElementById("grid");
-    if (!grid) return;
+    if (!grid) { return; }
 
     try {
         const response = await fetch("/api/examples");
-        if (!response.ok) throw new Error("Falha ao carregar exemplos do servidor.");
+        if (!response.ok) { throw new Error("Falha ao carregar exemplos do servidor."); }
         const examples = await response.json();
 
         grid.innerHTML = ""; // Limpa o estado de carregamento
@@ -55,7 +56,7 @@ if (simulationForm) {
         const resMath = document.getElementById("res-math");
         const resBox = document.getElementById("res-box");
 
-        if (!resTxt || !resMath) return;
+        if (!resTxt || !resMath) { return; }
 
         resTxt.textContent = "Processando cálculo financeiro auditável...";
         resMath.innerHTML = "";
@@ -74,7 +75,7 @@ if (simulationForm) {
                 body: JSON.stringify(payload),
             });
 
-            if (!response.ok) throw new Error("Erro no cálculo do servidor.");
+            if (!response.ok) { throw new Error("Erro no cálculo do servidor."); }
             const data = await response.json();
 
             // Atualiza o texto verbal para leitores de tela

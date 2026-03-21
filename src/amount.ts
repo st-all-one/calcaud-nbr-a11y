@@ -58,7 +58,7 @@ export class AuditableAmount {
      * @param value Valor inicial. Recomenda-se o uso de strings para decimais.
      */
     static from(value: NumericValue): AuditableAmount {
-        if (value instanceof AuditableAmount) return value;
+        if (value instanceof AuditableAmount) { return value; }
 
         const rawValue = typeof value === "bigint"
             ? value * INTERNAL_SCALE_FACTOR
@@ -77,7 +77,7 @@ export class AuditableAmount {
     private static parseStringValue(value: string): bigint {
         const numericPattern = /^(-?\d+)(?:\.(\d+))?$/;
         const match = value.match(numericPattern);
-        if (!match) throw new Error(`Invalid numeric format: ${value}`);
+        if (!match) { throw new Error(`Invalid numeric format: ${value}`); }
         const [_, integerPart, decimalPart = ""] = match;
         const isNegative = integerPart.startsWith("-");
         const absoluteInteger = BigInt(integerPart.replace("-", "")) * INTERNAL_SCALE_FACTOR;
@@ -88,7 +88,7 @@ export class AuditableAmount {
                 "0",
             );
             absoluteDecimal = BigInt(normalizedDecimal.slice(0, INTERNAL_CALCULATION_PRECISION));
-            if (Number(normalizedDecimal[INTERNAL_CALCULATION_PRECISION]) >= 5) absoluteDecimal += 1n;
+            if (Number(normalizedDecimal[INTERNAL_CALCULATION_PRECISION]) >= 5) { absoluteDecimal += 1n; }
         }
         const totalAbsoluteValue = absoluteInteger + absoluteDecimal;
         return isNegative ? -totalAbsoluteValue : totalAbsoluteValue;
@@ -162,7 +162,7 @@ export class AuditableAmount {
     div(value: NumericValue): AuditableAmount {
         const other = AuditableAmount.from(value);
         const otherValue = other.accumulatedValue + other.activeTermValue;
-        if (otherValue === 0n) throw new Error("Division by zero");
+        if (otherValue === 0n) { throw new Error("Division by zero"); }
 
         const nextActiveValue = (this.activeTermValue * INTERNAL_SCALE_FACTOR) / otherValue;
         const nextActiveExpr = `\\frac{${this.activeTermExpression}}{${other.getFullLaTeXExpression()}}`;
@@ -194,8 +194,8 @@ export class AuditableAmount {
         if (expStr.includes("/")) {
             const [num, den] = expStr.split("/").map((s) => BigInt(s.trim()));
             nextValue = calculateNthRoot(
-                calculateBigIntPower(baseValue, num) *
-                    calculateBigIntPower(INTERNAL_SCALE_FACTOR, den - num),
+                calculateBigIntPower(baseValue, num)
+                    * calculateBigIntPower(INTERNAL_SCALE_FACTOR, den - num),
                 den,
             );
             nextExpr = num === 1n ? `\\sqrt[${den}]{${baseExpr}}` : `\\sqrt[${den}]{${baseExpr}^{${num}}}`;
@@ -204,13 +204,13 @@ export class AuditableAmount {
             const exp = BigInt(expStr);
             nextExpr = `{${baseExpr}}^{${expStr}}`;
             nextVerbal = `${baseVerbal} elevado a ${expStr}`;
-            if (exp === 0n) nextValue = INTERNAL_SCALE_FACTOR;
+            if (exp === 0n) { nextValue = INTERNAL_SCALE_FACTOR; }
             else if (exp > 0n) {
-                nextValue = calculateBigIntPower(baseValue, exp) /
-                    calculateBigIntPower(INTERNAL_SCALE_FACTOR, exp - 1n);
+                nextValue = calculateBigIntPower(baseValue, exp)
+                    / calculateBigIntPower(INTERNAL_SCALE_FACTOR, exp - 1n);
             } else {
-                const denVal = calculateBigIntPower(baseValue, -exp) /
-                    calculateBigIntPower(INTERNAL_SCALE_FACTOR, (-exp) - 1n);
+                const denVal = calculateBigIntPower(baseValue, -exp)
+                    / calculateBigIntPower(INTERNAL_SCALE_FACTOR, (-exp) - 1n);
                 nextValue = (INTERNAL_SCALE_FACTOR * INTERNAL_SCALE_FACTOR) / denVal;
             }
         }
@@ -291,8 +291,8 @@ export class AuditableAmount {
     private wrapLaTeX(expr: string): string {
         const trimmed = expr.trim();
         if (
-            !trimmed.startsWith("\\left(") && !trimmed.startsWith("{") &&
-            (trimmed.includes("+") || trimmed.includes(" - "))
+            !trimmed.startsWith("\\left(") && !trimmed.startsWith("{")
+            && (trimmed.includes("+") || trimmed.includes(" - "))
         ) {
             return `\\left( ${expr} \\right)`;
         }

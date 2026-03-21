@@ -13,8 +13,8 @@ export function calculateBigIntPower(base: bigint, exponent: bigint): bigint {
     if (exponent < 0n) {
         throw new Error("Negative exponents are not supported for BigInt power operations.");
     }
-    if (exponent === 0n) return 1n;
-    if (exponent === 1n) return base;
+    if (exponent === 0n) { return 1n; }
+    if (exponent === 1n) { return base; }
 
     let result = 1n;
     let currentBase = base;
@@ -38,11 +38,11 @@ export function calculateBigIntPower(base: bigint, exponent: bigint): bigint {
  * @returns A parte inteira da raiz calculada.
  */
 export function calculateNthRoot(value: bigint, rootIndex: bigint): bigint {
-    if (rootIndex <= 0n) throw new Error("Root index must be a positive integer.");
+    if (rootIndex <= 0n) { throw new Error("Root index must be a positive integer."); }
     if (value < 0n && rootIndex % 2n === 0n) {
         throw new Error("Cannot calculate even root of a negative number.");
     }
-    if (value === 0n) return 0n;
+    if (value === 0n) { return 0n; }
 
     const isValueNegative = value < 0n;
     const absoluteValue = isValueNegative ? -value : value;
@@ -55,18 +55,18 @@ export function calculateNthRoot(value: bigint, rootIndex: bigint): bigint {
         const guessPowMinusOne = previousGuess ** (rootIndex - 1n);
 
         // Fórmula de Newton: x_{n+1} = ((k-1)x_n + A / x_n^{k-1}) / k
-        currentGuess = ((rootIndex - 1n) * previousGuess + absoluteValue / guessPowMinusOne) /
-            rootIndex;
+        currentGuess = ((rootIndex - 1n) * previousGuess + absoluteValue / guessPowMinusOne)
+            / rootIndex;
 
         // Verifica convergência (estabilidade entre -1 e 1)
-        if (currentGuess >= previousGuess - 1n && currentGuess <= previousGuess + 1n) break;
+        if (currentGuess >= previousGuess - 1n && currentGuess <= previousGuess + 1n) { break; }
     }
 
     // Ajuste fino para garantir a maior raiz inteira que satisfaça r^n <= x
     if (currentGuess ** rootIndex > absoluteValue) {
-        while (currentGuess ** rootIndex > absoluteValue) currentGuess--;
+        while (currentGuess ** rootIndex > absoluteValue) { currentGuess--; }
     } else {
-        while ((currentGuess + 1n) ** rootIndex <= absoluteValue) currentGuess++;
+        while ((currentGuess + 1n) ** rootIndex <= absoluteValue) { currentGuess++; }
     }
 
     return isValueNegative ? -currentGuess : currentGuess;

@@ -1,5 +1,8 @@
+// deno-lint-ignore triple-slash-reference
+/// <reference lib="dom" />
+
 import { AuditableAmount } from "../mod.ts";
-import { dirname, fromFileUrl, join } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { dirname, fromFileUrl, join } from "@std/path";
 
 const __dirname = dirname(fromFileUrl(import.meta.url));
 const ROOT = dirname(__dirname);
@@ -76,7 +79,7 @@ const getExamples = () =>
         result: ex.calc.commit(ex.title.includes("Arredondamento") ? 2 : 4),
     }));
 
-async function serveFile(path: string) {
+async function serveFile(path: string): Promise<Response> {
     const ext = path.split(".").pop();
     const mimes: Record<string, string> = {
         html: "text/html; charset=utf-8",
@@ -88,7 +91,7 @@ async function serveFile(path: string) {
     };
     try {
         const data = await Deno.readFile(path);
-        return new Response(data, { headers: { "content-type": mimes[ext!] || "application/octet-stream" } });
+        return new Response(data, { headers: { "content-type": mimes[ext ?? ""] || "application/octet-stream" } });
     } catch {
         return new Response("Not Found", { status: 404 });
     }
@@ -97,9 +100,9 @@ async function serveFile(path: string) {
 Deno.serve({ port: 8000 }, async (req) => {
     const url = new URL(req.url);
 
-    if (url.pathname === "/") return serveFile(join(__dirname, "index.html"));
-    if (url.pathname === "/style.css") return serveFile(join(__dirname, "style.css"));
-    if (url.pathname === "/script.js") return serveFile(join(__dirname, "script.js"));
+    if (url.pathname === "/") { return serveFile(join(__dirname, "index.html")); }
+    if (url.pathname === "/style.css") { return serveFile(join(__dirname, "style.css")); }
+    if (url.pathname === "/script.js") { return serveFile(join(__dirname, "script.js")); }
 
     if (url.pathname === "/api/examples") {
         return new Response(JSON.stringify(getExamples()), { headers: { "content-type": "application/json" } });
@@ -122,6 +125,6 @@ Deno.serve({ port: 8000 }, async (req) => {
         }
     }
 
-    if (url.pathname.startsWith("/assets/")) return serveFile(join(ROOT, url.pathname));
+    if (url.pathname.startsWith("/assets/")) { return serveFile(join(ROOT, url.pathname)); }
     return new Response("Not Found", { status: 404 });
 });
