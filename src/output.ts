@@ -1,9 +1,11 @@
-import { roundToPrecisionNBR5891 } from "./internal/rounding.ts";
 import { INTERNAL_CALCULATION_PRECISION } from "./constants.ts";
 import { formatBigIntToString, formatMonetary } from "./output_helpers/formatting.ts";
 import { generateHTML } from "./output_helpers/html_generator.ts";
 import { generateVerbal } from "./output_helpers/verbal_generator.ts";
 import { generateImageBuffer } from "./output_helpers/image_generator.ts";
+import { type CurrencyNBROutputOptions, DEFAULT_OPTIONS } from "./output_helpers/options.ts";
+import { applyRounding } from "./output_helpers/rounding_manager.ts";
+import { LOCALE_CURRENCY_MAP } from "./output_helpers/locales.ts";
 
 /**
  * Métodos de saída disponíveis para a classe CurrencyNBROutput.
@@ -34,6 +36,7 @@ export class CurrencyNBROutput {
     private readonly latexExpression: string;
     private readonly verbalExpression: string;
     private readonly unicodeExpression: string;
+    private readonly options: Required<CurrencyNBROutputOptions>;
 
     constructor(
         value: bigint,
@@ -41,131 +44,137 @@ export class CurrencyNBROutput {
         latexExpression: string,
         verbalExpression: string,
         unicodeExpression: string,
+        options?: CurrencyNBROutputOptions,
     ) {
         this.value = value;
         this.defaultDecimals = defaultDecimals;
         this.latexExpression = latexExpression;
         this.verbalExpression = verbalExpression;
         this.unicodeExpression = unicodeExpression;
+        this.options = { ...DEFAULT_OPTIONS, ...options };
     }
 
     /**
-     * Retorna o valor arredondado e formatado como string decimal.
-     * @param decimals Opcional. Sobrescreve a precisão padrão definida no commit.
+     * Retorna o valor arredondado e formatado como string decimal conforme configurado no commit.
      */
-    public toString(decimals: number = this.defaultDecimals): string {
-        const rounded = roundToPrecisionNBR5891(this.value, INTERNAL_CALCULATION_PRECISION, decimals);
-        return formatBigIntToString(rounded, decimals);
+    public toString(): string {
+        const rounded = applyRounding(
+            this.value,
+            this.options.roundingMethod,
+            INTERNAL_CALCULATION_PRECISION,
+            this.defaultDecimals,
+        );
+        return formatBigIntToString(rounded, this.defaultDecimals);
     }
 
     /**
      * Retorna o valor como um número de ponto flutuante (JavaScript Number).
      * @warning Pode haver perda de precisão para valores muito grandes ou muito precisos.
      */
-    public toFloatNumber(decimals: number = this.defaultDecimals): number {
-        return Number(this.toString(decimals));
+    public toFloatNumber(): number {
+        return Number(this.toString());
     }
 
     /**
-     * Retorna o valor bruto como BigInt (na escala interna de 10^12).
+     * Retorna o valor bruto como BigInt (na escala interna).
      */
     public toBigInt(): bigint {
         return this.value;
     }
 
     /**
-     * Retorna o resultado formatado como moeda.
-     * @param locale O locale (ex: "pt-BR").
-     * @param currency A moeda (ex: "BRL").
-     * @param decimals Opcional. Sobrescreve a precisão padrão.
+     * Retorna o resultado formatado como moeda conforme o locale e moeda definidos no commit.
      */
-    // deno-lint-ignore default-param-last
-    public toMonetary(locale: string = "pt-BR", currency: string = "BRL", decimals?: number): string {
-        // Moeda geralmente usa 2 casas, mas permitimos sobrescrever.
-        const str = this.toString(decimals ?? 2);
-        return formatMonetary(str, locale, currency);
+    public toMonetary(): string {
+        const targetLocale = this.options.locale;
+        const targetCurrency = LOCALE_CURRENCY_MAP[targetLocale] ?? "BRL";
+        return formatMonetary(this.toString(), targetLocale, targetCurrency);
     }
 
     /**
      * Retorna a expressão completa e o resultado em LaTeX.
      */
-    public toLaTeX(decimals: number = this.defaultDecimals): string {
-        return `$$ ${this.latexExpression} = ${this.toString(decimals)} $$`;
+    public toLaTeX(): string {
+        return `$$ ${this.latexExpression} = ${this.toString()} $$`;
     }
 
     /**
      * Retorna o HTML renderizado (com KaTeX) para a fórmula.
      */
-    public toHTML(decimals: number = this.defaultDecimals): string {
+    public toHTML(): string {
         return generateHTML(
             this.latexExpression,
-            this.toString(decimals),
-            this.toVerbalA11y(decimals),
+            this.toString(),
+            this.toVerbalA11y(),
         );
     }
 
     /**
      * Retorna a descrição verbal acessível.
      */
-    public toVerbalA11y(decimals: number = this.defaultDecimals): string {
-        return generateVerbal(this.verbalExpression, this.toString(decimals));
+    public toVerbalA11y(): string {
+        return generateVerbal(this.verbalExpression, this.toString());
     }
 
     /**
      * Retorna a expressão em Unicode para terminal/CLI.
      */
-    public toUnicode(decimals: number = this.defaultDecimals): string {
-        return `${this.unicodeExpression} = ${this.toString(decimals)}`;
+    public toUnicode(): string {
+        return `${this.unicodeExpression} = ${this.toString()}`;
     }
 
     /**
      * Retorna um buffer de imagem (SVG) contendo a renderização visual.
      */
-    public toImageBuffer(decimals: number = this.defaultDecimals): Uint8Array {
+    public toImageBuffer(): Uint8Array {
         return generateImageBuffer(
             this.latexExpression,
-            this.toString(decimals),
-            this.toVerbalA11y(decimals),
+            this.toString(),
+            this.toVerbalA11y(),
         );
     }
 
     /**
-     * Retorna um objeto JSON contendo os resultados dos métodos solicitados.
-     * @param elements Array de métodos desejados. Se vazio, retorna todos.
-     * @param decimals Casas decimais para os métodos que suportam.
+     * Retorna um objeto JSON contendo os resultados dos métodos solicitados e as opções utilizadas.
+     * @param elements Array de métodos desejados. Se vazio, retorna todos os disponíveis.
      */
-    public toJson(elements: CurrencyOutputMethod[] = [], decimals: number = this.defaultDecimals): string {
+    public toJson(elements: CurrencyOutputMethod[] = []): string {
         const targetElements = elements.length > 0 ? elements : AVAILABLE_OUTPUT_METHODS;
-        const result: Record<string, unknown> = {};
+        const result: Record<string, unknown> = {
+            metaInfo: {
+                options: this.options,
+                decimals: this.defaultDecimals,
+            },
+        };
 
         for (const key of targetElements) {
             switch (key) {
                 case "toString":
-                    result[key] = this.toString(decimals);
+                    result[key] = this.toString();
                     break;
                 case "toFloatNumber":
-                    result[key] = this.toFloatNumber(decimals);
+                    result[key] = this.toFloatNumber();
                     break;
                 case "toBigInt":
                     result[key] = this.toBigInt().toString();
                     break;
                 case "toMonetary":
-                    result[key] = this.toMonetary("pt-BR", "BRL", decimals);
+                    result[key] = this.toMonetary();
                     break;
                 case "toLaTeX":
-                    result[key] = this.toLaTeX(decimals);
+                    result[key] = this.toLaTeX();
                     break;
                 case "toHTML":
-                    result[key] = this.toHTML(decimals);
+                    result[key] = this.toHTML();
                     break;
                 case "toVerbalA11y":
-                    result[key] = this.toVerbalA11y(decimals);
+                    result[key] = this.toVerbalA11y();
                     break;
                 case "toUnicode":
-                    result[key] = this.toUnicode(decimals);
+                    result[key] = this.toUnicode();
                     break;
                 case "toImageBuffer":
-                    result[key] = Array.from(this.toImageBuffer(decimals));
+                    result[key] = Array.from(this.toImageBuffer());
                     break;
             }
         }

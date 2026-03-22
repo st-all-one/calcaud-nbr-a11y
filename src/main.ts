@@ -1,9 +1,12 @@
+// deno-lint-ignore-file ban-unused-ignore default-param-last
+
 import { calculateBigIntPower, calculateNthRoot } from "./internal/math_utils.ts";
 import { parseStringValue } from "./internal/parser.ts";
 import { toSuperscript } from "./internal/superscript.ts";
 import { wrapLaTeX, wrapUnicode } from "./internal/wrappers.ts";
 import { CurrencyNBROutput } from "./output.ts";
 import { DEFAULT_DISPLAY_PRECISION, INTERNAL_SCALE_FACTOR } from "./constants.ts";
+import type { CurrencyNBROutputOptions } from "./output_helpers/options.ts";
 
 /**
  * Representa qualquer valor que possa ser convertido em um montante auditável.
@@ -207,8 +210,12 @@ export class CurrencyNBR {
     /**
      * Finaliza o cálculo e retorna um objeto de saída para formatação.
      * @param decimals A precisão padrão desejada para o output (default: 6).
+     * @param options Opções de formatação e arredondamento.
      */
-    public commit(decimals: number = DEFAULT_DISPLAY_PRECISION): CurrencyNBROutput {
+    public commit(
+        decimals: number = DEFAULT_DISPLAY_PRECISION,
+        options?: CurrencyNBROutputOptions,
+    ): CurrencyNBROutput {
         const finalValue = this.accumulatedValue + this.activeTermValue;
         return new CurrencyNBROutput(
             finalValue,
@@ -216,6 +223,7 @@ export class CurrencyNBR {
             this.getFullLaTeXExpression(),
             this.getFullVerbalExpression(),
             this.getFullUnicodeExpression(),
+            options,
         );
     }
 
