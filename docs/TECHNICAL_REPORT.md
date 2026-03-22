@@ -74,7 +74,15 @@ O método `toVerbal()` realiza uma tradução semântica da árvore de estados p
 - **Estrutura:** O método `.group()` injeta os marcadores "em grupo" e "fim do grupo", permitindo que o usuário de leitor de tela entenda a precedência sem ambiguidades.
 - **Localização:** Converte o caractere de ponto decimal `.` para a palavra `"vírgula"`, garantindo uma narração fluida.
 
----
+## 6. Motor de Visualização Unicode (CLI)
+Para ambientes onde a renderização KaTeX não é possível (Terminais), a biblioteca fornece o método `toUnicode()`.
+
+### 6.1 Transformações Unicode
+- **Exponenciação:** Conversão de strings numéricas para caracteres Superscript (ex: `x²`, `y⁽¹⁺ⁿ⁾`).
+- **Raízes:** Utilização de símbolos de radical (`√`) combinados com Subscripts para índices (ex: `³√(x)`).
+- **Operadores:** Substituição de caracteres ASCII por símbolos matemáticos dedicados (`×`, `÷`).
+
+## 7. Segurança e Validação Operacional
 
 ## 6. Segurança e Validação Operacional
 

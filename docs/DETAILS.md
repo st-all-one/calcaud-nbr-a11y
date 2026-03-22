@@ -99,6 +99,8 @@ const acessivel = comGrupo.toVerbal(2);
 | `.group()` | Estrutura | Agrupamento. | Consolida o estado, resolve a soma e coloca parênteses visuais. |
 | `.commit(d)` | Finalizador | String Numérica. | Aplica o arredondamento **NBR 5891** e retorna o número. |
 | `.toLaTeX(d)` | Finalizador | Auditoria Visual. | Retorna a fórmula completa formatada para KaTeX. |
+| `.toHTML(d)` | Finalizador | Bloco Autocontido. | Gera um `div` com HTML e CSS embutidos para exibição imediata. |
+| `.toUnicode(d)` | Finalizador | Visualização CLI. | Retorna a fórmula utilizando caracteres Unicode (sobrescritos, símbolos) para terminais. |
 | `.toVerbal(d)` | Finalizador | Acessibilidade. | Retorna a narração em português para leitores de tela. |
 
 ---

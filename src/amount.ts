@@ -1,41 +1,28 @@
 import { roundToPrecisionNBR5891 } from "./rounding.ts";
-import { DEFAULT_DISPLAY_PRECISION, INTERNAL_CALCULATION_PRECISION, INTERNAL_SCALE_FACTOR } from "./constants.ts";
+import { DEFAULT_DISPLAY_PRECISION, INTERNAL_CALCULATION_PRECISION, INTERNAL_SCALE_FACTOR, KATEX_CSS_MINIFIED } from "./constants.ts";
 import { calculateBigIntPower, calculateNthRoot } from "./math_utils.ts";
+import katex from "@katex";
 
 /**
  * Representa qualquer valor que possa ser convertido em um montante auditável.
- * Aceita strings para evitar perda de precisão de ponto flutuante, numbers para conveniência
- * e BigInt para valores já escalados.
  */
 export type NumericValue = string | number | bigint | AuditableAmount;
 
 /**
  * Classe principal para cálculos financeiros precisos, auditáveis e acessíveis.
- *
- * DESIGN PATTERNS:
- * - Imutabilidade: Todas as operações retornam novas instâncias.
- * - State Machine: Gerencia registradores internos para respeitar a precedência PEMDAS.
- * - Multi-Output: Gera resultados em String numérica, LaTeX (visual) e Verbal (acessível).
- *
- * CONFORMIDADE:
- * - ABNT NBR 5891:1977 (Arredondamento).
- * - WCAG AAA & eMAG (Acessibilidade via narração em linguagem natural).
  */
 export class AuditableAmount {
-    /** Valor consolidado de operações de baixa precedência (+, -) na escala 10^12. */
     private readonly accumulatedValue: bigint;
-    /** Valor do termo atual para operações de alta precedência (*, /, ^) na escala 10^12. */
     private readonly activeTermValue: bigint;
-
-    /** Expressão LaTeX representando o valor acumulado. */
     private readonly accumulatedExpression: string;
-    /** Expressão LaTeX representando o termo ativo. */
     private readonly activeTermExpression: string;
-
-    /** Narração verbal do valor acumulado para acessibilidade. */
     private readonly accumulatedVerbal: string;
-    /** Narração verbal do termo ativo para acessibilidade. */
     private readonly activeTermVerbal: string;
+    private readonly accumulatedUnicode: string;
+    private readonly activeTermUnicode: string;
+
+    // Cache estático para o CSS do KaTeX para evitar múltiplas leituras de disco
+    private static cachedKaTeXCSS: string | null = null;
 
     private constructor(
         accumulatedValue: bigint,
@@ -44,6 +31,8 @@ export class AuditableAmount {
         activeTermExpression: string,
         accumulatedVerbal: string,
         activeTermVerbal: string,
+        accumulatedUnicode: string,
+        activeTermUnicode: string,
     ) {
         this.accumulatedValue = accumulatedValue;
         this.activeTermValue = activeTermValue;
@@ -51,29 +40,30 @@ export class AuditableAmount {
         this.activeTermExpression = activeTermExpression;
         this.accumulatedVerbal = accumulatedVerbal;
         this.activeTermVerbal = activeTermVerbal;
+        this.accumulatedUnicode = accumulatedUnicode;
+        this.activeTermUnicode = activeTermUnicode;
     }
 
-    /**
-     * Ponto de entrada para criação de montantes.
-     * @param value Valor inicial. Recomenda-se o uso de strings para decimais.
-     */
     static from(value: NumericValue): AuditableAmount {
         if (value instanceof AuditableAmount) { return value; }
-
         const rawValue = typeof value === "bigint"
             ? value * INTERNAL_SCALE_FACTOR
             : this.parseStringValue(value.toString());
-
         const initialExpression = value.toString();
         const initialVerbal = initialExpression.replace(".", ",");
-
-        return new AuditableAmount(0n, rawValue, "", initialExpression, "", initialVerbal);
+        const initialUnicode = initialExpression;
+        return new AuditableAmount(
+            0n,
+            rawValue,
+            "",
+            initialExpression,
+            "",
+            initialVerbal,
+            "",
+            initialUnicode,
+        );
     }
 
-    /**
-     * Parser rigoroso que converte strings em BigInt escalado.
-     * Realiza arredondamento simples no 13º dígito decimal para garantir a integridade da base.
-     */
     private static parseStringValue(value: string): bigint {
         const numericPattern = /^(-?\d+)(?:\.(\d+))?$/;
         const match = value.match(numericPattern);
@@ -94,48 +84,37 @@ export class AuditableAmount {
         return isNegative ? -totalAbsoluteValue : totalAbsoluteValue;
     }
 
-    /**
-     * Adição matemática. Consolida o termo ativo no acumulador.
-     */
     add(value: NumericValue): AuditableAmount {
         const other = AuditableAmount.from(value);
         const newAccumulatedValue = this.accumulatedValue + this.activeTermValue;
-        const newAccumulatedExpr = this.getFullLaTeXExpression();
-        const newAccumulatedVerbal = this.getFullVerbalExpression();
-
         return new AuditableAmount(
             newAccumulatedValue,
             other.accumulatedValue + other.activeTermValue,
-            newAccumulatedExpr,
+            this.getFullLaTeXExpression(),
             other.activeTermExpression,
-            newAccumulatedVerbal,
+            this.getFullVerbalExpression(),
             other.activeTermVerbal,
+            this.getFullUnicodeExpression(),
+            other.activeTermUnicode,
         );
     }
 
-    /**
-     * Subtração matemática.
-     */
     sub(value: NumericValue): AuditableAmount {
         const other = AuditableAmount.from(value);
         const otherValue = other.accumulatedValue + other.activeTermValue;
         const newAccumulatedValue = this.accumulatedValue + this.activeTermValue;
-        const newAccumulatedExpr = this.getFullLaTeXExpression();
-        const newAccumulatedVerbal = this.getFullVerbalExpression();
-
         return new AuditableAmount(
             newAccumulatedValue,
             -otherValue,
-            newAccumulatedExpr,
+            this.getFullLaTeXExpression(),
             `- ${other.activeTermExpression}`,
-            newAccumulatedVerbal,
+            this.getFullVerbalExpression(),
             `menos ${other.activeTermVerbal}`,
+            this.getFullUnicodeExpression(),
+            `- ${other.activeTermUnicode}`,
         );
     }
 
-    /**
-     * Multiplicação. Atua exclusivamente sobre o termo ativo, respeitando a precedência.
-     */
     mult(value: NumericValue): AuditableAmount {
         const other = AuditableAmount.from(value);
         const otherValue = other.accumulatedValue + other.activeTermValue;
@@ -145,6 +124,9 @@ export class AuditableAmount {
             other.wrapLaTeX(other.getFullLaTeXExpression())
         }`;
         const nextActiveVerbal = `${this.activeTermVerbal} multiplicado por ${other.getFullVerbalExpression()}`;
+        const nextActiveUnicode = `${this.wrapUnicode(this.activeTermUnicode)} × ${
+            this.wrapUnicode(other.getFullUnicodeExpression())
+        }`;
 
         return new AuditableAmount(
             this.accumulatedValue,
@@ -153,20 +135,22 @@ export class AuditableAmount {
             nextActiveExpr,
             this.accumulatedVerbal,
             nextActiveVerbal,
+            this.accumulatedUnicode,
+            nextActiveUnicode,
         );
     }
 
-    /**
-     * Divisão. Atua exclusivamente sobre o termo ativo.
-     */
     div(value: NumericValue): AuditableAmount {
         const other = AuditableAmount.from(value);
         const otherValue = other.accumulatedValue + other.activeTermValue;
         if (otherValue === 0n) { throw new Error("Division by zero"); }
-
         const nextActiveValue = (this.activeTermValue * INTERNAL_SCALE_FACTOR) / otherValue;
+
         const nextActiveExpr = `\\frac{${this.activeTermExpression}}{${other.getFullLaTeXExpression()}}`;
         const nextActiveVerbal = `${this.activeTermVerbal} dividido por ${other.getFullVerbalExpression()}`;
+        const nextActiveUnicode = `${this.wrapUnicode(this.activeTermUnicode)} ÷ ${
+            this.wrapUnicode(other.getFullUnicodeExpression())
+        }`;
 
         return new AuditableAmount(
             this.accumulatedValue,
@@ -175,35 +159,44 @@ export class AuditableAmount {
             nextActiveExpr,
             this.accumulatedVerbal,
             nextActiveVerbal,
+            this.accumulatedUnicode,
+            nextActiveUnicode,
         );
     }
 
-    /**
-     * Exponenciação e Raízes.
-     * Suporta frações (ex: "1/2") para cálculo de raízes com precisão preservada.
-     */
     pow(exponent: string | number): AuditableAmount {
         const baseValue = this.activeTermValue;
         const baseExpr = this.wrapLaTeX(this.activeTermExpression);
         const baseVerbal = this.activeTermVerbal;
+        const baseUnicode = this.wrapUnicode(this.activeTermUnicode);
+
         let nextExpr: string;
         let nextVerbal: string;
+        let nextUnicode: string;
         let nextValue: bigint;
 
         const expStr = exponent.toString();
         if (expStr.includes("/")) {
             const [num, den] = expStr.split("/").map((s) => BigInt(s.trim()));
             nextValue = calculateNthRoot(
-                calculateBigIntPower(baseValue, num)
-                    * calculateBigIntPower(INTERNAL_SCALE_FACTOR, den - num),
+                calculateBigIntPower(baseValue, num) * calculateBigIntPower(INTERNAL_SCALE_FACTOR, den - num),
                 den,
             );
+
+            const denSup = AuditableAmount.toSuperscript(den.toString());
+            const numSup = num === 1n ? "" : AuditableAmount.toSuperscript(num.toString());
+
             nextExpr = num === 1n ? `\\sqrt[${den}]{${baseExpr}}` : `\\sqrt[${den}]{${baseExpr}^{${num}}}`;
             nextVerbal = `raiz de índice ${den} de ${baseVerbal}${num === 1n ? "" : " elevado a " + num}`;
+            nextUnicode = `${denSup === "²" ? "" : denSup}√(${baseUnicode}${numSup})`;
         } else {
             const exp = BigInt(expStr);
+            const expSup = AuditableAmount.toSuperscript(expStr);
+
             nextExpr = `{${baseExpr}}^{${expStr}}`;
             nextVerbal = `${baseVerbal} elevado a ${expStr}`;
+            nextUnicode = `${baseUnicode}${expSup}`;
+
             if (exp === 0n) { nextValue = INTERNAL_SCALE_FACTOR; }
             else if (exp > 0n) {
                 nextValue = calculateBigIntPower(baseValue, exp)
@@ -214,7 +207,6 @@ export class AuditableAmount {
                 nextValue = (INTERNAL_SCALE_FACTOR * INTERNAL_SCALE_FACTOR) / denVal;
             }
         }
-
         return new AuditableAmount(
             this.accumulatedValue,
             nextValue,
@@ -222,32 +214,26 @@ export class AuditableAmount {
             nextExpr,
             this.accumulatedVerbal,
             nextVerbal,
+            this.accumulatedUnicode,
+            nextUnicode,
         );
     }
 
-    /**
-     * Consolida acumulador e termo ativo em um novo grupo protegido por parênteses.
-     * Essencial para forçar ordens de cálculo (ex: (a + b) * c).
-     */
     group(): AuditableAmount {
         const totalValue = this.accumulatedValue + this.activeTermValue;
         const groupedExpr = `\\left( ${this.getFullLaTeXExpression()} \\right)`;
         const groupedVerbal = `em grupo, ${this.getFullVerbalExpression()}, fim do grupo`;
-
-        return new AuditableAmount(0n, totalValue, "", groupedExpr, "", groupedVerbal);
+        const groupedUnicode = `(${this.getFullUnicodeExpression()})`;
+        return new AuditableAmount(0n, totalValue, "", groupedExpr, "", groupedVerbal, "", groupedUnicode);
     }
 
-    /**
-     * Finaliza o cálculo e retorna o valor formatado com arredondamento NBR 5891.
-     * @param decimals Casas decimais desejadas (padrão: 6).
-     */
     commit(decimals: number = DEFAULT_DISPLAY_PRECISION): string {
         const finalValue = this.accumulatedValue + this.activeTermValue;
         const rounded = roundToPrecisionNBR5891(finalValue, INTERNAL_CALCULATION_PRECISION, decimals);
-        return this.formatBigInt(rounded, decimals);
+        return this.formatBigIntToString(rounded, decimals);
     }
 
-    private formatBigInt(value: bigint, decimals: number): string {
+    private formatBigIntToString(value: bigint, decimals: number): string {
         const isNeg = value < 0n;
         const abs = isNeg ? -value : value;
         const scale = 10n ** BigInt(decimals);
@@ -256,18 +242,39 @@ export class AuditableAmount {
         return `${isNeg ? "-" : ""}${int}.${frac}`;
     }
 
-    /** Gera a expressão LaTeX completa para auditoria visual. */
     toLaTeX(decimals: number = DEFAULT_DISPLAY_PRECISION): string {
         return `$$ ${this.getFullLaTeXExpression()} = ${this.commit(decimals)} $$`;
     }
 
-    /**
-     * Gera narração verbal completa para acessibilidade (WCAG AAA).
-     * Transforma símbolos matemáticos em linguagem natural clara.
-     */
+    toHTML(decimals: number = DEFAULT_DISPLAY_PRECISION): string {
+        if (!AuditableAmount.cachedKaTeXCSS) {
+            AuditableAmount.cachedKaTeXCSS = KATEX_CSS_MINIFIED;
+        }
+        const latex = this.getFullLaTeXExpression() + " = " + this.commit(decimals);
+        const renderedHTML = katex.renderToString(latex, {
+            displayMode: true,
+            throwOnError: false,
+        });
+        return `
+<div class="auditable-amount-container" aria-label="${this.toVerbal(decimals)}">
+  <style>
+    ${AuditableAmount.cachedKaTeXCSS}
+    .auditable-amount-container { margin: 1em 0; overflow-x: auto; }
+  </style>
+  ${renderedHTML}
+</div>`.trim();
+    }
+
     toVerbal(decimals: number = DEFAULT_DISPLAY_PRECISION): string {
         const result = this.commit(decimals).replace(".", " vírgula ");
         return `${this.getFullVerbalExpression()} é igual a ${result}`;
+    }
+
+    /**
+     * Gera uma representação em string Unicode para visualização em CLI.
+     */
+    toUnicode(decimals: number = DEFAULT_DISPLAY_PRECISION): string {
+        return `${this.getFullUnicodeExpression()} = ${this.commit(decimals)}`;
     }
 
     private getFullLaTeXExpression(): string {
@@ -288,6 +295,15 @@ export class AuditableAmount {
         return verbal;
     }
 
+    private getFullUnicodeExpression(): string {
+        let unicode = this.accumulatedUnicode;
+        if (this.accumulatedUnicode && this.activeTermUnicode) {
+            unicode += this.activeTermUnicode.startsWith("-") ? " " : " + ";
+        }
+        unicode += this.activeTermUnicode;
+        return unicode;
+    }
+
     private wrapLaTeX(expr: string): string {
         const trimmed = expr.trim();
         if (
@@ -297,6 +313,38 @@ export class AuditableAmount {
             return `\\left( ${expr} \\right)`;
         }
         return expr;
+    }
+
+    private wrapUnicode(expr: string): string {
+        const trimmed = expr.trim();
+        if (
+            !trimmed.startsWith("(") && (trimmed.includes("+") || trimmed.includes(" - "))
+        ) {
+            return `(${expr})`;
+        }
+        return expr;
+    }
+
+    private static toSuperscript(s: string): string {
+        const map: Record<string, string> = {
+            "0": "⁰",
+            "1": "¹",
+            "2": "²",
+            "3": "³",
+            "4": "⁴",
+            "5": "⁵",
+            "6": "⁶",
+            "7": "⁷",
+            "8": "⁸",
+            "9": "⁹",
+            "+": "⁺",
+            "-": "⁻",
+            "(": "⁽",
+            ")": "⁾",
+            ".": "·",
+            ",": "·",
+        };
+        return s.split("").map((c) => map[c] || c).join("");
     }
 
     toString(): string {

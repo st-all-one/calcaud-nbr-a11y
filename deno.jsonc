@@ -32,11 +32,11 @@
         "@std/assert": "jsr:@std/assert@1",
         "@std/path": "jsr:@std/path@^1.1.4",
         "@zod": "jsr:@zod/zod@^4.3.6",
-        "katex": "npm:katex@^0.16.40"
+        "@katex": "npm:katex@^0.16.40"
     },
     "nodeModulesDir": "auto",
     "vendor": true,
-    "lock": { "frozen": true },
+    "lock": { "frozen": false },
 
     "fmt": {
         "bracePosition": "sameLine",
