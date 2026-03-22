@@ -1,7 +1,7 @@
 import { INTERNAL_CALCULATION_PRECISION } from "./constants.ts";
 import { formatBigIntToString, formatMonetary } from "./output_helpers/formatting.ts";
 import { generateHTML } from "./output_helpers/html_generator.ts";
-import { generateVerbal } from "./output_helpers/verbal_generator.ts";
+import { translateVerbal } from "./output_helpers/verbal_translator.ts";
 import { generateImageBuffer } from "./output_helpers/image_generator.ts";
 import { type CurrencyNBROutputOptions, DEFAULT_OPTIONS } from "./output_helpers/options.ts";
 import { applyRounding } from "./output_helpers/rounding_manager.ts";
@@ -110,10 +110,15 @@ export class CurrencyNBROutput {
     }
 
     /**
-     * Retorna a descrição verbal acessível.
+     * Retorna a descrição verbal acessível traduzida para o locale configurado.
      */
     public toVerbalA11y(): string {
-        return generateVerbal(this.verbalExpression, this.toString());
+        return translateVerbal(
+            this.verbalExpression,
+            this.toString(),
+            this.options.locale,
+            this.options.roundingMethod,
+        );
     }
 
     /**
@@ -141,7 +146,7 @@ export class CurrencyNBROutput {
     public toJson(elements: CurrencyOutputMethod[] = []): string {
         const targetElements = elements.length > 0 ? elements : AVAILABLE_OUTPUT_METHODS;
         const result: Record<string, unknown> = {
-            metaInfo: {
+            meta: {
                 options: this.options,
                 decimals: this.defaultDecimals,
             },

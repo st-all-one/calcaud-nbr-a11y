@@ -7,6 +7,7 @@ import { wrapLaTeX, wrapUnicode } from "./internal/wrappers.ts";
 import { CurrencyNBROutput } from "./output.ts";
 import { DEFAULT_DISPLAY_PRECISION, INTERNAL_SCALE_FACTOR } from "./constants.ts";
 import type { CurrencyNBROutputOptions } from "./output_helpers/options.ts";
+import { VERBAL_TOKENS } from "./output_helpers/i18n.ts";
 
 /**
  * Representa qualquer valor que possa ser convertido em um montante auditável.
@@ -50,7 +51,8 @@ export class CurrencyNBR {
         if (value instanceof CurrencyNBR) { return value; }
         const rawValue = typeof value === "bigint" ? value * INTERNAL_SCALE_FACTOR : parseStringValue(value.toString());
         const initialExpression = value.toString();
-        const initialVerbal = initialExpression.replace(".", ",");
+        // Não substituímos mais o ponto por vírgula aqui. Deixamos para o gerador final.
+        const initialVerbal = initialExpression;
         const initialUnicode = initialExpression;
         return new CurrencyNBR(
             0n,
@@ -89,7 +91,7 @@ export class CurrencyNBR {
             this.getFullLaTeXExpression(),
             `- ${other.activeTermExpression}`,
             this.getFullVerbalExpression(),
-            `menos ${other.activeTermVerbal}`,
+            `${VERBAL_TOKENS.SUB}${other.activeTermVerbal}`, // Usando Token
             this.getFullUnicodeExpression(),
             `- ${other.activeTermUnicode}`,
         );
@@ -103,7 +105,8 @@ export class CurrencyNBR {
         const nextActiveExpr = `${wrapLaTeX(this.activeTermExpression)} \\times ${
             wrapLaTeX(other.getFullLaTeXExpression())
         }`;
-        const nextActiveVerbal = `${this.activeTermVerbal} multiplicado por ${other.getFullVerbalExpression()}`;
+        // Usando Token MULT
+        const nextActiveVerbal = `${this.activeTermVerbal}${VERBAL_TOKENS.MULT}${other.getFullVerbalExpression()}`;
         const nextActiveUnicode = `${wrapUnicode(this.activeTermUnicode)} × ${
             wrapUnicode(other.getFullUnicodeExpression())
         }`;
@@ -127,7 +130,8 @@ export class CurrencyNBR {
         const nextActiveValue = (this.activeTermValue * INTERNAL_SCALE_FACTOR) / otherValue;
 
         const nextActiveExpr = `\\frac{${this.activeTermExpression}}{${other.getFullLaTeXExpression()}}`;
-        const nextActiveVerbal = `${this.activeTermVerbal} dividido por ${other.getFullVerbalExpression()}`;
+        // Usando Token DIV
+        const nextActiveVerbal = `${this.activeTermVerbal}${VERBAL_TOKENS.DIV}${other.getFullVerbalExpression()}`;
         const nextActiveUnicode = `${wrapUnicode(this.activeTermUnicode)} ÷ ${
             wrapUnicode(other.getFullUnicodeExpression())
         }`;
@@ -167,14 +171,19 @@ export class CurrencyNBR {
             const numSup = num === 1n ? "" : toSuperscript(num.toString());
 
             nextExpr = num === 1n ? `\\sqrt[${den}]{${baseExpr}}` : `\\sqrt[${den}]{${baseExpr}^{${num}}}`;
-            nextVerbal = `raiz de índice ${den} de ${baseVerbal}${num === 1n ? "" : " elevado a " + num}`;
+            // Verbal usando Tokens de Raiz
+            // ex: raiz de índice 3 de base elevado a 2
+            nextVerbal = `${VERBAL_TOKENS.ROOT_IDX}${den}${VERBAL_TOKENS.ROOT_OF}${baseVerbal}${
+                num === 1n ? "" : VERBAL_TOKENS.POW + num
+            }`;
             nextUnicode = `${denSup === "²" ? "" : denSup}√(${baseUnicode}${numSup})`;
         } else {
             const exp = BigInt(expStr);
             const expSup = toSuperscript(expStr);
 
             nextExpr = `{${baseExpr}}^{${expStr}}`;
-            nextVerbal = `${baseVerbal} elevado a ${expStr}`;
+            // Verbal usando Token POW
+            nextVerbal = `${baseVerbal}${VERBAL_TOKENS.POW}${expStr}`;
             nextUnicode = `${baseUnicode}${expSup}`;
 
             if (exp === 0n) { nextValue = INTERNAL_SCALE_FACTOR; }
@@ -202,7 +211,8 @@ export class CurrencyNBR {
     public group(): CurrencyNBR {
         const totalValue = this.accumulatedValue + this.activeTermValue;
         const groupedExpr = `\\left( ${this.getFullLaTeXExpression()} \\right)`;
-        const groupedVerbal = `em grupo, ${this.getFullVerbalExpression()}, fim do grupo`;
+        // Usando Tokens de Grupo
+        const groupedVerbal = `${VERBAL_TOKENS.GRP_START}${this.getFullVerbalExpression()}${VERBAL_TOKENS.GRP_END}`;
         const groupedUnicode = `(${this.getFullUnicodeExpression()})`;
         return new CurrencyNBR(0n, totalValue, "", groupedExpr, "", groupedVerbal, "", groupedUnicode);
     }
@@ -239,7 +249,9 @@ export class CurrencyNBR {
     private getFullVerbalExpression(): string {
         let verbal = this.accumulatedVerbal;
         if (this.accumulatedVerbal && this.activeTermVerbal) {
-            verbal += this.activeTermVerbal.includes("menos") ? " " : " mais ";
+            // Verifica se o termo ativo já começa com token de subtração (negativo)
+            // Se sim, usa espaço, senão usa ADD
+            verbal += this.activeTermVerbal.includes(VERBAL_TOKENS.SUB) ? " " : VERBAL_TOKENS.ADD;
         }
         verbal += this.activeTermVerbal;
         return verbal;

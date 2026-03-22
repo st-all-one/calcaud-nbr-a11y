@@ -1,4 +1,4 @@
-import { LOCALE_CURRENCY_MAP } from "./locales.ts";
+import type { LOCALE_CURRENCY_MAP } from "./locales.ts";
 
 /**
  * Métodos de arredondamento disponíveis.

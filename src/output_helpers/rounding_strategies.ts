@@ -8,18 +8,19 @@
  */
 export function roundHalfUp(value: bigint, currentScale: number, targetDecimals: number): bigint {
     const scaleDiff = BigInt(currentScale - targetDecimals);
-    if (scaleDiff <= 0n) return value; // Sem necessidade de arredondamento se a escala alvo for maior
+    if (scaleDiff <= 0n) { return value; // Sem necessidade de arredondamento se a escala alvo for maior
+     }
 
     const divisor = 10n ** scaleDiff;
     const remainder = value % divisor;
     const half = divisor / 2n;
 
     let result = value / divisor;
-    
+
     // Tratamento para números negativos
     if (value < 0n) {
         if (remainder <= -half) {
-             result -= 1n;
+            result -= 1n;
         }
     } else {
         if (remainder >= half) {
@@ -36,30 +37,30 @@ export function roundHalfUp(value: bigint, currentScale: number, targetDecimals:
  */
 export function roundHalfEven(value: bigint, currentScale: number, targetDecimals: number): bigint {
     const scaleDiff = BigInt(currentScale - targetDecimals);
-    if (scaleDiff <= 0n) return value;
+    if (scaleDiff <= 0n) { return value; }
 
     const divisor = 10n ** scaleDiff;
     const remainder = value % divisor;
     const half = divisor / 2n;
-    
+
     let result = value / divisor;
 
     // Se o resto for exatamente metade
     if (remainder === half || remainder === -half) {
         // Se o resultado atual for ímpar, arredonda para o par (soma/subtrai 1)
         if (result % 2n !== 0n) {
-             if (value < 0n) {
-                 result -= 1n;
-             } else {
-                 result += 1n;
-             }
+            if (value < 0n) {
+                result -= 1n;
+            } else {
+                result += 1n;
+            }
         }
     } else {
         // Comportamento normal de Half-Up para outros casos
         if (value < 0n) {
-             if (remainder < -half) result -= 1n;
+            if (remainder < -half) { result -= 1n; }
         } else {
-             if (remainder > half) result += 1n;
+            if (remainder > half) { result += 1n; }
         }
     }
 
@@ -72,7 +73,7 @@ export function roundHalfEven(value: bigint, currentScale: number, targetDecimal
  */
 export function roundTruncate(value: bigint, currentScale: number, targetDecimals: number): bigint {
     const scaleDiff = BigInt(currentScale - targetDecimals);
-    if (scaleDiff <= 0n) return value;
+    if (scaleDiff <= 0n) { return value; }
 
     const divisor = 10n ** scaleDiff;
     return value / divisor;
@@ -84,11 +85,11 @@ export function roundTruncate(value: bigint, currentScale: number, targetDecimal
  */
 export function roundCeil(value: bigint, currentScale: number, targetDecimals: number): bigint {
     const scaleDiff = BigInt(currentScale - targetDecimals);
-    if (scaleDiff <= 0n) return value;
+    if (scaleDiff <= 0n) { return value; }
 
     const divisor = 10n ** scaleDiff;
     const remainder = value % divisor;
-    
+
     let result = value / divisor;
 
     if (remainder > 0n) {
