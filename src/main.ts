@@ -274,6 +274,109 @@ export class CurrencyNBR {
         }
     }
 
+    public divInt(value: CurrencyNBRAllowedValue): CurrencyNBR {
+        const start = performance.now();
+        try {
+            const other = CurrencyNBR.from(value);
+            const otherValue = other.accumulatedValue + other.activeTermValue;
+            if (otherValue === 0n) {
+                throw new CurrencyNBRError({
+                    type: "division-by-zero",
+                    title: "Operação Matemática Inválida",
+                    detail: "Tentativa de divisão inteira por um montante acumulado igual a zero.",
+                    operation: "divInt",
+                    latex: `\\lfloor \\frac{${this.activeTermExpression}}{0} \\rfloor`,
+                    unicode: `⌊${this.activeTermUnicode} ÷ 0⌋`,
+                });
+            }
+            // Divisão BigInt já é inteira (trunca)
+            const nextActiveValue = (this.activeTermValue / otherValue) * INTERNAL_SCALE_FACTOR;
+
+            const nextActiveExpr = `\\lfloor \\frac{${this.activeTermExpression}}{${other.getFullLaTeXExpression()}} \\rfloor`;
+            const nextActiveVerbal = `${this.activeTermVerbal}${VERBAL_TOKENS.DIV_INT}${other.getFullVerbalExpression()}`;
+            const nextActiveUnicode = `⌊${this.activeTermUnicode} ÷ ${other.getFullUnicodeExpression()}⌋`;
+
+            const result = new CurrencyNBR(
+                this.accumulatedValue,
+                nextActiveValue,
+                this.accumulatedExpression,
+                nextActiveExpr,
+                this.accumulatedVerbal,
+                nextActiveVerbal,
+                this.accumulatedUnicode,
+                nextActiveUnicode,
+            );
+            const end = performance.now();
+            getLogger(["currency-nbr-a11y", "engine", "divInt"]).debug("Integer division performed {*}", {
+                calcTime: end - start,
+                mathState: {
+                    latex: result.getFullLaTeXExpression(),
+                    unicode: result.getFullUnicodeExpression(),
+                },
+                currentAccumulatedResult: (result.accumulatedValue + result.activeTermValue).toString(),
+                activeTerm: result.activeTermValue.toString(),
+                divisor: otherValue.toString(),
+            });
+            return result;
+        } catch (e) {
+            if (!(e instanceof CurrencyNBRError)) {
+                logFatal(e, { operation: "divInt", value: String(value) });
+            }
+            throw e;
+        }
+    }
+
+    public mod(value: CurrencyNBRAllowedValue): CurrencyNBR {
+        const start = performance.now();
+        try {
+            const other = CurrencyNBR.from(value);
+            const otherValue = other.accumulatedValue + other.activeTermValue;
+            if (otherValue === 0n) {
+                throw new CurrencyNBRError({
+                    type: "division-by-zero",
+                    title: "Operação Matemática Inválida",
+                    detail: "Tentativa de cálculo de módulo por zero.",
+                    operation: "mod",
+                    latex: `${this.activeTermExpression} \\pmod{0}`,
+                    unicode: `${this.activeTermUnicode} mod 0`,
+                });
+            }
+            const nextActiveValue = this.activeTermValue % otherValue;
+
+            const nextActiveExpr = `${this.activeTermExpression} \\pmod{${other.getFullLaTeXExpression()}}`;
+            const nextActiveVerbal = `${this.activeTermVerbal}${VERBAL_TOKENS.MOD}${other.getFullVerbalExpression()}`;
+            const nextActiveUnicode = `${this.activeTermUnicode} mod ${other.getFullUnicodeExpression()}`;
+
+            const result = new CurrencyNBR(
+                this.accumulatedValue,
+                nextActiveValue,
+                this.accumulatedExpression,
+                nextActiveExpr,
+                this.accumulatedVerbal,
+                nextActiveVerbal,
+                this.accumulatedUnicode,
+                nextActiveUnicode,
+            );
+            const end = performance.now();
+            getLogger(["currency-nbr-a11y", "engine", "mod"]).debug("Modulo performed {*}", {
+                calcTime: end - start,
+                mathState: {
+                    latex: result.getFullLaTeXExpression(),
+                    unicode: result.getFullUnicodeExpression(),
+                },
+                currentAccumulatedResult: (result.accumulatedValue + result.activeTermValue).toString(),
+                activeTerm: result.activeTermValue.toString(),
+                divisor: otherValue.toString(),
+            });
+            return result;
+        } catch (e) {
+            if (!(e instanceof CurrencyNBRError)) {
+                logFatal(e, { operation: "mod", value: String(value) });
+            }
+            throw e;
+        }
+    }
+
     public pow(exponent: string | number): CurrencyNBR {
         const start = performance.now();
         try {
