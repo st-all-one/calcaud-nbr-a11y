@@ -10,7 +10,64 @@
     --primary-light: #f0f7ff;
     --border: #333333;
     --code-bg: #1e1e1e;
+
+    /* Scrollbar Variables */
+    --scrollbar-thumb-bg: var(--primary);
+    --scrollbar-track-bg: var(--bg);
+    --scrollbar-thumb-border: var(--bg);
 }
+
+/* Custom Scrollbar Styling */
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 1.25rem; /* 20px - Thicker for accessibility */
+    height: 1.25rem; /* 20px */
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-bg);
+    border: 0.0625rem solid var(--primary-light); /* Subtle border for distinction */
+    border-radius: 0.5rem; /* 8px */
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-bg);
+    border-radius: 0.5rem; /* 8px */
+    border: 0.1875rem solid var(--scrollbar-thumb-border); /* 3px border to make thumb appear thinner and more distinct */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent); /* Accent on hover for feedback */
+}
+
+::-webkit-scrollbar-button {
+    display: block; /* Ensure buttons are visible */
+    height: 1.25rem; /* Match scrollbar width */
+    width: 1.25rem; /* Match scrollbar width */
+    background-color: var(--primary); /* Solid color for buttons */
+    border-radius: 0.25rem; /* Slightly rounded corners */
+    /* Add an SVG or unicode character for the arrow if desired, using background-image */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%; /* Adjust size of arrow icon */
+}
+
+/* Up arrow for top button */
+::-webkit-scrollbar-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E");
+}
+
+/* Down arrow for bottom button */
+::-webkit-scrollbar-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+}
+
+/* Firefox */
+html {
+    scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-track-bg); /* thumb track */
+    scrollbar-width: auto; /* Thicker scrollbar for Firefox */
+}
+
 
 /* Foco Global Visível (WCAG 2.4.7 AAA) */
 *:focus-visible {
@@ -70,13 +127,16 @@
     justify-content: center;
 }
 
+.page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
 body {
     font-family: "Segoe UI", system-ui, sans-serif;
     line-height: 1.6;
     color: var(--text);
     background-color: var(--bg);
-    max-width: 1400px;
-    margin: 0 auto;
     padding: 4.5rem 0 2rem 0; /* Ajustado para 4.5rem */
     font-size: clamp(1rem, 0.95em + 0.5vw, 1.125rem);
 }
@@ -210,6 +270,7 @@ textarea {
     border-radius: 0.3125rem; /* 5px para rem */
     resize: vertical;
     background: #fff;
+    color: var(--text);
 }
 
 small {
@@ -312,6 +373,10 @@ button:active {
     padding: 0 clamp(1rem, 5vw, 2rem);
 }
 
+.card-result-text {
+    color: var(--text);
+}
+
 /* Estilos base (mobile-first) */
 .grid,
 .output-grid {
@@ -359,11 +424,97 @@ button:active {
 
 /* Media query para telas ainda maiores (Notebook/Desktop - 3 colunas) */
 @media (min-width: 1100px) {
-    /* Grid de 3 Colunas */
-    .grid, .output-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+    #barra-acessibilidade {
+        flex-direction: row;
+        justify-content: space-between;
+        font-size: 1rem;
     }
-    /* Mantém full-width ocupando tudo */
+    #barra-acessibilidade ul {
+        flex-wrap: nowrap; /* Prevent wrapping in desktop mode */
+    }
+    #barra-acessibilidade #atalhos {
+        justify-content: flex-start;
+    }
+    #barra-acessibilidade #opcoes-acessibilidade {
+        margin-left: auto; /* Empurra o alto contraste para a direita */
+    }
+
+    body {
+        padding: 0; /* Reset body padding for grid layout */
+    }
+
+    .page-container {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        grid-template-rows: auto 1fr auto;
+        grid-template-areas:
+            "sidebar header"
+            "sidebar main"
+            "sidebar footer";
+    }
+
+    header {
+        grid-area: header;
+        padding-top: 3rem; /* Adjusted for accessibility bar height */
+    }
+    main {
+        grid-area: main;
+    }
+    footer {
+        grid-area: footer;
+    }
+
+    #menu-principal {
+        grid-area: sidebar;
+        position: sticky;
+        top: 45px; /* Offset for the accessibility bar (approx. 40-45px) */
+        height: calc(100vh - 45px);
+        overflow-y: auto;
+        border-right: 1px solid var(--border);
+        padding: 1.5rem 1rem;
+        margin-bottom: 0;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25rem;
+        flex-wrap: nowrap;
+    }
+
+    .nav-links a {
+        display: block;
+        padding: 0.5rem 1rem;
+        min-height: auto; /* Reset min-height */
+        white-space: nowrap; /* Ensure single line */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .nav-group-title {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+
+    /* Add indentation for hierarchy */
+    .nav-links li:not(.nav-group-title) a {
+        padding-left: 1.5rem;
+        font-size: 0.95em;
+    }
+
+    /* Adjust scroll-margin-top for anchor links to prevent content being hidden under fixed bar */
+    h2[id^="h-"], section[id^="sec-"] {
+        scroll-margin-top: 50px; /* Slightly more than accessibility bar height */
+    }
+
+    /* Original 3-column grid for content becomes a 2-column grid */
+    .grid,
+    .output-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
     .output-item.full-width {
         grid-column: 1 / -1;
     }
@@ -456,6 +607,112 @@ footer {
     text-align: center;
 }
 
+/* Modo Escuro (Dark Mode) */
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --text: #e0e0e0;
+    --primary: #8ab4f8;
+    --accent: #fdd835;
+    --primary-light: #1e2a38;
+    --border: #555555;
+    --code-bg: #1c1c1c;
+
+    /* Scrollbar Variables for Dark Mode */
+    --scrollbar-thumb-bg: var(--primary);
+    --scrollbar-track-bg: var(--bg);
+    --scrollbar-thumb-border: var(--bg);
+}
+
+html[data-theme="dark"] #barra-acessibilidade {
+    background: #1a202c;
+    color: #ffffff;
+    border-bottom: 0.0625rem solid var(--primary);
+}
+
+html[data-theme="dark"] #barra-acessibilidade a,
+html[data-theme="dark"] #barra-acessibilidade a:hover,
+html[data-theme="dark"] #barra-acessibilidade a:focus {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] body {
+    background-color: var(--bg);
+    color: var(--text);
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .output-item {
+    background: #1a202c;
+    border-color: #4a5568;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme="dark"] .nav-links a {
+    background: var(--primary-light);
+    color: var(--text);
+    border-color: var(--primary);
+}
+
+html[data-theme="dark"] .nav-links a:hover,
+html[data-theme="dark"] .nav-links a:focus {
+    background: var(--primary);
+    color: #000;
+}
+
+html[data-theme="dark"] textarea {
+    background: #2d3748;
+    color: var(--text);
+    border-color: #4a5568;
+}
+
+html[data-theme="dark"] small {
+    color: #a0aec0;
+}
+
+html[data-theme="dark"] button {
+    background: var(--primary);
+    color: #000;
+}
+
+html[data-theme="dark"] button:hover,
+html[data-theme="dark"] button:focus {
+    background: #ffffff;
+    color: #000;
+    border-color: var(--primary);
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-button {
+    background-color: var(--primary-light); /* Darker primary for buttons in dark mode */
+}
+html[data-theme="dark"] ::-webkit-scrollbar-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e0e0e0' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E"); /* Lighter arrows */
+}
+html[data-theme="dark"] ::-webkit-scrollbar-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e0e0e0' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* Lighter arrows */
+}
+
+html[data-theme="dark"] .simulator-form {
+    background: #1a202c;
+    border-color: var(--primary);
+}
+
+html[data-theme="dark"] .json-view {
+    background: #1c1c1c;
+    color: var(--text);
+}
+
+html[data-theme="dark"] .card-math-render {
+     background: #2d3748;
+     border-color: #4a5568;
+}
+
+html[data-theme="dark"] #barra-acessibilidade a,
+html[data-theme="dark"] #barra-acessibilidade a:hover,
+html[data-theme="dark"] #barra-acessibilidade a:focus {
+    color: #ffffff;
+}
+
 /* Modo Alto Contraste (eMAG) */
 body.alto-contraste {
     --bg: #000000;
@@ -465,6 +722,24 @@ body.alto-contraste {
     --primary-light: #1a1a1a;
     --border: #ffffff;
     --code-bg: #000000;
+
+    /* Scrollbar Variables for High Contrast Mode */
+    --scrollbar-thumb-bg: var(--primary) !important; /* Yellow */
+    --scrollbar-track-bg: var(--bg) !important; /* Black */
+    --scrollbar-thumb-border: var(--bg) !important; /* Black */
+
+    /* Firefox Scrollbar for High Contrast */
+    scrollbar-color: var(--primary) var(--bg) !important; /* yellow black */
+}
+
+body.alto-contraste ::-webkit-scrollbar-button {
+    background-color: var(--bg) !important; /* Black buttons */
+}
+body.alto-contraste ::-webkit-scrollbar-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffff00' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E") !important; /* Yellow arrows */
+}
+body.alto-contraste ::-webkit-scrollbar-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffff00' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") !important; /* Yellow arrows */
 }
 
 body.alto-contraste #barra-acessibilidade {

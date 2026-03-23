@@ -98,9 +98,9 @@ async function loadExamples() {
                 if (groupType === "operations") {
                     resultView = `
                         <div class="result-label">toString():</div>
-                        <div class="card-result-text" style="color: #000;">${ex.outputs.toString}</div>
+                        <div class="card-result-text">${ex.outputs.toString}</div>
                         <div class="result-label" style="margin-top: 10px;">toMonetary():</div>
-                        <div class="card-result-text" style="color: var(--primary);">${ex.outputs.toMonetary}</div>
+                        <div class="card-result-text">${ex.outputs.toMonetary}</div>
                         <div class="result-label" style="margin-top: 10px;">toHTML():</div>
                         <div class="card-math-render">${ex.outputs.toHTML}</div>
                     `;
@@ -157,6 +157,18 @@ async function loadExamples() {
 
 // Inicialização
 function init() {
+    // 0. Aplicar Tema Escuro salvo no carregamento
+    const htmlEl = document.documentElement;
+    const savedTheme = localStorage.getItem("theme") || "light";
+    htmlEl.setAttribute("data-theme", savedTheme);
+
+    const darkModeBtn = document.getElementById("modo-escuro");
+    if (darkModeBtn) {
+        const isDark = savedTheme === "dark";
+        darkModeBtn.setAttribute("aria-pressed", isDark);
+        darkModeBtn.querySelector("span").textContent = isDark ? "☾" : "☼";
+    }
+
     // 1. Carregar Exemplos
     loadExamples();
 
@@ -194,7 +206,23 @@ function init() {
         });
     }
 
-    // 3. Configurar Alto Contraste
+    // 3. Configurar Modo Escuro
+    if (darkModeBtn) {
+        darkModeBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const currentTheme = htmlEl.getAttribute("data-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            
+            htmlEl.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme);
+
+            const isDark = newTheme === "dark";
+            darkModeBtn.setAttribute("aria-pressed", isDark);
+            darkModeBtn.querySelector("span").textContent = isDark ? "☾" : "☼";
+        });
+    }
+
+    // 4. Configurar Alto Contraste
     const contrastBtn = document.getElementById("alto-contraste");
     if (contrastBtn) {
         contrastBtn.addEventListener("click", (e) => {

@@ -3,7 +3,24 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="theme-color" content="#003366">
+        <meta name="referrer" content="no-referrer">
+        <meta name="color-scheme" content="light dark">
+        <meta name="robots" content="noindex, nofollow"> 
+        <meta name="keywords" content="math, finance, audit, latex, bigint, precision, currency, money">
+        <meta name="description" content="Biblioteca TypeScript de matemática financeira com exportação LaTeX e texto próprio para leitura e acessibilidade.">
+            
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            
+        <meta property="og:title" content="Descubra o Poder das Meta Tags">
+        <meta property="og:description" content="Como usar meta tags para otimizar sites e atrair mais usuários.">
+        <meta property="og:image" content="https://rocketseat.com.br/meta-tags.png">
+        <meta property="og:url" content="https://rocketseat.com.br/meta-tags">
+        <meta property="og:type" content="article">
+            
         <title>CurrencyNBR - Demonstração Completa de Auditabilidade</title>
+        <link rel="icon" id="favicon" href="../assets/favicon.ico">
         <link rel="stylesheet" href="style.css">
 
     </head>
@@ -16,6 +33,9 @@
             </ul>
             <ul id="opcoes-acessibilidade">
                 <li>
+                    <a href="#" id="modo-escuro" aria-pressed="false"><span aria-hidden="true">☼</span> Modo Escuro</a>
+                </li>
+                <li>
                     <a href="#" id="alto-contraste" aria-pressed="false"><span aria-hidden="true">◐</span> Alto
                         Contraste</a>
                 </li>
@@ -24,64 +44,65 @@
 
         <a href="#menu-principal" class="skip-link">Pular para o conteúdo principal</a>
 
-        <header role="banner">
-            <h1>CurrencyNBR: Showcase de Auditabilidade</h1>
-            <p>Demonstração exaustiva de todos os métodos da classe <code>CurrencyNBROutput</code>.</p>
-        </header>
+        <div class="page-container">
+            <header role="banner">
+                <h1>CurrencyNBR: Showcase de Auditabilidade</h1>
+                <p>Demonstração exaustiva de todos os métodos da classe <code>CurrencyNBROutput</code>.</p>
+            </header>
 
-        <nav id="menu-principal" aria-label="Navegação rápida">
-            <ul class="nav-links">
-                <li><a href="#sec-interactive">1. interactive</a></li>
+            <nav id="menu-principal" aria-label="Navegação rápida">
+                <ul class="nav-links">
+                    <li><a href="#sec-interactive">1. interactive</a></li>
 
-                <li class="nav-group-title">Outputs</li>
-                <li><a href="#sec-verbalMonetary">2. locale</a></li>
-                <li><a href="#sec-roundingShowcase">3. Rounding</a></li>
-                <li><a href="#sec-toString">4. toString</a></li>
-                <li><a href="#sec-toFloatNumber">5. toFloatNumber</a></li>
-                <li><a href="#sec-toBigInt">6. toBigInt</a></li>
-                <li><a href="#sec-toMonetary">7. toMonetary</a></li>
-                <li><a href="#sec-toLaTeX">8. toLaTeX</a></li>
-                <li><a href="#sec-toHTML">9. toHTML</a></li>
-                <li><a href="#sec-toVerbalA11y">10. toVerbalA11y</a></li>
-                <li><a href="#sec-toUnicode">11. toUnicode</a></li>
-                <li><a href="#sec-toImageBuffer">12. toImageBuffer</a></li>
-                <li><a href="#sec-toJson">13. toJson</a></li>
+                    <li class="nav-group-title">Outputs</li>
+                    <li><a href="#sec-verbalMonetary">2. locale</a></li>
+                    <li><a href="#sec-roundingShowcase">3. Rounding</a></li>
+                    <li><a href="#sec-toString">4. toString</a></li>
+                    <li><a href="#sec-toFloatNumber">5. toFloatNumber</a></li>
+                    <li><a href="#sec-toBigInt">6. toBigInt</a></li>
+                    <li><a href="#sec-toMonetary">7. toMonetary</a></li>
+                    <li><a href="#sec-toLaTeX">8. toLaTeX</a></li>
+                    <li><a href="#sec-toHTML">9. toHTML</a></li>
+                    <li><a href="#sec-toVerbalA11y">10. toVerbalA11y</a></li>
+                    <li><a href="#sec-toUnicode">11. toUnicode</a></li>
+                    <li><a href="#sec-toImageBuffer">12. toImageBuffer</a></li>
+                    <li><a href="#sec-toJson">13. toJson</a></li>
 
-                <li class="nav-group-title">Operações</li>
-                <li><a href="#sec-add">add</a></li>
-                <li><a href="#sec-sub">sub</a></li>
-                <li><a href="#sec-mult">mult</a></li>
-                <li><a href="#sec-pow">pow</a></li>
-                <li><a href="#sec-mod">mod</a></li>
-                <li><a href="#sec-divInt">divInt</a></li>
-                <li><a href="#sec-group">group</a></li>
-            </ul>
-        </nav>
+                    <li class="nav-group-title">Operações</li>
+                    <li><a href="#sec-add">add</a></li>
+                    <li><a href="#sec-sub">sub</a></li>
+                    <li><a href="#sec-mult">mult</a></li>
+                    <li><a href="#sec-pow">pow</a></li>
+                    <li><a href="#sec-mod">mod</a></li>
+                    <li><a href="#sec-divInt">divInt</a></li>
+                    <li><a href="#sec-group">group</a></li>
+                </ul>
+            </nav>
 
-        <main id="main-content" role="main">
-            <!-- 1. SIMULADOR INTERATIVO -->
-            <section id="sec-interactive" aria-labelledby="h-interactive">
-                <h2 id="h-interactive">1. Simulador Interativo (Manual)</h2>
-                <div class="interactive-container">
-                    <form id="f" class="simulator-form" onsubmit="return false;">
-                        <div class="form-group full-width">
-                            <label for="expr">Expressão de Cálculo (TypeScript):</label>
-                            <textarea
-                                id="expr"
-                                name="expression"
-                                rows="25"
-                                placeholder="Ex: CurrencyNBR.from(1000).mult(1.05).pow(12).commit(2)"
-                            >
-CurrencyNBR.from("50000.00")
-    // ============================================
-    // Exemplo: Liquidação de Debênture em Atraso
-    // ============================================
-    // 1. Montante Bruto Atualizado: P * (1 + 0.12)^(34/252)
-    .mult(
+            <main id="main-content" role="main">
+                <!-- 1. SIMULADOR INTERATIVO -->
+                <section id="sec-interactive" aria-labelledby="h-interactive">
+                    <h2 id="h-interactive">1. Simulador Interativo (Manual)</h2>
+                    <div class="interactive-container">
+                        <form id="f" class="simulator-form" onsubmit="return false;">
+                            <div class="form-group full-width">
+                                <label for="expr">Expressão de Cálculo (TypeScript):</label>
+                                <textarea
+                                    id="expr"
+                                    name="expression"
+                                    rows="25"
+                                    placeholder="Ex: CurrencyNBR.from(1000).mult(1.05).pow(12).commit(2)"
+                                >
+        CurrencyNBR.from("50000.00")
+        // ============================================
+        // Exemplo: Liquidação de Debênture em Atraso
+        // ============================================
+        // 1. Montante Bruto Atualizado: P * (1 + 0.12)^(34/252)
+        .mult(
         CurrencyNBR.from("1").add("0.12").group().pow("34/252")
-    )
-    // 2. Subtrai o IRRF sobre o lucro: - [ (Bruto - P) * 0.225 ]
-    .sub(
+        )
+        // 2. Subtrai o IRRF sobre o lucro: - [ (Bruto - P) * 0.225 ]
+        .sub(
         CurrencyNBR.from("50000.00")
             .mult(
                 CurrencyNBR.from("1").add("0.12").group().pow("34/252")
@@ -89,77 +110,78 @@ CurrencyNBR.from("50000.00")
             .sub("50000.00")
             .group()
             .mult("0.225")
-    )
-    // 3. Adiciona a multa fixa: + (P * 0.02)
-    .add(
+        )
+        // 3. Adiciona a multa fixa: + (P * 0.02)
+        .add(
         CurrencyNBR.from("50000.00").mult("0.02")
-    )
-    // 4. Fecha a expressão matemática geral e gera o output auditável
-    .group()
-    .commit(2)</textarea>
-                            <small>Use a sintaxe da biblioteca: <code
-                                >CurrencyNBR.from(val).add(x).commit(n)</code></small>
-                        </div>
-                        <button type="button" id="btn-executar">Executar e Gerar Auditoria</button>
-                    </form>
+        )
+        // 4. Fecha a expressão matemática geral e gera o output auditável
+        .group()
+        .commit(2)</textarea>
+                                <small>Use a sintaxe da biblioteca: <code
+                                    >CurrencyNBR.from(val).add(x).commit(n)</code></small>
+                            </div>
+                            <button type="button" id="btn-executar">Executar e Gerar Auditoria</button>
+                        </form>
 
-                    <div id="res-box" class="interactive-results" aria-live="polite">
-                        <h3>Resultados em Tempo Real</h3>
-                        <div class="output-grid" id="interactive-outputs">
-                            <div class="output-item full-width" data-type="toHTML">
-                                <strong>toHTML():</strong>
-                                <div class="val-math">--</div>
-                            </div>
-                            <div class="output-item" data-type="toString">
-                                <strong>toString():</strong>
-                                <span class="val">--</span>
-                            </div>
-                            <div class="output-item" data-type="toFloatNumber">
-                                <strong>toFloatNumber():</strong>
-                                <span class="val">--</span>
-                            </div>
-                            <div class="output-item" data-type="toBigInt">
-                                <strong>toBigInt():</strong>
-                                <span class="val">--</span>
-                            </div>
-                            <div class="output-item" data-type="toMonetary">
-                                <strong>toMonetary():</strong>
-                                <span class="val">--</span>
-                            </div>
-                            <div class="output-item" data-type="toLaTeX">
-                                <strong>toLaTeX():</strong>
-                                <span class="val">--</span>
-                            </div>
-                            <div class="output-item" data-type="toUnicode">
-                                <strong>toUnicode():</strong>
-                                <span class="val">--</span>
-                            </div>
-                            <div class="output-item full-width" data-type="toVerbalA11y">
-                                <strong>toVerbalA11y():</strong>
-                                <span class="val">--</span>
-                            </div>
-                            <div class="output-item full-width" data-type="toImageBuffer">
-                                <strong>toImageBuffer():</strong>
-                                <div class="img-preview">--</div>
-                            </div>
-                            <div class="output-item full-width" data-type="toJson">
-                                <strong>toJson():</strong>
-                                <div class="val">--</div>
+                        <div id="res-box" class="interactive-results" aria-live="polite">
+                            <h3>Resultados em Tempo Real</h3>
+                            <div class="output-grid" id="interactive-outputs">
+                                <div class="output-item full-width" data-type="toHTML">
+                                    <strong>toHTML():</strong>
+                                    <div class="val-math">--</div>
+                                </div>
+                                <div class="output-item" data-type="toString">
+                                    <strong>toString():</strong>
+                                    <span class="val">--</span>
+                                </div>
+                                <div class="output-item" data-type="toFloatNumber">
+                                    <strong>toFloatNumber():</strong>
+                                    <span class="val">--</span>
+                                </div>
+                                <div class="output-item" data-type="toBigInt">
+                                    <strong>toBigInt():</strong>
+                                    <span class="val">--</span>
+                                </div>
+                                <div class="output-item" data-type="toMonetary">
+                                    <strong>toMonetary():</strong>
+                                    <span class="val">--</span>
+                                </div>
+                                <div class="output-item" data-type="toLaTeX">
+                                    <strong>toLaTeX():</strong>
+                                    <span class="val">--</span>
+                                </div>
+                                <div class="output-item" data-type="toUnicode">
+                                    <strong>toUnicode():</strong>
+                                    <span class="val">--</span>
+                                </div>
+                                <div class="output-item full-width" data-type="toVerbalA11y">
+                                    <strong>toVerbalA11y():</strong>
+                                    <span class="val">--</span>
+                                </div>
+                                <div class="output-item full-width" data-type="toImageBuffer">
+                                    <strong>toImageBuffer():</strong>
+                                    <div class="img-preview">--</div>
+                                </div>
+                                <div class="output-item full-width" data-type="toJson">
+                                    <strong>toJson():</strong>
+                                    <div class="val">--</div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </section>
+
+                <!-- EXEMPLOS ESTÁTICOS POR CATEGORIA -->
+                <div id="categories-container">
+                    <p class="loading">Carregando galeria de exemplos...</p>
                 </div>
-            </section>
+            </main>
 
-            <!-- EXEMPLOS ESTÁTICOS POR CATEGORIA -->
-            <div id="categories-container">
-                <p class="loading">Carregando galeria de exemplos...</p>
-            </div>
-        </main>
-
-        <footer id="footer" role="contentinfo">
-            <p>&copy; 2026 Currency Math Audit. Auditoria rigorosa conforme ABNT NBR 5891.</p>
-        </footer>
+            <footer id="footer" role="contentinfo">
+                <p>&copy; 2026 Currency Math Audit. Auditoria rigorosa conforme ABNT NBR 5891.</p>
+            </footer>
+        </div>
 
         <!-- VLibras Widget -->
         <div vw class="enabled">
@@ -167,8 +189,7 @@ CurrencyNBR.from("50000.00")
             <div vw-plugin-wrapper>
                 <div class="vw-plugin-top-wrapper"></div>
             </div>
-        </div>
-        <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+        </div>        <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
         <script>
             new window.VLibras.Widget("https://vlibras.gov.br/app");
         </script>
