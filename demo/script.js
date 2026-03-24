@@ -11,7 +11,7 @@ function updateInteractiveDisplay(data) {
         toLaTeX: data.toLaTeX,
         toUnicode: data.toUnicode,
         toVerbalA11y: data.toVerbalA11y,
-        toHTML: data.toHTML,
+        // toHTML handled separately below
         toJson: `<div class="json-view">${JSON.stringify(JSON.parse(data.toJson), null, 2)}</div>`,
         toImageBuffer: `
       <div class="image-output-wrapper">
@@ -27,6 +27,12 @@ function updateInteractiveDisplay(data) {
             const valEl = item.querySelector(".val, .val-math, .img-preview");
             if (valEl) { valEl.innerHTML = val; }
         }
+    }
+
+    // Atualiza o div de output com o HTML (seguro, pois vem do nosso gerador que já sanitiza/estiliza)
+    const htmlOutput = document.getElementById("html-output");
+    if (htmlOutput && data.toHTML) {
+        htmlOutput.innerHTML = data.toHTML;
     }
 }
 
@@ -56,23 +62,14 @@ async function loadExamples() {
             add: "Adição",
             sub: "Subtração",
             mult: "Multiplicação",
+            div: "Divisão",
             pow: "Potência",
             mod: "Módulo",
             divInt: "Divisão Inteira",
             group: "Agrupamento",
         };
 
-        // 1. Renderiza Grupo OUTPUTS
-        const outputHeader = document.createElement("h1");
-        outputHeader.className = "group-main-header";
-        outputHeader.textContent = "Outputs";
-        container.appendChild(outputHeader);
-
-        for (const [method, examples] of Object.entries(categoriesGrouped.outputs)) {
-            renderCategory(method, examples, "outputs");
-        }
-
-        // 2. Renderiza Grupo OPERAÇÕES
+        // 1. Renderiza Grupo OPERAÇÕES
         const operationsHeader = document.createElement("h1");
         operationsHeader.className = "group-main-header";
         operationsHeader.textContent = "Operações";
@@ -80,6 +77,16 @@ async function loadExamples() {
 
         for (const [method, examples] of Object.entries(categoriesGrouped.operations)) {
             renderCategory(method, examples, "operations");
+        }
+
+        // 2. Renderiza Grupo OUTPUTS
+        const outputHeader = document.createElement("h1");
+        outputHeader.className = "group-main-header";
+        outputHeader.textContent = "Outputs";
+        container.appendChild(outputHeader);
+
+        for (const [method, examples] of Object.entries(categoriesGrouped.outputs)) {
+            renderCategory(method, examples, "outputs");
         }
 
         function renderCategory(method, examples, groupType) {
@@ -155,11 +162,18 @@ async function loadExamples() {
     }
 }
 
+// Global resolve for code request
+let codePromiseResolve = null;
+
 // Inicialização
 function init() {
-    // 0. Aplicar Tema Escuro salvo no carregamento
     const htmlEl = document.documentElement;
-    const savedTheme = localStorage.getItem("theme") || "light";
+    let savedTheme = "light";
+    try {
+        savedTheme = localStorage.getItem("theme") || "light";
+    } catch (e) {
+        // localStorage pode estar bloqueado em sandbox
+    }
     htmlEl.setAttribute("data-theme", savedTheme);
 
     const darkModeBtn = document.getElementById("modo-escuro");
@@ -169,25 +183,67 @@ function init() {
         darkModeBtn.querySelector("span").textContent = isDark ? "☾" : "☼";
     }
 
-    // 1. Carregar Exemplos
+    // Carregar Exemplos
     loadExamples();
 
-    // 2. Configurar Formulário de Simulação (Bloqueio Total)
+    // Listener para mensagens do Editor Sandbox
+    window.addEventListener("message", (event) => {
+        if (event.data.type === "CODE_RESPONSE") {
+            if (codePromiseResolve) {
+                codePromiseResolve(event.data.code);
+                codePromiseResolve = null;
+            }
+        } else if (event.data.type === "CODE_ERROR") {
+            if (codePromiseResolve) {
+                alert(event.data.error);
+                codePromiseResolve(null);
+                codePromiseResolve = null;
+            }
+        } else if (event.data.type === "EDITOR_READY") {
+            // Sincroniza o tema quando o editor estiver pronto
+            const iframe = document.getElementById("editor-iframe");
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage({ type: "THEME_CHANGE", theme: htmlEl.getAttribute("data-theme") }, "*");
+            }
+        }
+    });
+
     const btnExecutar = document.getElementById("btn-executar");
     if (btnExecutar) {
         btnExecutar.addEventListener("click", async () => {
             const originalText = btnExecutar.textContent;
+            const iframe = document.getElementById("editor-iframe");
+
+            if (!iframe || !iframe.contentWindow) return;
+
+            // Solicita o código ao editor via postMessage
+            const expression = await new Promise((resolve) => {
+                codePromiseResolve = resolve;
+                iframe.contentWindow.postMessage({ type: "GET_CODE" }, "*");
+                // Timeout de segurança
+                setTimeout(() => {
+                    if (codePromiseResolve === resolve) {
+                        codePromiseResolve(null);
+                        codePromiseResolve = null;
+                        alert("O editor não respondeu.");
+                    }
+                }, 2000);
+            });
+
+            if (!expression) return;
+
             btnExecutar.disabled = true;
             btnExecutar.textContent = "Processando...";
 
-            const payload = {
-                expression: document.getElementById("expr").value,
-            };
+            const payload = { expression };
 
             try {
                 const response = await fetch("/api/calculate", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "X-Requested-With": "CurrencyNBR-Demo"
+                    },
                     body: JSON.stringify(payload),
                 });
                 const data = await response.json();
@@ -206,7 +262,7 @@ function init() {
         });
     }
 
-    // 3. Configurar Modo Escuro
+    // Modo Escuro
     if (darkModeBtn) {
         darkModeBtn.addEventListener("click", (e) => {
             e.preventDefault();
@@ -214,15 +270,23 @@ function init() {
             const newTheme = currentTheme === "dark" ? "light" : "dark";
             
             htmlEl.setAttribute("data-theme", newTheme);
-            localStorage.setItem("theme", newTheme);
+            try {
+                localStorage.setItem("theme", newTheme);
+            } catch (e) {}
 
             const isDark = newTheme === "dark";
             darkModeBtn.setAttribute("aria-pressed", isDark);
             darkModeBtn.querySelector("span").textContent = isDark ? "☾" : "☼";
+            
+            // Notificar o editor sobre a mudança de tema
+            const iframe = document.getElementById("editor-iframe");
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage({ type: "THEME_CHANGE", theme: newTheme }, "*");
+            }
         });
     }
 
-    // 4. Configurar Alto Contraste
+    // Alto Contraste
     const contrastBtn = document.getElementById("alto-contraste");
     if (contrastBtn) {
         contrastBtn.addEventListener("click", (e) => {
@@ -230,20 +294,26 @@ function init() {
             const isPressed = contrastBtn.getAttribute("aria-pressed") === "true";
             document.body.classList.toggle("alto-contraste");
             contrastBtn.setAttribute("aria-pressed", !isPressed);
-            localStorage.setItem("altoContraste", !isPressed);
+            try {
+                localStorage.setItem("altoContraste", !isPressed);
+            } catch (e) {}
         });
 
-        if (localStorage.getItem("altoContraste") === "true") {
+        let savedContrast = "false";
+        try {
+            savedContrast = localStorage.getItem("altoContraste");
+        } catch (e) {}
+        
+        if (savedContrast === "true") {
             document.body.classList.add("alto-contraste");
             contrastBtn.setAttribute("aria-pressed", "true");
         }
     }
 }
 
-// Garantir que a inicialização ocorra após o DOM estar pronto
+// Inicialização
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
 } else {
     init();
 }
-

@@ -1,11 +1,11 @@
 {
-    "name": "@stallone-dev/currency-a11y-nbr5891",
-    "version": "0.1.0",
+    "name": "@stallone-dev/currency-nbr-a11y",
+    "version": "0.2.0",
     "exports": "./mod.ts",
     "license": "Apache-2.0",
 
     "publish": {
-        "exclude": ["./tests", "./demo", "./docs", "GEMINI.md"]
+        "exclude": ["./tests", "./demo", "node_modules", "GEMINI.md"]
     },
 
     "tasks": {
@@ -29,12 +29,17 @@
     },
 
     "imports": {
+        "@codemirror/autocomplete": "npm:@codemirror/autocomplete@^6.20.1",
+        "@codemirror/commands": "npm:@codemirror/commands@^6.10.3",
+        "@codemirror/lang-javascript": "npm:@codemirror/lang-javascript@^6.2.5",
+        "@codemirror/language": "npm:@codemirror/language@^6.12.2",
+        "@codemirror/lint": "npm:@codemirror/lint@^6.9.5",
+        "@codemirror/state": "npm:@codemirror/state@^6.6.0",
+        "@codemirror/view": "npm:@codemirror/view@^6.40.0",
         "@logtape": "jsr:@logtape/logtape@^2.0.4",
-        "@logtape/file": "jsr:@logtape/file@^2.0.4",
-        "@std/expect": "jsr:@std/expect@^1.0.18",
         "@std/path": "jsr:@std/path@^1.1.4",
-        "@std/testing": "jsr:@std/testing@^1.0.17",
-        "@katex": "npm:katex@^0.16.40"
+        "@katex": "npm:katex@^0.16.40",
+        "codemirror": "npm:codemirror@^6.0.2"
     },
     "nodeModulesDir": "auto",
     "vendor": true,

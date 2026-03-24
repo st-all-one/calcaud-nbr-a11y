@@ -45,14 +45,30 @@ export function generateImageBuffer(latexExpression: string, result: string, ver
 
     // Cálculo da Altura Estimada
     // Geralmente auditores financeiros exibem em linha única.
-    // Heurística baseada no font-size escalado + padding.
-    let baseHeight = (16 * scaleFactor) + (paddingVertical * 2);
-
-    // Se houver frações ou raízes, o KaTeX cresce verticalmente, aumentamos a altura.
-    if (latexExpression.includes("\\frac") || latexExpression.includes("\\sqrt")) {
-        baseHeight += 40; // Adiciona um respiro vertical
+    // Heurística baseada no font-size escalado + padding + expansão vertical por LaTeX.
+    
+    let verticalExpansion = 0;
+    
+    // Conta frações (especialmente aninhadas)
+    const fracMatches = latexExpression.match(/\\frac/g);
+    if (fracMatches) {
+        // Expansão generosa para frações: cada \frac adiciona altura significativa
+        verticalExpansion += fracMatches.length * 15;
     }
-    const finalHeight = Math.ceil(baseHeight);
+
+    // Conta raízes
+    const sqrtMatches = latexExpression.match(/\\sqrt/g);
+    if (sqrtMatches) {
+        verticalExpansion += sqrtMatches.length * 25;
+    }
+
+    // Altura base proporcional ao scaleFactor + padding + expansão calculada
+    let baseHeight = (24 * scaleFactor) + (paddingVertical * 2) + verticalExpansion;
+    
+    // Garante uma altura mínima e teto máximo
+    const minHeight = 80;
+    const maxHeight = 1000;
+    const finalHeight = Math.max(minHeight, Math.min(maxHeight, Math.ceil(baseHeight)));
     // --------------------------------------------------------------------------
 
     // Cria o SVG agnóstico e calculado

@@ -2,6 +2,26 @@
     box-sizing: border-box;
 }
 
+/* Local Fonts */
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('/fonts/JetBrainsMono-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Fira Code';
+    src: url('/fonts/FiraCode-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
 :root {
     --bg: #ffffff;
     --text: #1a1a1a;
@@ -20,36 +40,49 @@
 /* Custom Scrollbar Styling */
 /* Webkit (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
-    width: 1.25rem; /* 20px - Thicker for accessibility */
-    height: 1.25rem; /* 20px */
+    width: 1.25rem;
+    /* 20px - Thicker for accessibility */
+    height: 1.25rem;
+    /* 20px */
 }
 
 ::-webkit-scrollbar-track {
     background: var(--scrollbar-track-bg);
-    border: 0.0625rem solid var(--primary-light); /* Subtle border for distinction */
-    border-radius: 0.5rem; /* 8px */
+    border: 0.0625rem solid var(--primary-light);
+    /* Subtle border for distinction */
+    border-radius: 0.5rem;
+    /* 8px */
 }
 
 ::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb-bg);
-    border-radius: 0.5rem; /* 8px */
-    border: 0.1875rem solid var(--scrollbar-thumb-border); /* 3px border to make thumb appear thinner and more distinct */
+    border-radius: 0.5rem;
+    /* 8px */
+    border: 0.1875rem solid var(--scrollbar-thumb-border);
+    /* 3px border to make thumb appear thinner and more distinct */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--accent); /* Accent on hover for feedback */
+    background: var(--accent);
+    /* Accent on hover for feedback */
 }
 
 ::-webkit-scrollbar-button {
-    display: block; /* Ensure buttons are visible */
-    height: 1.25rem; /* Match scrollbar width */
-    width: 1.25rem; /* Match scrollbar width */
-    background-color: var(--primary); /* Solid color for buttons */
-    border-radius: 0.25rem; /* Slightly rounded corners */
+    display: block;
+    /* Ensure buttons are visible */
+    height: 1.25rem;
+    /* Match scrollbar width */
+    width: 1.25rem;
+    /* Match scrollbar width */
+    background-color: var(--primary);
+    /* Solid color for buttons */
+    border-radius: 0.25rem;
+    /* Slightly rounded corners */
     /* Add an SVG or unicode character for the arrow if desired, using background-image */
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 60%; /* Adjust size of arrow icon */
+    background-size: 60%;
+    /* Adjust size of arrow icon */
 }
 
 /* Up arrow for top button */
@@ -64,16 +97,21 @@
 
 /* Firefox */
 html {
-    scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-track-bg); /* thumb track */
-    scrollbar-width: auto; /* Thicker scrollbar for Firefox */
+    scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-track-bg);
+    /* thumb track */
+    scrollbar-width: auto;
+    /* Thicker scrollbar for Firefox */
 }
 
 
 /* Foco Global Visível (WCAG 2.4.7 AAA) */
 *:focus-visible {
-    outline: 0.1875rem solid var(--accent); /* 3px para 0.1875rem */
-    outline-offset: 0.1875rem; /* 3px para 0.1875rem */
-    box-shadow: 0 0 0 0.3125rem var(--bg); /* 5px para 0.3125rem */
+    outline: 0.1875rem solid var(--accent);
+    /* 3px para 0.1875rem */
+    outline-offset: 0.1875rem;
+    /* 3px para 0.1875rem */
+    box-shadow: 0 0 0 0.3125rem var(--bg);
+    /* 5px para 0.3125rem */
 }
 
 /* Barra de Acessibilidade (eMAG) */
@@ -133,11 +171,12 @@ html {
 }
 
 body {
-    font-family: "Segoe UI", system-ui, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
     color: var(--text);
     background-color: var(--bg);
-    padding: 4.5rem 0 2rem 0; /* Ajustado para 4.5rem */
+    padding: 4.5rem 0 2rem 0;
+    /* Ajustado para 4.5rem */
     font-size: clamp(1rem, 0.95em + 0.5vw, 1.125rem);
 }
 
@@ -146,18 +185,23 @@ body {
         padding: 0.5rem clamp(1rem, 5vw, 2rem);
         font-size: 0.85rem;
     }
+
     #barra-acessibilidade ul {
         display: flex;
         flex-direction: row;
         gap: 1.25rem;
     }
+
     body {
         padding: 3rem 0 2rem 0;
     }
+
     /* Grid de 2 Colunas para Tablet */
-    .grid, .output-grid {
+    .grid,
+    .output-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
     .output-item.full-width {
         grid-column: span 2;
     }
@@ -165,10 +209,13 @@ body {
 
 /* NOTEBOOK/DESKTOP Layout (>= 1100px) */
 @media (min-width: 1100px) {
+
     /* Grid de 3 Colunas para Notebook+ */
-    .grid, .output-grid {
+    .grid,
+    .output-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
     .output-item.full-width {
         grid-column: span 3;
     }
@@ -189,29 +236,36 @@ body {
 }
 
 header {
-    border-bottom: 0.3125rem solid var(--primary); /* 5px para 0.3125rem */
-    margin: clamp(1rem, 5vw, 2rem); /* De 2rem para clamp() */
+    border-bottom: 0.3125rem solid var(--primary);
+    /* 5px para 0.3125rem */
+    margin: clamp(1rem, 5vw, 2rem);
+    /* De 2rem para clamp() */
 }
 
 header h1 {
-    font-size: clamp(2rem, 5vw, 3.5rem); /* Ex: de 32px a 56px */
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    /* Ex: de 32px a 56px */
 }
 
 /* Headers de Seção */
 h2 {
-    border-left: 0.625rem solid var(--accent); /* 10px para 0.625rem */
+    border-left: 0.625rem solid var(--accent);
+    /* 10px para 0.625rem */
     padding-left: 1rem;
     margin-top: 4rem;
     color: var(--primary);
-    font-size: clamp(1.5rem, 4vw, 2.5rem); /* Ex: de 24px a 40px */
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    /* Ex: de 24px a 40px */
 }
 
 .nav-links {
     list-style: none;
-    padding: 0 clamp(1rem, 5vw, 2rem); /* Ajustar padding lateral */
+    padding: 0 clamp(1rem, 5vw, 2rem);
+    /* Ajustar padding lateral */
     display: flex;
     flex-wrap: wrap;
-    gap: 0.625rem; /* 10px para 0.625rem */
+    gap: 0.625rem;
+    /* 10px para 0.625rem */
     margin-bottom: 3rem;
 }
 
@@ -220,10 +274,13 @@ h2 {
     text-decoration: none;
     background: var(--primary-light);
     color: var(--primary);
-    padding: 0.75rem 1.25rem; /* 12px 20px para rem */
-    border-radius: 0.3125rem; /* 5px para rem */
+    padding: 0.75rem 1.25rem;
+    /* 12px 20px para rem */
+    border-radius: 0.3125rem;
+    /* 5px para rem */
     font-weight: bold;
-    border: 0.0625rem solid var(--primary); /* 1px para 0.0625rem */
+    border: 0.0625rem solid var(--primary);
+    /* 1px para 0.0625rem */
     display: inline-block;
     min-height: 44px;
 }
@@ -237,12 +294,17 @@ h2 {
 /* Simulator Form */
 .simulator-form {
     display: flex;
-    gap: clamp(0.5rem, 2vw, 1rem); /* clamp para o gap */
+    gap: clamp(0.5rem, 2vw, 1rem);
+    /* clamp para o gap */
     flex-wrap: wrap;
-    background: var(--primary-light); /* Ajustado para cinza azulado suave */
-    padding: clamp(1rem, 5vw, 2rem); /* clamp para o padding */
-    border-radius: 0.625rem; /* 10px para rem */
-    border: 0.125rem solid var(--primary); /* 2px para rem */
+    background: var(--primary-light);
+    /* Ajustado para cinza azulado suave */
+    padding: clamp(1rem, 5vw, 2rem);
+    /* clamp para o padding */
+    border-radius: 0.625rem;
+    /* 10px para rem */
+    border: 0.125rem solid var(--primary);
+    /* 2px para rem */
 }
 
 .form-group {
@@ -266,8 +328,10 @@ textarea {
     padding: 1rem;
     font-family: monospace;
     font-size: 1.1rem;
-    border: 0.125rem solid var(--border); /* 2px para rem */
-    border-radius: 0.3125rem; /* 5px para rem */
+    border: 0.125rem solid var(--border);
+    /* 2px para rem */
+    border-radius: 0.3125rem;
+    /* 5px para rem */
     resize: vertical;
     background: #fff;
     color: var(--text);
@@ -275,24 +339,29 @@ textarea {
 
 small {
     display: block;
-    margin-top: 0.3125rem; /* 5px para rem */
+    margin-top: 0.3125rem;
+    /* 5px para rem */
     color: #444;
 }
 
 .error {
     color: #cc0000;
     font-weight: bold;
-    margin-top: 0.625rem; /* 10px para rem */
+    margin-top: 0.625rem;
+    /* 10px para rem */
 }
 
 button {
     background: var(--primary);
     color: white;
-    border: 0.125rem solid transparent; /* Adicionar borda para consistência */
-    padding: 0.625rem 1.25rem; /* 1rem 2rem para rem */
+    border: 0.125rem solid transparent;
+    /* Adicionar borda para consistência */
+    padding: 0.625rem 1.25rem;
+    /* 1rem 2rem para rem */
     font-weight: bold;
     cursor: pointer;
-    border-radius: 0.3125rem; /* 5px para rem */
+    border-radius: 0.3125rem;
+    /* 5px para rem */
     font-size: 1rem;
     min-height: 44px;
     transition: transform 0.1s;
@@ -302,7 +371,8 @@ button:hover,
 button:focus {
     background: #ffffff;
     color: var(--primary);
-    border: 0.125rem solid var(--primary); /* 2px para rem */
+    border: 0.125rem solid var(--primary);
+    /* 2px para rem */
     filter: brightness(1);
     transform: translateY(-1px);
 }
@@ -312,16 +382,22 @@ button:active {
 }
 
 /* Ajustes de Quebra de Conteúdo (Mobile Fix) */
-.val, .val-math, .card-result-text, .img-preview {
+.val,
+.val-math,
+.card-result-text,
+.img-preview {
     word-wrap: break-word;
     overflow-wrap: break-word;
     word-break: break-word;
     max-width: 100%;
 }
 
-.json-view, .binary-view, .binary-view-small {
+.json-view,
+.binary-view,
+.binary-view-small {
     white-space: pre-wrap;
-    word-break: break-all; /* Quebra hashes longos e JSON */
+    word-break: break-all;
+    /* Quebra hashes longos e JSON */
     max-width: 100%;
 }
 
@@ -343,29 +419,43 @@ button:active {
 .output-grid {
     display: grid;
     /* grid-template-columns já tratado em mobile-first */
-    gap: 0.9375rem; /* 1.5rem é bom, mas se for px, converter */
+    gap: 0.9375rem;
+    /* 1.5rem é bom, mas se for px, converter */
     margin-top: 2rem;
 }
 
 .output-item {
     background: white;
-    border: 0.0625rem solid #ccc; /* 1px para rem */
-    padding: 0.625rem; /* 1rem para rem */
-    border-radius: 0.5rem; /* 8px para rem */
-    box-shadow: 0 0.125rem 0.3125rem rgba(0,0,0,0.05); /* 2px 5px para rem */
-    overflow-x: auto; /* Permite rolagem interna se o conteúdo for largo */
+    border: 0.0625rem solid #ccc;
+    /* 1px para rem */
+    padding: 0.625rem;
+    /* 1rem para rem */
+    border-radius: 0.5rem;
+    /* 8px para rem */
+    box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.05);
+    /* 2px 5px para rem */
+    overflow-x: auto;
+    /* Permite rolagem interna se o conteúdo for largo */
 }
 
 .output-item.full-width {
     /* grid-column já tratado em mobile-first */
 }
 
+.result-label {
+    font-weight: 600;
+    letter-spacing: 0.025rem
+}
+
 .output-item strong {
     display: block;
     color: var(--primary);
-    margin-bottom: 0.5rem; /* 8px para rem */
-    border-bottom: 0.0625rem solid var(--primary-light); /* 1px para rem */
-    padding-bottom: 0.25rem; /* 4px para rem */
+    margin-bottom: 0.5rem;
+    /* 8px para rem */
+    border-bottom: 0.0625rem solid var(--primary-light);
+    /* 1px para rem */
+    padding-bottom: 0.25rem;
+    /* 4px para rem */
 }
 
 /* Cards */
@@ -380,22 +470,33 @@ button:active {
 /* Estilos base (mobile-first) */
 .grid,
 .output-grid {
-    display: grid; /* Essencial para o grid funcionar */
-    grid-template-columns: 1fr; /* Padrão para mobile */
-    gap: 1.5rem; /* Manter gap como rem */
+    display: grid;
+    /* Essencial para o grid funcionar */
+    grid-template-columns: 1fr;
+    /* Padrão para mobile */
+    gap: 1.5rem;
+    /* Manter gap como rem */
 }
+
 .output-item.full-width {
-    grid-column: span 1; /* Padrão para mobile */
+    grid-column: span 1;
+    /* Padrão para mobile */
 }
+
 #barra-acessibilidade {
-    flex-direction: column; /* Padrão para mobile */
+    flex-direction: column;
+    /* Padrão para mobile */
     padding: 1rem;
-    gap: 0.625rem; /* 10px para 0.625rem */
+    gap: 0.625rem;
+    /* 10px para 0.625rem */
     text-align: center;
 }
+
 #barra-acessibilidade ul {
-    flex-direction: column; /* Padrão para mobile */
-    gap: 0.3125rem; /* 5px para 0.3125rem */
+    flex-direction: column;
+    /* Padrão para mobile */
+    gap: 0.3125rem;
+    /* 5px para 0.3125rem */
 }
 
 /* Media query para telas maiores (Tablet - 2 colunas) */
@@ -404,21 +505,26 @@ button:active {
         padding: 0.5rem clamp(1rem, 5vw, 2rem);
         font-size: 0.85rem;
     }
+
     #barra-acessibilidade ul {
         display: flex;
         flex-direction: row;
         gap: 1.25rem;
     }
+
     body {
         padding: 3rem 0 2rem 0;
     }
-    
+
     /* Grid de 2 Colunas */
-    .grid, .output-grid {
+    .grid,
+    .output-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
     .output-item.full-width {
-        grid-column: 1 / -1; /* Ocupa todas as colunas disponíveis */
+        grid-column: 1 / -1;
+        /* Ocupa todas as colunas disponíveis */
     }
 }
 
@@ -429,18 +535,24 @@ button:active {
         justify-content: space-between;
         font-size: 1rem;
     }
+
     #barra-acessibilidade ul {
-        flex-wrap: nowrap; /* Prevent wrapping in desktop mode */
+        flex-wrap: nowrap;
+        /* Prevent wrapping in desktop mode */
     }
+
     #barra-acessibilidade #atalhos {
         justify-content: flex-start;
     }
+
     #barra-acessibilidade #opcoes-acessibilidade {
-        margin-left: auto; /* Empurra o alto contraste para a direita */
+        margin-left: auto;
+        /* Empurra o alto contraste para a direita */
     }
 
     body {
-        padding: 0; /* Reset body padding for grid layout */
+        padding: 0;
+        /* Reset body padding for grid layout */
     }
 
     .page-container {
@@ -455,11 +567,14 @@ button:active {
 
     header {
         grid-area: header;
-        padding-top: 3rem; /* Adjusted for accessibility bar height */
+        padding-top: 3rem;
+        /* Adjusted for accessibility bar height */
     }
+
     main {
         grid-area: main;
     }
+
     footer {
         grid-area: footer;
     }
@@ -467,7 +582,8 @@ button:active {
     #menu-principal {
         grid-area: sidebar;
         position: sticky;
-        top: 45px; /* Offset for the accessibility bar (approx. 40-45px) */
+        top: 45px;
+        /* Offset for the accessibility bar (approx. 40-45px) */
         height: calc(100vh - 45px);
         overflow-y: auto;
         border-right: 1px solid var(--border);
@@ -485,8 +601,10 @@ button:active {
     .nav-links a {
         display: block;
         padding: 0.5rem 1rem;
-        min-height: auto; /* Reset min-height */
-        white-space: nowrap; /* Ensure single line */
+        min-height: auto;
+        /* Reset min-height */
+        white-space: nowrap;
+        /* Ensure single line */
         overflow: hidden;
         text-overflow: ellipsis;
     }
@@ -506,8 +624,10 @@ button:active {
     }
 
     /* Adjust scroll-margin-top for anchor links to prevent content being hidden under fixed bar */
-    h2[id^="h-"], section[id^="sec-"] {
-        scroll-margin-top: 50px; /* Slightly more than accessibility bar height */
+    h2[id^="h-"],
+    section[id^="sec-"] {
+        scroll-margin-top: 50px;
+        /* Slightly more than accessibility bar height */
     }
 
     /* Original 3-column grid for content becomes a 2-column grid */
@@ -515,6 +635,7 @@ button:active {
     .output-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
     .output-item.full-width {
         grid-column: 1 / -1;
     }
@@ -522,30 +643,41 @@ button:active {
 
 .card {
     background: white;
-    border: 0.125rem solid var(--primary-light); /* 2px para rem */
-    padding: 0.9375rem; /* 1.5rem para rem */
-    border-radius: 0.625rem; /* 10px para rem */
-    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05); /* 4px 12px para rem */
+    border: 0.125rem solid var(--primary-light);
+    /* 2px para rem */
+    padding: 0.9375rem;
+    /* 1.5rem para rem */
+    border-radius: 0.625rem;
+    /* 10px para rem */
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
+    /* 4px 12px para rem */
     min-width: 0;
-    overflow-x: auto; /* Permite rolagem interna se o conteúdo for largo */
+    overflow-x: auto;
+    /* Permite rolagem interna se o conteúdo for largo */
 }
 
 .card-code {
     background: var(--code-bg);
     color: #eee;
-    padding: 0.625rem; /* 10px para rem */
-    border-radius: 0.3125rem; /* 5px para rem */
+    padding: 0.625rem;
+    /* 10px para rem */
+    border-radius: 0.3125rem;
+    /* 5px para rem */
     font-family: monospace;
     font-size: 0.85rem;
-    margin: 0.625rem 0; /* 10px para rem */
+    margin: 0.625rem 0;
+    /* 10px para rem */
     word-break: break-all;
 }
 
 .result-area {
     background: var(--primary-light);
-    padding: 0.625rem; /* 1rem para rem */
-    border-radius: 0.3125rem; /* 5px para rem */
-    margin-top: 0.625rem; /* 10px para rem */
+    padding: 0.625rem;
+    /* 1rem para rem */
+    border-radius: 0.3125rem;
+    /* 5px para rem */
+    margin-top: 0.625rem;
+    /* 10px para rem */
 }
 
 /* Views */
@@ -556,22 +688,29 @@ button:active {
     font-size: 0.75rem;
     color: #333;
     background: #f8f9fa;
-    padding: 0.625rem; /* 10px para rem */
+    padding: 0.625rem;
+    /* 10px para rem */
     overflow: auto;
-    max-height: 12.5rem; /* 200px para rem */
-    margin-bottom: 0.625rem; /* 10px para rem */
+    max-height: 12.5rem;
+    /* 200px para rem */
+    margin-bottom: 0.625rem;
+    /* 10px para rem */
     word-break: break-all;
     white-space: pre-wrap;
-    border: 0.0625rem solid #ddd; /* 1px para rem */
-    border-radius: 0.3125rem; /* 5px para rem */
+    border: 0.0625rem solid #ddd;
+    /* 1px para rem */
+    border-radius: 0.3125rem;
+    /* 5px para rem */
 }
 
 .json-view {
     font-size: 0.85rem;
     background: #fff;
     color: var(--primary);
-    max-height: 18.75rem; /* 300px para rem */
-    border-left: 0.25rem solid var(--accent); /* 4px para rem */
+    max-height: 18.75rem;
+    /* 300px para rem */
+    border-left: 0.25rem solid var(--accent);
+    /* 4px para rem */
 }
 
 .image-output-wrapper {
@@ -584,25 +723,35 @@ button:active {
 .image-result {
     max-width: 100%;
     height: auto;
-    min-height: 3.75rem; /* 60px para rem */
-    border: 0.0625rem solid #ddd; /* 1px para rem */
+    min-height: 3.75rem;
+    /* 60px para rem */
+    border: 0.0625rem solid #ddd;
+    /* 1px para rem */
     display: block;
-    margin: 0.9375rem auto; /* 15px para rem */
+    margin: 0.9375rem auto;
+    /* 15px para rem */
     background: #fff;
-    box-shadow: 0 0.25rem 0.9375rem rgba(0, 0, 0, 0.1); /* 4px 15px para rem */
-    border-radius: 0.5rem; /* 8px para rem */
+    box-shadow: 0 0.25rem 0.9375rem rgba(0, 0, 0, 0.1);
+    /* 4px 15px para rem */
+    border-radius: 0.5rem;
+    /* 8px para rem */
 }
 
 .card-math-render {
     background: white;
-    padding: 0.625rem; /* 10px para rem */
-    border-radius: 0.3125rem; /* 5px para rem */
-    border: 0.0625rem solid #eee; /* 1px para rem */
+    padding: 0.625rem;
+    /* 10px para rem */
+    border-radius: 0.3125rem;
+    /* 5px para rem */
+    border: 0.0625rem solid #eee;
+    /* 1px para rem */
 }
 
 footer {
-    margin: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 2rem) clamp(1rem, 5vw, 2rem) clamp(1rem, 5vw, 2rem); /* clamp para margens */
-    padding-top: clamp(1rem, 3vw, 2rem); /* clamp para padding-top */
+    margin: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 2rem) clamp(1rem, 5vw, 2rem) clamp(1rem, 5vw, 2rem);
+    /* clamp para margens */
+    padding-top: clamp(1rem, 3vw, 2rem);
+    /* clamp para padding-top */
     border-top: 1px solid var(--primary-light);
     text-align: center;
 }
@@ -611,12 +760,16 @@ footer {
 html[data-theme="dark"] {
     color-scheme: dark;
     --bg: #121212;
-    --text: #e0e0e0;
+    --text: #ffffff;
     --primary: #8ab4f8;
     --accent: #fdd835;
     --primary-light: #1e2a38;
     --border: #555555;
     --code-bg: #1c1c1c;
+
+    /* Force text color for sandboxed editor iframe content */
+    --editor-text: #ffffff;
+}
 
     /* Scrollbar Variables for Dark Mode */
     --scrollbar-thumb-bg: var(--primary);
@@ -683,13 +836,18 @@ html[data-theme="dark"] button:focus {
 }
 
 html[data-theme="dark"] ::-webkit-scrollbar-button {
-    background-color: var(--primary-light); /* Darker primary for buttons in dark mode */
+    background-color: var(--primary-light);
+    /* Darker primary for buttons in dark mode */
 }
+
 html[data-theme="dark"] ::-webkit-scrollbar-button:vertical:decrement {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e0e0e0' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E"); /* Lighter arrows */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e0e0e0' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E");
+    /* Lighter arrows */
 }
+
 html[data-theme="dark"] ::-webkit-scrollbar-button:vertical:increment {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e0e0e0' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* Lighter arrows */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e0e0e0' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    /* Lighter arrows */
 }
 
 html[data-theme="dark"] .simulator-form {
@@ -703,8 +861,8 @@ html[data-theme="dark"] .json-view {
 }
 
 html[data-theme="dark"] .card-math-render {
-     background: #2d3748;
-     border-color: #4a5568;
+    background: #2d3748;
+    border-color: #4a5568;
 }
 
 html[data-theme="dark"] #barra-acessibilidade a,
@@ -717,29 +875,39 @@ html[data-theme="dark"] #barra-acessibilidade a:focus {
 body.alto-contraste {
     --bg: #000000;
     --text: #ffffff;
-    --primary: #ffff00; /* Amarelo */
+    --primary: #ffff00;
+    /* Amarelo */
     --accent: #ffffff;
     --primary-light: #1a1a1a;
     --border: #ffffff;
     --code-bg: #000000;
 
     /* Scrollbar Variables for High Contrast Mode */
-    --scrollbar-thumb-bg: var(--primary) !important; /* Yellow */
-    --scrollbar-track-bg: var(--bg) !important; /* Black */
-    --scrollbar-thumb-border: var(--bg) !important; /* Black */
+    --scrollbar-thumb-bg: var(--primary) !important;
+    /* Yellow */
+    --scrollbar-track-bg: var(--bg) !important;
+    /* Black */
+    --scrollbar-thumb-border: var(--bg) !important;
+    /* Black */
 
     /* Firefox Scrollbar for High Contrast */
-    scrollbar-color: var(--primary) var(--bg) !important; /* yellow black */
+    scrollbar-color: var(--primary) var(--bg) !important;
+    /* yellow black */
 }
 
 body.alto-contraste ::-webkit-scrollbar-button {
-    background-color: var(--bg) !important; /* Black buttons */
+    background-color: var(--bg) !important;
+    /* Black buttons */
 }
+
 body.alto-contraste ::-webkit-scrollbar-button:vertical:decrement {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffff00' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E") !important; /* Yellow arrows */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffff00' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E") !important;
+    /* Yellow arrows */
 }
+
 body.alto-contraste ::-webkit-scrollbar-button:vertical:increment {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffff00' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") !important; /* Yellow arrows */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffff00' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") !important;
+    /* Yellow arrows */
 }
 
 body.alto-contraste #barra-acessibilidade {
@@ -801,34 +969,45 @@ body.alto-contraste #res-box h3 {
 
 .group-main-header {
     margin-top: 5rem;
-    padding-bottom: 0.625rem; /* 10px para 0.625rem */
-    border-bottom: 0.1875rem solid var(--border); /* 3px para 0.1875rem */
+    padding-bottom: 0.625rem;
+    /* 10px para 0.625rem */
+    border-bottom: 0.1875rem solid var(--border);
+    /* 3px para 0.1875rem */
     display: flex;
     align-items: center;
-    gap: 0.9375rem; /* 15px para 0.9375rem */
-    font-size: clamp(1.8rem, 4vw, 2.8rem); /* Ajustar com clamp() */
+    gap: 0.9375rem;
+    /* 15px para 0.9375rem */
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    /* Ajustar com clamp() */
     color: var(--text);
     text-transform: none;
     letter-spacing: normal;
     box-shadow: none;
     background: none;
 }
+
 .group-main-header::before {
     content: "";
     display: block;
-    width: 1.25rem; /* 20px para 1.25rem */
-    height: 2.5rem; /* 40px para 2.5rem */
+    width: 1.25rem;
+    /* 20px para 1.25rem */
+    height: 2.5rem;
+    /* 40px para 2.5rem */
     background: var(--primary);
 }
+
 .nav-group-title {
     width: 100%;
     font-weight: bold;
     color: var(--primary);
-    margin-top: 0.9375rem; /* 15px para 0.9375rem */
+    margin-top: 0.9375rem;
+    /* 15px para 0.9375rem */
     font-size: 0.9rem;
     text-transform: uppercase;
-    border-bottom: 0.0625rem solid var(--border); /* 1px para 0.0625rem */
-    padding-bottom: 0.3125rem; /* 5px para 0.3125rem */
+    border-bottom: 0.0625rem solid var(--border);
+    /* 1px para 0.0625rem */
+    padding-bottom: 0.3125rem;
+    /* 5px para 0.3125rem */
 }
 
 /* Correções específicas para visibilidade em Alto Contraste */
@@ -864,7 +1043,7 @@ body.alto-contraste {
 /* ... (outras regras de alto contraste) ... */
 
 /* Ajuste específico para o texto "Contexto:" em modo de alto contraste */
-body.alto-contraste .card p strong:has(+ em), 
+body.alto-contraste .card p strong:has(+ em),
 body.alto-contraste .card p strong:contains("Contexto:") {
     color: #000000 !important;
 }
@@ -883,7 +1062,8 @@ body.alto-contraste #res-box .val {
 body.alto-contraste label,
 body.alto-contraste small,
 body.alto-contraste strong {
-    color: #ffffff !important; /* Padrão para strong fora da área especial */
+    color: #ffffff !important;
+    /* Padrão para strong fora da área especial */
 }
 
 /* Área especial de resultados interativos */
@@ -900,4 +1080,3 @@ body.alto-contraste .group-main-header {
 body.alto-contraste .group-main-header::before {
     background: #ffff00;
 }
-
