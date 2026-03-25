@@ -63,7 +63,7 @@ export function generateImageBuffer(latexExpression: string, result: string, ver
     }
 
     // Altura base proporcional ao scaleFactor + padding + expansão calculada
-    let baseHeight = (24 * scaleFactor) + (paddingVertical * 2) + verticalExpansion;
+    const baseHeight = (24 * scaleFactor) + (paddingVertical * 2) + verticalExpansion;
 
     // Garante uma altura mínima e teto máximo
     const minHeight = 80;

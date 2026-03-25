@@ -1,49 +1,49 @@
-import { assertThrows } from "https://deno.land/std/assert/mod.ts";
-import { CurrencyNBR } from "../src/main.ts";
+import { describe, it } from "@std/testing/bdd";
+import { expect } from "@std/expect";
+import { CurrencyNBR } from "../mod.ts";
 import { CurrencyNBRError } from "../src/errors.ts";
 
-Deno.test("CurrencyNBR.pow - validação rigorosa de expoente fracionário", () => {
-    const base = CurrencyNBR.from(10);
+describe("CurrencyNBR.pow - Validação de Expoente", () => {
+    it("deve lançar erro para expoente com múltiplas barras (ex: '2/3/5')", () => {
+        const base = CurrencyNBR.from(10);
+        expect(() => base.pow("2/3/5")).toThrow(CurrencyNBRError);
+        try {
+            base.pow("2/3/5");
+        } catch (e) {
+            expect((e as CurrencyNBRError).detail).toContain(
+                "Um expoente fracionário deve conter exatamente um numerador e um denominador",
+            );
+        }
+    });
 
-    // Caso 1: Múltiplas barras (ex: "2/3/5")
-    assertThrows(
-        () => base.pow("2/3/5"),
-        CurrencyNBRError,
-        "O expoente '2/3/5' é inválido. Um expoente fracionário deve conter exatamente um numerador e um denominador separados por uma única barra (ex: '1/2').",
-    );
+    it("deve lançar erro para expoente com caracteres não numéricos (ex: '1/abc')", () => {
+        const base = CurrencyNBR.from(10);
+        expect(() => base.pow("1/abc")).toThrow(CurrencyNBRError);
+        try {
+            base.pow("1/abc");
+        } catch (e) {
+            expect((e as CurrencyNBRError).detail).toContain(
+                "Não foi possível converter as partes do expoente '1/abc' para números inteiros",
+            );
+        }
+    });
 
-    // Caso 2: Formato inválido com caracteres não numéricos (ex: "1/abc")
-    assertThrows(
-        () => base.pow("1/abc"),
-        CurrencyNBRError,
-        "Não foi possível converter as partes do expoente '1/abc' para números inteiros.",
-    );
+    it("deve lançar erro para apenas uma barra sem números (ex: '/')", () => {
+        const base = CurrencyNBR.from(10);
+        expect(() => base.pow("/")).toThrow(CurrencyNBRError);
+        // Detail check if possible
+    });
 
-    // Caso 3: Apenas uma barra sem números (ex: "/")
-    // BigInt("") resulta em 0n no Deno, que então falha na validação do denominador positivo em calculateFractionalPower
-    assertThrows(
-        () => base.pow("/"),
-        CurrencyNBRError,
-        "O denominador de um expoente fracionário deve ser um número inteiro positivo.",
-    );
+    it("deve lançar erro para espaços em branco resultando em múltiplas barras (ex: '1 / 2 / 3')", () => {
+        const base = CurrencyNBR.from(10);
+        expect(() => base.pow("1 / 2 / 3")).toThrow(CurrencyNBRError);
+    });
 
-    // Caso 4: Espaços em branco (deve funcionar se for válido, ou falhar se for "1 / 2 / 3")
-    assertThrows(
-        () => base.pow("1 / 2 / 3"),
-        CurrencyNBRError,
-        "O expoente '1 / 2 / 3' é inválido.",
-    );
-});
-
-Deno.test("CurrencyNBR.pow - expoente fracionário válido com espaços", () => {
-    const base = CurrencyNBR.from(4);
-    // "1 / 2" deve ser aceito pois o .trim() é usado
-    const result = base.pow(" 1 / 2 ");
-    // Raiz quadrada de 4 é 2
-    // O valor interno deve ser 2 * INTERNAL_SCALE_FACTOR (10^12)
-    // Usando commit para facilitar verificação
-    const output = JSON.parse(result.commit(2).toJson(["toString"])) as any;
-    if (output.toString !== "2.00") {
-        throw new Error(`Esperado 2.00, obtido ${output.toString}`);
-    }
+    it("deve aceitar expoente fracionário válido com espaços", () => {
+        const base = CurrencyNBR.from(4);
+        // "1 / 2" deve ser aceito
+        const result = base.pow(" 1 / 2 ");
+        const output = result.commit(2);
+        expect(output.toString()).toBe("2.00");
+    });
 });

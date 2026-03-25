@@ -105,10 +105,9 @@ function parseScientificLiteral(value: string): bigint {
     let mantissaStr = removeUnderscores(parts[0]);
     const expStr = removeUnderscores(parts[1]);
 
-    let exp = BigInt(expStr);
+    const exp = BigInt(expStr);
 
     // Parse Mantissa
-    let mantissaInt: bigint;
     let mantissaDecimals = 0;
 
     if (mantissaStr.includes(".")) {
@@ -117,7 +116,7 @@ function parseScientificLiteral(value: string): bigint {
         mantissaStr = intPart + decPart;
     }
 
-    mantissaInt = BigInt(mantissaStr || "0"); // Handle ".5" -> "" + "5"
+    const mantissaInt = BigInt(mantissaStr || "0"); // Handle ".5" -> "" + "5"
 
     // Formula: mantissaInt * 10^(exp + INTERNAL_CALCULATION_PRECISION - mantissaDecimals)
     const power = exp + BigInt(INTERNAL_CALCULATION_PRECISION) - BigInt(mantissaDecimals);
