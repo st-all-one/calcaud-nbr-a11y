@@ -1,14 +1,17 @@
 {
     "name": "@scope/tests",
-    "license": "Apache-2.0",
+    "license": "MPL-2.0",
     "exports": "./",
-
     "tasks": {
         "test": "deno test --allow-all ."
     },
-
     "compilerOptions": {
-        "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"],
+        "lib": [
+            "dom",
+            "dom.iterable",
+            "dom.asynciterable",
+            "deno.ns"
+        ],
         "strict": true,
         "noImplicitAny": true,
         "strictNullChecks": true,
@@ -16,7 +19,6 @@
         "noUnusedParameters": true,
         "exactOptionalPropertyTypes": true
     },
-
     "imports": {
         "@logtape": "jsr:@logtape/logtape@^2.0.4",
         "@logtape/file": "jsr:@logtape/file@^2.0.4",

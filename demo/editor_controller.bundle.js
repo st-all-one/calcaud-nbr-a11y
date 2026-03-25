@@ -25052,18 +25052,26 @@
     "&.cm-focused": { outline: "none" }
   });
   var readOnlyFilter = EditorState.changeFilter.of((tr) => {
-    if (tr.changes.empty) return true;
+    if (tr.changes.empty) {
+      return true;
+    }
     const doc2 = tr.startState.doc;
     const docString = doc2.toString();
     const startFixed = 'CalcAUD.from("';
     const startLen = startFixed.length;
     const endFixed = ".commit(";
     const endIdx = docString.lastIndexOf(endFixed);
-    if (endIdx === -1) return false;
+    if (endIdx === -1) {
+      return false;
+    }
     let allowed = true;
     tr.changes.iterChanges((fromA, toA) => {
-      if (fromA < startLen) allowed = false;
-      if (toA > endIdx) allowed = false;
+      if (fromA < startLen) {
+        allowed = false;
+      }
+      if (toA > endIdx) {
+        allowed = false;
+      }
     });
     return allowed;
   });
@@ -25145,7 +25153,9 @@
   }
   window.setupEditor = function(containerId) {
     const parent = document.getElementById(containerId);
-    if (!parent) return;
+    if (!parent) {
+      return;
+    }
     parent.innerHTML = "";
     const startCode = `CalcAUD.from("1234567.89")
         .pow("353/1141")
@@ -25187,7 +25197,9 @@
     });
   };
   window.getUserCode = function() {
-    if (!editorView) return null;
+    if (!editorView) {
+      return null;
+    }
     const code = editorView.state.doc.toString();
     if (!code.startsWith('CalcAUD.from("')) {
       throw new Error(`O c\xF3digo deve come\xE7ar com 'CalcAUD.from("'`);

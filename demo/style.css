@@ -210,7 +210,6 @@ body {
 
 /* NOTEBOOK/DESKTOP Layout (>= 1100px) */
 @media (min-width: 1100px) {
-
     /* Grid de 3 Colunas para Notebook+ */
     .grid,
     .output-grid {
@@ -917,12 +916,14 @@ body.alto-contraste ::-webkit-scrollbar-button {
 }
 
 body.alto-contraste ::-webkit-scrollbar-button:vertical:decrement {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffff00' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E") !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffff00' d='M7 14l5-5 5 5z'/%3E%3C/svg%3E")
+        !important;
     /* Yellow arrows */
 }
 
 body.alto-contraste ::-webkit-scrollbar-button:vertical:increment {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffff00' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffff00' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")
+        !important;
     /* Yellow arrows */
 }
 

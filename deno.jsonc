@@ -1,16 +1,28 @@
 {
     "name": "@st-all-one/calcaud-nbr-a11y",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "exports": "./mod.ts",
-    "license": "Apache-2.0",
-
+    "license": "MPL-2.0",
     "publish": {
-        "exclude": ["./tests", "./demo", "node_modules", "vendor", "GEMINI.md"],
-        "include": ["mod.ts", "src", "docs", "README.md", "LICENSE"]
+        "exclude": [
+            "./tests",
+            "./demo",
+            "node_modules",
+            "vendor",
+            "GEMINI.md"
+        ],
+        "include": [
+            "mod.ts",
+            "src",
+            "docs",
+            "README.md",
+            "LICENSE"
+        ]
     },
-    
-    "workspace": ["./demo", "./tests"],
-
+    "workspace": [
+        "./demo",
+        "./tests"
+    ],
     "tasks": {
         "fmt": "deno fmt --config=deno.jsonc ./src ./tests ./deno.jsonc",
         "lint": "deno lint --config=deno.jsonc ./src",
@@ -19,9 +31,13 @@
         "coverage": "deno task test --reporter=dot --coverage=./coverage",
         "test": "deno test --allow-all tests/"
     },
-
     "compilerOptions": {
-        "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"],
+        "lib": [
+            "dom",
+            "dom.iterable",
+            "dom.asynciterable",
+            "deno.ns"
+        ],
         "strict": true,
         "noImplicitAny": true,
         "strictNullChecks": true,
@@ -29,18 +45,15 @@
         "noUnusedParameters": true,
         "exactOptionalPropertyTypes": true
     },
-
     "imports": {
         "@logtape": "jsr:@logtape/logtape@^2.0.4",
-        "@std/path": "jsr:@std/path@^1.1.4",
-        "@std/testing": "jsr:@std/testing@^1.0.0",
-        "@std/expect": "jsr:@std/expect@^1.0.0",
         "@katex": "npm:katex@^0.16.40"
     },
     "nodeModulesDir": "auto",
     "vendor": true,
-    "lock": { "frozen": false },
-
+    "lock": {
+        "frozen": false
+    },
     "fmt": {
         "bracePosition": "sameLine",
         "nextControlFlowPosition": "sameLine",
@@ -57,11 +70,14 @@
         "proseWrap": "preserve",
         "newLineKind": "lf"
     },
-
     "lint": {
-        "exclude": ["!*.ts"],
+        "exclude": [
+            "!*.ts"
+        ],
         "rules": {
-            "tags": ["recommended"],
+            "tags": [
+                "recommended"
+            ],
             "include": [
                 "default-param-last",
                 "eqeqeq",
