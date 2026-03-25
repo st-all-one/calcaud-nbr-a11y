@@ -79,4 +79,17 @@ console.log(output.toVerbalA11y());  // "150 ponto 50 menos em grupo..."
 
 ---
 
+## Tests
+
+<details closed>
+  <summary>Análise SonarQube</summary>
+
+  ![Resultado do teste de análise de código SonarQube, onde indica 0 problemas de segurança e manutenibilidade, 97,5% de cobertura de testes e 8,2% de duplicação de código](.github/assets/sonnar_qube_scanner.png)
+
+- *Teste realizado em 25/03/2026*
+
+</details>
+
+---
+
 **CalcAUD (NBR-A11y)** é um projeto de código aberto sob licença **MPL-2.0**, focado em trazer acessibilidade e precisão matemática financeira para a web moderna.
