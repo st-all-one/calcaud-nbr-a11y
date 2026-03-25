@@ -1,5 +1,5 @@
 import { mapAllOutputs } from "../logic/mapper.ts";
-import { CalcAUD } from "@calc-aud-nbr-a11y";
+import { CalcAUD } from "../../mod.ts";
 
 type ExampleOutput = Record<string, string | number | null>;
 

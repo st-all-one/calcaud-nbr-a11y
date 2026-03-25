@@ -1,15 +1,14 @@
 {
-    "name": "@stallone-dev/currency-nbr-a11y",
-    "version": "0.2.0",
+    "name": "@st-all-one/calc-aud-nbr-a11y",
+    "version": "0.3.0",
     "exports": "./mod.ts",
     "license": "Apache-2.0",
 
     "publish": {
-        "exclude": ["./tests", "./demo", "node_modules", "GEMINI.md"]
+        "exclude": ["./tests", "./demo", "node_modules", "vendor", "GEMINI.md"]
     },
 
     "tasks": {
-        "demo": "deno serve --watch --allow-read demo/server.ts ",
         "fmt": "deno fmt --config=deno.jsonc ./src ./tests ./deno.jsonc",
         "lint": "deno lint --config=deno.jsonc ./src",
         "coverage:report": "deno task coverage ; deno coverage ./tests/coverage-log --lcov > ./tests/coverage-log/coverage.lcov ; genhtml -o ./tests/coverage-log ./tests/coverage-log/coverage.lcov",
@@ -29,21 +28,15 @@
     },
 
     "imports": {
-        "@codemirror/autocomplete": "npm:@codemirror/autocomplete@^6.20.1",
-        "@codemirror/commands": "npm:@codemirror/commands@^6.10.3",
-        "@codemirror/lang-javascript": "npm:@codemirror/lang-javascript@^6.2.5",
-        "@codemirror/language": "npm:@codemirror/language@^6.12.2",
-        "@codemirror/lint": "npm:@codemirror/lint@^6.9.5",
-        "@codemirror/state": "npm:@codemirror/state@^6.6.0",
-        "@codemirror/view": "npm:@codemirror/view@^6.40.0",
         "@logtape": "jsr:@logtape/logtape@^2.0.4",
         "@std/path": "jsr:@std/path@^1.1.4",
-        "@katex": "npm:katex@^0.16.40",
-        "codemirror": "npm:codemirror@^6.0.2"
+        "@std/testing": "jsr:@std/testing@^1.0.0",
+        "@std/expect": "jsr:@std/expect@^1.0.0",
+        "@katex": "npm:katex@^0.16.40"
     },
     "nodeModulesDir": "auto",
     "vendor": true,
-    "lock": { "frozen": false },
+    "lock": { "frozen": true },
 
     "fmt": {
         "bracePosition": "sameLine",
