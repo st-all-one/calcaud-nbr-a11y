@@ -14,7 +14,7 @@ export function mapAllOutputs(
   return {
     toString: output.toString(),
     toFloatNumber: output.toFloatNumber(),
-    toBigInt: output.toBigInt().toString(),
+    toRawInternalBigInt: output.toRawInternalBigInt().toString(),
     toMonetary: output.toMonetary(),
     toLaTeX: output.toLaTeX(),
     toHTML: output.toHTML(),

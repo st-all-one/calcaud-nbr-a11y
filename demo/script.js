@@ -6,7 +6,7 @@ function updateInteractiveDisplay(data) {
   const mapping = {
     toString: data.toString,
     toFloatNumber: data.toFloatNumber,
-    toBigInt: data.toBigInt,
+    toRawInternalBigInt: data.toRawInternalBigInt,
     toMonetary: data.toMonetary,
     toLaTeX: data.toLaTeX,
     toUnicode: data.toUnicode,
@@ -51,7 +51,7 @@ async function loadExamples() {
       roundingShowcase: "2. Rounding",
       toString: "3. toString",
       toFloatNumber: "4. toFloatNumber",
-      toBigInt: "5. toBigInt",
+      toRawInternalBigInt: "5. toRawInternalBigInt",
       toMonetary: "6. toMonetary",
       toLaTeX: "7. toLaTeX",
       toHTML: "8. toHTML",

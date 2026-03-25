@@ -149,23 +149,23 @@ export const getCategorizedExamples = () => {
           ),
         },
       ],
-      toBigInt: [
+      toRawInternalBigInt: [
         {
           title: "Escala Interna (10^12)",
           context: "Valor: 1.00",
-          code: "CurrencyNBR.from(1).commit().toBigInt()",
+          code: "CurrencyNBR.from(1).commit().toRawInternalBigInt()",
           outputs: mapAllOutputs(CurrencyNBR.from(1).commit()),
         },
         {
           title: "Precisão de 12 casas",
           context: "Valor: 0.000000000001",
-          code: "CurrencyNBR.from('0.000000000001').commit().toBigInt()",
+          code: "CurrencyNBR.from('0.000000000001').commit().toRawInternalBigInt()",
           outputs: mapAllOutputs(CurrencyNBR.from("0.000000000001").commit()),
         },
         {
           title: "Limite Seguro",
           context: "Valor: 2^53 - 1",
-          code: "CurrencyNBR.from(Number.MAX_SAFE_INTEGER).commit().toBigInt()",
+          code: "CurrencyNBR.from(Number.MAX_SAFE_INTEGER).commit().toRawInternalBigInt()",
           outputs: mapAllOutputs(
             CurrencyNBR.from(Number.MAX_SAFE_INTEGER).commit(),
           ),
@@ -173,7 +173,7 @@ export const getCategorizedExamples = () => {
         {
           title: "Volume de Transações",
           context: "Soma de grandes volumes",
-          code: "CurrencyNBR.from(1e9).mult(1e5).add(0.01).commit().toBigInt()",
+          code: "CurrencyNBR.from(1e9).mult(1e5).add(0.01).commit().toRawInternalBigInt()",
           outputs: mapAllOutputs(
             CurrencyNBR.from(1e9).mult(1e5).add(0.01).commit(),
           ),
