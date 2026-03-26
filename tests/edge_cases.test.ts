@@ -29,7 +29,7 @@ describe("Edge Cases e Robustez (logFatal)", () => {
         const val = CalcAUD.from(100);
 
         // Sabotagem via injeção de erro em propriedade privada
-        Object.defineProperty(val, "activeTermValue", {
+        Object.defineProperty(val, "activeFactorValue", {
             get: () => {
                 throw new Error("Erro Crítico Inesperado");
             },
@@ -193,13 +193,13 @@ describe("Edge Cases e Robustez (logFatal)", () => {
             }
         });
 
-        it("parseStringValue - deve arredondar para cima se a 13ª casa decimal for >= 5", () => {
-            // Nossa escala interna é 12.
-            // "0.0000000000005" (13 casas) -> 5 >= 5 -> deve virar 1 na 12ª casa
-            const result = parseStringValue("0.0000000000005");
+        it("parseStringValue - deve arredondar para cima se a 19ª casa decimal for >= 5", () => {
+            // Nossa escala interna é 18.
+            // "0.0000000000000000005" (19 casas) -> 5 >= 5 -> deve virar 1 na 18ª casa
+            const result = parseStringValue("0.0000000000000000005");
             expect(result).toBe(1n);
 
-            const resultLower = parseStringValue("0.0000000000004");
+            const resultLower = parseStringValue("0.0000000000000000004");
             expect(resultLower).toBe(0n);
         });
     });

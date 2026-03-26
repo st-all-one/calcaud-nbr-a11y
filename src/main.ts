@@ -59,34 +59,66 @@ export type CalcAUDAllowedValue = string | number | bigint | CalcAUD;
  * console.log(taxaSemestral.toVerbalA11y()); // "... elevado a 6/12 ..."
  * ```
  */
+/**
+ * Tipos de operações pendentes dentro de um termo multiplicativo.
+ * Essencial para manter a precedência de Potência > (Mult/Div/Mod/DivInt).
+ */
+export type CalcAUDPendingOperation = "MULT" | "DIV" | "DIV_INT" | "MOD";
+export type CalcAUDPendingStrategy = MathDivModStrategy;
+
 export class CalcAUD {
     private readonly accumulatedValue: bigint;
-    private readonly activeTermValue: bigint;
+    private readonly activeTermProduct: bigint;
+    private readonly activeFactorValue: bigint;
+    private readonly activePendingOperation: CalcAUDPendingOperation;
+    private readonly activePendingStrategy: CalcAUDPendingStrategy;
+
     private readonly accumulatedExpression: string;
-    private readonly activeTermExpression: string;
+    private readonly activeTermProductExpression: string;
+    private readonly activeFactorExpression: string;
+
     private readonly accumulatedVerbal: string;
-    private readonly activeTermVerbal: string;
+    private readonly activeTermProductVerbal: string;
+    private readonly activeFactorVerbal: string;
+
     private readonly accumulatedUnicode: string;
-    private readonly activeTermUnicode: string;
+    private readonly activeTermProductUnicode: string;
+    private readonly activeFactorUnicode: string;
+
+    private readonly _isCompound: boolean;
 
     private constructor(
         accumulatedValue: bigint,
-        activeTermValue: bigint,
+        activeTermProduct: bigint,
+        activeFactorValue: bigint,
+        activePendingOperation: CalcAUDPendingOperation,
+        activePendingStrategy: CalcAUDPendingStrategy,
         accumulatedExpression: string,
-        activeTermExpression: string,
+        activeTermProductExpression: string,
+        activeFactorExpression: string,
         accumulatedVerbal: string,
-        activeTermVerbal: string,
+        activeTermProductVerbal: string,
+        activeFactorVerbal: string,
         accumulatedUnicode: string,
-        activeTermUnicode: string,
+        activeTermProductUnicode: string,
+        activeFactorUnicode: string,
+        isCompound = false,
     ) {
         this.accumulatedValue = accumulatedValue;
-        this.activeTermValue = activeTermValue;
+        this.activeTermProduct = activeTermProduct;
+        this.activeFactorValue = activeFactorValue;
+        this.activePendingOperation = activePendingOperation;
+        this.activePendingStrategy = activePendingStrategy;
         this.accumulatedExpression = accumulatedExpression;
-        this.activeTermExpression = activeTermExpression;
+        this.activeTermProductExpression = activeTermProductExpression;
+        this.activeFactorExpression = activeFactorExpression;
         this.accumulatedVerbal = accumulatedVerbal;
-        this.activeTermVerbal = activeTermVerbal;
+        this.activeTermProductVerbal = activeTermProductVerbal;
+        this.activeFactorVerbal = activeFactorVerbal;
         this.accumulatedUnicode = accumulatedUnicode;
-        this.activeTermUnicode = activeTermUnicode;
+        this.activeTermProductUnicode = activeTermProductUnicode;
+        this.activeFactorUnicode = activeFactorUnicode;
+        this._isCompound = isCompound;
     }
 
     /**
@@ -106,7 +138,17 @@ export class CalcAUD {
      */
     public static from(value: CalcAUDAllowedValue): CalcAUD {
         const start = performance.now();
-        if (value instanceof CalcAUD) { return value; }
+        if (value instanceof CalcAUD) {
+            // Evitamos agrupamento redundante se já for uma expressão agrupada
+            const isAlreadyGrouped = value.accumulatedExpression === "" &&
+                value.activeTermProductExpression === "" &&
+                value.activeFactorExpression.startsWith("\\left(");
+
+            if (value._isCompound && !isAlreadyGrouped) {
+                return value.group();
+            }
+            return value;
+        }
 
         try {
             // Validação rigorosa em runtime para garantir integridade dos cálculos
@@ -125,23 +167,31 @@ export class CalcAUD {
                 });
             }
 
-            // Convertemos tudo para a escala interna de 10^12 para evitar erros de float
+            // Convertemos tudo para a escala interna para evitar erros de float
             const rawValue = typeof value === "bigint"
                 ? value * INTERNAL_SCALE_FACTOR
                 : parseStringValue(value.toString());
+
             const initialExpression = value.toString();
             const initialVerbal = initialExpression;
             const initialUnicode = initialExpression;
 
             const result = new CalcAUD(
                 0n,
+                INTERNAL_SCALE_FACTOR,
                 rawValue,
+                "MULT",
+                "euclidean",
+                "",
                 "",
                 initialExpression,
                 "",
+                "",
                 initialVerbal,
                 "",
+                "",
                 initialUnicode,
+                false,
             );
 
             const end = performance.now();
@@ -183,30 +233,33 @@ export class CalcAUD {
         const start = performance.now();
         try {
             const other = CalcAUD.from(value);
-            const otherValue = other.accumulatedValue + other.activeTermValue;
-            const newAccumulatedValue = this.accumulatedValue + this.activeTermValue;
+            const otherValue = other.accumulatedValue + other.getActiveTermValue();
 
-            // Mantemos a imutabilidade criando novos registros léxicos para o total
-            const nextActiveExpr = wrapLaTeX(other.getFullLaTeXExpression());
-            const nextActiveUnicode = wrapUnicode(other.getFullUnicodeExpression());
-            const nextActiveVerbal = other.accumulatedVerbal
-                ? `${VERBAL_TOKENS.GRP_START}${other.getFullVerbalExpression()}${VERBAL_TOKENS.GRP_END}`
-                : other.activeTermVerbal;
+            const newAccumulatedValue = this.accumulatedValue + this.getActiveTermValue();
 
             const result = new CalcAUD(
                 newAccumulatedValue,
+                INTERNAL_SCALE_FACTOR,
                 otherValue,
+                "MULT",
+                "euclidean",
                 this.getFullLaTeXExpression(),
-                nextActiveExpr,
+                "",
+                wrapLaTeX(other.getFullLaTeXExpression()),
                 this.getFullVerbalExpression(),
-                nextActiveVerbal,
+                "",
+                other.accumulatedVerbal
+                    ? `${VERBAL_TOKENS.GRP_START}${other.getFullVerbalExpression()}${VERBAL_TOKENS.GRP_END}`
+                    : other.activeFactorVerbal,
                 this.getFullUnicodeExpression(),
-                nextActiveUnicode,
+                "",
+                wrapUnicode(other.getFullUnicodeExpression()),
+                true,
             );
             const end = performance.now();
             Logger.getChild(["engine", "add"]).debug("Addition performed {*}", {
                 calcTime: end - start,
-                currentAccumulatedResult: (result.accumulatedValue + result.activeTermValue).toString(),
+                currentAccumulatedResult: (result.accumulatedValue + result.getActiveTermValue()).toString(),
                 addingValue: otherValue.toString(),
             });
             return result;
@@ -218,53 +271,39 @@ export class CalcAUD {
         }
     }
 
-    /**
-     * Subtrai um valor do montante atual.
-     *
-     * @param value Valor a ser subtraído.
-     * @returns Nova instância com o resultado da subtração.
-     *
-     * @example
-     * ```ts
-     * // Básico
-     * CalcAUD.from(10).sub(3); // 7
-     *
-     * // Com valores negativos
-     * CalcAUD.from(10).sub(-5); // 15
-     *
-     * // Encadeado com expressões complexas
-     * CalcAUD.from("100").sub(CalcAUD.from(20).add(30)); // 50
-     * ```
-     */
     public sub(value: CalcAUDAllowedValue): CalcAUD {
         const start = performance.now();
         try {
             const other = CalcAUD.from(value);
-            const otherValue = other.accumulatedValue + other.activeTermValue;
-            const newAccumulatedValue = this.accumulatedValue + this.activeTermValue;
+            const otherValue = other.accumulatedValue + other.getActiveTermValue();
 
-            const nextActiveExpr = `- ${wrapLaTeX(other.getFullLaTeXExpression())}`;
-            const nextActiveUnicode = `- ${wrapUnicode(other.getFullUnicodeExpression())}`;
-            const nextActiveVerbal = `${VERBAL_TOKENS.SUB}${
-                other.accumulatedVerbal
-                    ? `${VERBAL_TOKENS.GRP_START}${other.getFullVerbalExpression()}${VERBAL_TOKENS.GRP_END}`
-                    : other.activeTermVerbal
-            }`;
+            const newAccumulatedValue = this.accumulatedValue + this.getActiveTermValue();
 
             const result = new CalcAUD(
                 newAccumulatedValue,
+                INTERNAL_SCALE_FACTOR,
                 -otherValue,
+                "MULT",
+                "euclidean",
                 this.getFullLaTeXExpression(),
-                nextActiveExpr,
+                "",
+                `- ${wrapLaTeX(other.getFullLaTeXExpression())}`,
                 this.getFullVerbalExpression(),
-                nextActiveVerbal,
+                "",
+                `${VERBAL_TOKENS.SUB}${
+                    other.accumulatedVerbal
+                        ? `${VERBAL_TOKENS.GRP_START}${other.getFullVerbalExpression()}${VERBAL_TOKENS.GRP_END}`
+                        : other.activeFactorVerbal
+                }`,
                 this.getFullUnicodeExpression(),
-                nextActiveUnicode,
+                "",
+                `- ${wrapUnicode(other.getFullUnicodeExpression())}`,
+                true,
             );
             const end = performance.now();
             Logger.getChild(["engine", "sub"]).debug("Subtraction performed {*}", {
                 calcTime: end - start,
-                currentAccumulatedResult: (result.accumulatedValue + result.activeTermValue).toString(),
+                currentAccumulatedResult: (result.accumulatedValue + result.getActiveTermValue()).toString(),
                 subtrahend: otherValue.toString(),
             });
             return result;
@@ -298,36 +337,36 @@ export class CalcAUD {
         const start = performance.now();
         try {
             const other = CalcAUD.from(value);
-            const otherValue = other.accumulatedValue + other.activeTermValue;
-            const product = this.activeTermValue * otherValue;
+            const otherValue = other.accumulatedValue + other.getActiveTermValue();
 
-            // Arredondamento na 12ª casa interna para evitar propagação de resíduos infinitesimais
-            const halfScale = INTERNAL_SCALE_FACTOR / 2n;
-            const adjustment = product >= 0n ? halfScale : -halfScale;
-            const nextActiveValue = (product + adjustment) / INTERNAL_SCALE_FACTOR;
-
-            const nextActiveExpr = `${wrapLaTeX(this.activeTermExpression)} \\times ${
-                wrapLaTeX(other.getFullLaTeXExpression())
-            }`;
-            const nextActiveVerbal = `${this.activeTermVerbal}${VERBAL_TOKENS.MULT}${other.getFullVerbalExpression()}`;
-            const nextActiveUnicode = `${wrapUnicode(this.activeTermUnicode)} × ${
-                wrapUnicode(other.getFullUnicodeExpression())
-            }`;
+            const nextProduct = this.getActiveTermValue();
+            const nextProductExpr = this.getActiveTermLaTeX();
+            const nextProductVerbal = this.getActiveTermVerbal();
+            const nextProductUnicode = this.getActiveTermUnicode();
 
             const result = new CalcAUD(
                 this.accumulatedValue,
-                nextActiveValue,
+                nextProduct,
+                otherValue,
+                "MULT",
+                "euclidean",
                 this.accumulatedExpression,
-                nextActiveExpr,
+                nextProductExpr,
+                wrapLaTeX(other.getFullLaTeXExpression()),
                 this.accumulatedVerbal,
-                nextActiveVerbal,
+                nextProductVerbal,
+                other.accumulatedVerbal
+                    ? `${VERBAL_TOKENS.GRP_START}${other.getFullVerbalExpression()}${VERBAL_TOKENS.GRP_END}`
+                    : other.activeFactorVerbal,
                 this.accumulatedUnicode,
-                nextActiveUnicode,
+                nextProductUnicode,
+                wrapUnicode(other.getFullUnicodeExpression()),
+                true,
             );
             const end = performance.now();
             Logger.getChild(["engine", "mult"]).debug("Multiplication performed {*}", {
                 calcTime: end - start,
-                currentAccumulatedResult: (result.accumulatedValue + result.activeTermValue).toString(),
+                currentAccumulatedResult: (result.accumulatedValue + result.getActiveTermValue()).toString(),
                 multiplier: otherValue.toString(),
             });
             return result;
@@ -339,68 +378,50 @@ export class CalcAUD {
         }
     }
 
-    /**
-     * Divide o montante atual por um valor.
-     *
-     * @param value Divisor.
-     * @returns Nova instância com o quociente calculado.
-     * @throws CalcAUDError se o divisor for zero.
-     *
-     * @example
-     * ```ts
-     * // Básico
-     * CalcAUD.from(10).div(2); // 5
-     *
-     * // Divisão com dízima
-     * CalcAUD.from(10).div(3).commit(2); // "3.33"
-     *
-     * // Divisão de montantes complexos
-     * CalcAUD.from(100).div(CalcAUD.from(2).add(3)); // 20
-     * ```
-     */
     public div(value: CalcAUDAllowedValue): CalcAUD {
         const start = performance.now();
         try {
             const other = CalcAUD.from(value);
-            const otherValue = other.accumulatedValue + other.activeTermValue;
+            const otherValue = other.accumulatedValue + other.getActiveTermValue();
             if (otherValue === 0n) {
                 throw new CalcAUDError({
                     type: "division-by-zero",
                     title: "Operação Matemática Inválida",
                     detail: "Tentativa de divisão por zero.",
                     operation: "division",
-                    latex: `\\frac{${this.activeTermExpression}}{0}`,
-                    unicode: `${this.activeTermUnicode} ÷ 0`,
+                    latex: `\\frac{${this.getActiveTermLaTeX()}}{0}`,
+                    unicode: `${this.getActiveTermUnicode()} ÷ 0`,
                 });
             }
-            const numerator = this.activeTermValue * INTERNAL_SCALE_FACTOR;
 
-            // Arredondamento Half-Up na 12ª casa decimal interna para precisão absoluta
-            const halfDenominator = otherValue / 2n;
-            const adjustment = (this.activeTermValue < 0n) === (otherValue < 0n) ? halfDenominator : -halfDenominator;
-
-            const nextActiveValue = (numerator + adjustment) / otherValue;
-
-            const nextActiveExpr = `\\frac{${this.activeTermExpression}}{${other.getFullLaTeXExpression()}}`;
-            const nextActiveVerbal = `${this.activeTermVerbal}${VERBAL_TOKENS.DIV}${other.getFullVerbalExpression()}`;
-            const nextActiveUnicode = `${wrapUnicode(this.activeTermUnicode)} ÷ ${
-                wrapUnicode(other.getFullUnicodeExpression())
-            }`;
+            const nextProduct = this.getActiveTermValue();
+            const nextProductExpr = this.getActiveTermLaTeX();
+            const nextProductVerbal = this.getActiveTermVerbal();
+            const nextProductUnicode = this.getActiveTermUnicode();
 
             const result = new CalcAUD(
                 this.accumulatedValue,
-                nextActiveValue,
+                nextProduct,
+                otherValue,
+                "DIV",
+                "euclidean",
                 this.accumulatedExpression,
-                nextActiveExpr,
+                nextProductExpr,
+                wrapLaTeX(other.getFullLaTeXExpression()),
                 this.accumulatedVerbal,
-                nextActiveVerbal,
+                nextProductVerbal,
+                other.accumulatedVerbal
+                    ? `${VERBAL_TOKENS.GRP_START}${other.getFullVerbalExpression()}${VERBAL_TOKENS.GRP_END}`
+                    : other.activeFactorVerbal,
                 this.accumulatedUnicode,
-                nextActiveUnicode,
+                nextProductUnicode,
+                wrapUnicode(other.getFullUnicodeExpression()),
+                true,
             );
             const end = performance.now();
             Logger.getChild(["engine", "div"]).debug("Division performed {*}", {
                 calcTime: end - start,
-                currentAccumulatedResult: (result.accumulatedValue + result.activeTermValue).toString(),
+                currentAccumulatedResult: (result.accumulatedValue + result.getActiveTermValue()).toString(),
                 divisor: otherValue.toString(),
             });
             return result;
@@ -437,63 +458,47 @@ export class CalcAUD {
         const start = performance.now();
         try {
             const other = CalcAUD.from(value);
-            const otherValue = other.accumulatedValue + other.activeTermValue;
+            const otherValue = other.accumulatedValue + other.getActiveTermValue();
             if (otherValue === 0n) {
                 throw new CalcAUDError({
                     type: "division-by-zero",
                     title: "Operação Matemática Inválida",
                     detail: "Tentativa de divisão inteira por zero.",
                     operation: "divInt",
-                    latex: `\\lfloor \\frac{${this.activeTermExpression}}{0} \\rfloor`,
-                    unicode: `⌊${this.activeTermUnicode} ÷ 0⌋`,
+                    latex: `\\lfloor \\frac{${this.getActiveTermLaTeX()}}{0} \\rfloor`,
+                    unicode: `⌊${this.getActiveTermUnicode()} ÷ 0⌋`,
                 });
             }
 
-            let quotient: bigint;
-            let nextActiveExpr: string;
-            let nextActiveUnicode: string;
-            let nextActiveVerbal: string;
-
-            if (divStrategy === "euclidean") {
-                // Lógica Euclidiana: O quociente é o piso (floor) da divisão real
-                quotient = this.activeTermValue / otherValue;
-                const remainder = this.activeTermValue % otherValue;
-
-                if (remainder !== 0n && ((this.activeTermValue < 0n) !== (otherValue < 0n))) {
-                    quotient -= 1n;
-                }
-                nextActiveExpr =
-                    `\\lfloor \\frac{${this.activeTermExpression}}{${other.getFullLaTeXExpression()}} \\rfloor`;
-                nextActiveUnicode = `⌊${this.activeTermUnicode} ÷ ${other.getFullUnicodeExpression()}⌋`;
-                nextActiveVerbal =
-                    `${this.activeTermVerbal}${VERBAL_TOKENS.DIV_INT_E_MID}${other.getFullVerbalExpression()}${VERBAL_TOKENS.DIV_INT_E_SUF}`;
-            } else {
-                // Lógica Truncada: Descarta a parte fracionária (padrão C/Java/JS)
-                quotient = this.activeTermValue / otherValue;
-                nextActiveExpr =
-                    `\\operatorname{trunc}\\left(\\frac{${this.activeTermExpression}}{${other.getFullLaTeXExpression()}}\\right)`;
-                nextActiveUnicode = `trun(${this.activeTermUnicode} ÷ ${other.getFullUnicodeExpression()})`;
-                nextActiveVerbal =
-                    `${this.activeTermVerbal}${VERBAL_TOKENS.DIV_INT_T_MID}${other.getFullVerbalExpression()}${VERBAL_TOKENS.DIV_INT_T_SUF}`;
-            }
-
-            const nextActiveValue = quotient * INTERNAL_SCALE_FACTOR;
+            const nextProduct = this.getActiveTermValue();
+            const nextProductExpr = this.getActiveTermLaTeX();
+            const nextProductVerbal = this.getActiveTermVerbal();
+            const nextProductUnicode = this.getActiveTermUnicode();
 
             const result = new CalcAUD(
                 this.accumulatedValue,
-                nextActiveValue,
+                nextProduct,
+                otherValue,
+                "DIV_INT",
+                divStrategy,
                 this.accumulatedExpression,
-                nextActiveExpr,
+                nextProductExpr,
+                wrapLaTeX(other.getFullLaTeXExpression()),
                 this.accumulatedVerbal,
-                nextActiveVerbal,
+                nextProductVerbal,
+                other.accumulatedVerbal
+                    ? `${VERBAL_TOKENS.GRP_START}${other.getFullVerbalExpression()}${VERBAL_TOKENS.GRP_END}`
+                    : other.activeFactorVerbal,
                 this.accumulatedUnicode,
-                nextActiveUnicode,
+                nextProductUnicode,
+                wrapUnicode(other.getFullUnicodeExpression()),
+                true,
             );
             const end = performance.now();
             Logger.getChild(["engine", "divInt"]).debug("Integer division performed {*}", {
                 calcTime: end - start,
                 strategy: divStrategy,
-                currentAccumulatedResult: (result.accumulatedValue + result.activeTermValue).toString(),
+                currentAccumulatedResult: (result.accumulatedValue + result.getActiveTermValue()).toString(),
             });
             return result;
         } catch (e) {
@@ -504,83 +509,51 @@ export class CalcAUD {
         }
     }
 
-    /**
-     * Calcula o módulo (resto da divisão) entre o montante atual e um valor.
-     *
-     * @param value Divisor.
-     * @param divStrategy Estratégia de divisão: "euclidean" (padrão) ou "truncated".
-     * @returns Nova instância com o resultado do módulo.
-     *
-     * @remarks
-     * **ATENÇÃO:** A estratégia de divisão deve ser definida neste momento!
-     * Opções passadas posteriormente no método `commit()` NÃO afetarão o cálculo realizado aqui.
-     *
-     * @example
-     * ```ts
-     * // Básico (Euclidiana)
-     * CalcAUD.from(10).mod(3); // 1
-     *
-     * // Diferença de Estratégia com Negativos
-     * CalcAUD.from(-10).mod(3); // 2 (Euclidiano: resto sempre positivo)
-     * CalcAUD.from(-10).mod(3, "truncated"); // -1 (Truncado: segue o sinal do dividendo)
-     * ```
-     */
     public mod(value: CalcAUDAllowedValue, divStrategy: MathDivModStrategy = "euclidean"): CalcAUD {
         const start = performance.now();
         try {
             const other = CalcAUD.from(value);
-            const otherValue = other.accumulatedValue + other.activeTermValue;
+            const otherValue = other.accumulatedValue + other.getActiveTermValue();
             if (otherValue === 0n) {
                 throw new CalcAUDError({
                     type: "division-by-zero",
                     title: "Operação Matemática Inválida",
                     detail: "Tentativa de cálculo de módulo por zero.",
                     operation: "mod",
-                    latex: `${this.activeTermExpression} \\bmod 0`,
-                    unicode: `${this.activeTermUnicode} mod 0`,
+                    latex: `${this.getActiveTermLaTeX()} \\bmod 0`,
+                    unicode: `${this.getActiveTermUnicode()} mod 0`,
                 });
             }
 
-            let nextActiveValue: bigint;
-            let nextActiveExpr: string;
-            let nextActiveUnicode: string;
-            let nextActiveVerbal: string;
-
-            if (divStrategy === "euclidean") {
-                // Módulo Euclidiano garante que o resto seja sempre positivo: ((a % n) + n) % n
-                const rawMod = this.activeTermValue % otherValue;
-                const absDivisor = otherValue < 0n ? -otherValue : otherValue;
-                nextActiveValue = ((rawMod % absDivisor) + absDivisor) % absDivisor;
-
-                nextActiveExpr = `${this.activeTermExpression} \\bmod ${other.getFullLaTeXExpression()}`;
-                nextActiveUnicode = `${this.activeTermUnicode} mod ${other.getFullUnicodeExpression()}`;
-                nextActiveVerbal =
-                    `${VERBAL_TOKENS.MOD_E_PRE}${this.activeTermVerbal}${VERBAL_TOKENS.MOD_E_MID}${other.getFullVerbalExpression()}${VERBAL_TOKENS.MOD_E_SUF}`;
-            } else {
-                // Resto Truncado segue a implementação nativa da maioria das linguagens
-                nextActiveValue = this.activeTermValue % otherValue;
-
-                nextActiveExpr = `${this.activeTermExpression} \\text{ rem } ${other.getFullLaTeXExpression()}`;
-                nextActiveUnicode = `${this.activeTermUnicode} % ${other.getFullUnicodeExpression()}`;
-                nextActiveVerbal =
-                    `${VERBAL_TOKENS.MOD_T_PRE}${this.activeTermVerbal}${VERBAL_TOKENS.MOD_T_MID}${other.getFullVerbalExpression()}${VERBAL_TOKENS.MOD_T_SUF}`;
-            }
+            const nextProduct = this.getActiveTermValue();
+            const nextProductExpr = this.getActiveTermLaTeX();
+            const nextProductVerbal = this.getActiveTermVerbal();
+            const nextProductUnicode = this.getActiveTermUnicode();
 
             const result = new CalcAUD(
                 this.accumulatedValue,
-                nextActiveValue,
+                nextProduct,
+                otherValue,
+                "MOD",
+                divStrategy,
                 this.accumulatedExpression,
-                nextActiveExpr,
+                nextProductExpr,
+                wrapLaTeX(other.getFullLaTeXExpression()),
                 this.accumulatedVerbal,
-                nextActiveVerbal,
+                nextProductVerbal,
+                other.accumulatedVerbal
+                    ? `${VERBAL_TOKENS.GRP_START}${other.getFullVerbalExpression()}${VERBAL_TOKENS.GRP_END}`
+                    : other.activeFactorVerbal,
                 this.accumulatedUnicode,
-                nextActiveUnicode,
+                nextProductUnicode,
+                wrapUnicode(other.getFullUnicodeExpression()),
+                true,
             );
             const end = performance.now();
             Logger.getChild(["engine", "mod"]).debug("Modulo performed {*}", {
                 calcTime: end - start,
                 strategy: divStrategy,
-                currentAccumulatedResult: (result.accumulatedValue + result.activeTermValue).toString(),
+                currentAccumulatedResult: (result.accumulatedValue + result.getActiveTermValue()).toString(),
             });
             return result;
         } catch (e) {
@@ -609,22 +582,24 @@ export class CalcAUD {
      * CalcAUD.from(27).pow("1/3"); // 3
      * ```
      */
-    public pow(exponent: string | number): CalcAUD {
+    public pow(exponent: CalcAUDAllowedValue): CalcAUD {
         const start = performance.now();
         try {
-            const baseValue = this.activeTermValue;
-            const baseExpr = wrapLaTeX(this.activeTermExpression);
-            const baseVerbal = this.activeTermVerbal;
-            const baseUnicode = wrapUnicode(this.activeTermUnicode);
+            const baseValue = this.activeFactorValue;
+            const baseExpr = wrapLaTeX(this.activeFactorExpression);
+            const baseVerbal = this.activeFactorVerbal;
+            const baseUnicode = wrapUnicode(this.activeFactorUnicode);
 
             let nextExpr: string;
             let nextVerbal: string;
             let nextUnicode: string;
             let nextValue: bigint;
 
+            const isFractionString = typeof exponent === "string" && exponent.includes("/");
             const expStr = exponent.toString();
-            if (expStr.includes("/")) {
-                // Lógica para potências fracionárias (raízes n-ésimas)
+
+            if (isFractionString) {
+                // Lógica para potências fracionárias (raízes n-ésimas) via string (retrocompatibilidade)
                 const parts = expStr.split("/");
 
                 if (parts.length !== 2) {
@@ -660,12 +635,15 @@ export class CalcAUD {
                 }`;
                 nextUnicode = `${denSup === "²" ? "" : denSup}√(${baseUnicode}${numSup})`;
             } else {
-                // Lógica para potências inteiras ou decimais simples
-                const exp = BigInt(expStr);
-                const expSup = toSuperscript(expStr);
+                // Lógica para potências via CalcAUDAllowedValue
+                const other = CalcAUD.from(exponent);
+                const expValue = other.accumulatedValue + other.getActiveTermValue();
+                const exp = expValue / INTERNAL_SCALE_FACTOR;
+                const expDispStr = other.getFullUnicodeExpression();
+                const expSup = toSuperscript(expDispStr);
 
-                nextExpr = `{${baseExpr}}^{${expStr}}`;
-                nextVerbal = `${baseVerbal}${VERBAL_TOKENS.POW}${expStr}`;
+                nextExpr = `{${baseExpr}}^{${other.getFullLaTeXExpression()}}`;
+                nextVerbal = `${baseVerbal}${VERBAL_TOKENS.POW}${other.getFullVerbalExpression()}`;
                 nextUnicode = `${baseUnicode}${expSup}`;
 
                 if (exp === 0n) { nextValue = INTERNAL_SCALE_FACTOR; }
@@ -680,19 +658,26 @@ export class CalcAUD {
             }
             const result = new CalcAUD(
                 this.accumulatedValue,
+                this.activeTermProduct,
                 nextValue,
+                this.activePendingOperation,
+                this.activePendingStrategy,
                 this.accumulatedExpression,
+                this.activeTermProductExpression,
                 nextExpr,
                 this.accumulatedVerbal,
+                this.activeTermProductVerbal,
                 nextVerbal,
                 this.accumulatedUnicode,
+                this.activeTermProductUnicode,
                 nextUnicode,
+                true,
             );
             const end = performance.now();
             Logger.getChild(["engine", "pow"]).debug("Power/Root operation performed {*}", {
                 calcTime: end - start,
                 exponent: expStr,
-                result: result.activeTermValue.toString(),
+                result: result.getActiveTermValue().toString(),
             });
             return result;
         } catch (e) {
@@ -720,11 +705,27 @@ export class CalcAUD {
     public group(): CalcAUD {
         const start = performance.now();
         try {
-            const totalValue = this.accumulatedValue + this.activeTermValue;
+            const totalValue = this.accumulatedValue + this.getActiveTermValue();
             const groupedExpr = `\\left( ${this.getFullLaTeXExpression()} \\right)`;
             const groupedVerbal = `${VERBAL_TOKENS.GRP_START}${this.getFullVerbalExpression()}${VERBAL_TOKENS.GRP_END}`;
             const groupedUnicode = `(${this.getFullUnicodeExpression()})`;
-            const result = new CalcAUD(0n, totalValue, "", groupedExpr, "", groupedVerbal, "", groupedUnicode);
+            const result = new CalcAUD(
+                0n,
+                INTERNAL_SCALE_FACTOR,
+                totalValue,
+                "MULT",
+                "euclidean",
+                "",
+                "",
+                groupedExpr,
+                "",
+                "",
+                groupedVerbal,
+                "",
+                "",
+                groupedUnicode,
+                true,
+            );
             const end = performance.now();
             Logger.getChild(["engine", "group"]).debug("Grouping performed {*}", {
                 calcTime: end - start,
@@ -772,7 +773,7 @@ export class CalcAUD {
             });
         }
         try {
-            const finalValue = this.accumulatedValue + this.activeTermValue;
+            const finalValue = this.accumulatedValue + this.getActiveTermValue();
             const result = new CalcAUDOutput(
                 finalValue,
                 decimals,
@@ -798,28 +799,152 @@ export class CalcAUD {
 
     private getFullLaTeXExpression(): string {
         let expr = this.accumulatedExpression;
-        if (this.accumulatedExpression && this.activeTermExpression) {
-            expr += this.activeTermExpression.startsWith("-") ? " " : " + ";
+        const active = this.getActiveTermLaTeX();
+        if (this.accumulatedExpression && active) {
+            expr += active.startsWith("-") ? " " : " + ";
         }
-        expr += this.activeTermExpression;
+        expr += active;
         return expr;
     }
 
     private getFullVerbalExpression(): string {
         let verbal = this.accumulatedVerbal;
-        if (this.accumulatedVerbal && this.activeTermVerbal) {
-            verbal += this.activeTermVerbal.startsWith(VERBAL_TOKENS.SUB) ? " " : VERBAL_TOKENS.ADD;
+        const active = this.getActiveTermVerbal();
+        if (this.accumulatedVerbal && active) {
+            verbal += active.startsWith(VERBAL_TOKENS.SUB) ? " " : VERBAL_TOKENS.ADD;
         }
-        verbal += this.activeTermVerbal;
+        verbal += active;
         return verbal;
     }
 
     private getFullUnicodeExpression(): string {
         let unicode = this.accumulatedUnicode;
-        if (this.accumulatedUnicode && this.activeTermUnicode) {
-            unicode += this.activeTermUnicode.startsWith("-") ? " " : " + ";
+        const active = this.getActiveTermUnicode();
+        if (this.accumulatedUnicode && active) {
+            unicode += active.startsWith("-") ? " " : " + ";
         }
-        unicode += this.activeTermUnicode;
+        unicode += active;
         return unicode;
+    }
+
+    private getActiveTermValue(): bigint {
+        if (this.activeFactorValue === 0n && this.activePendingOperation !== "MULT") {
+            // Divisão por zero deve ser evitada pelo chamador ou lançar erro antes.
+            return 0n;
+        }
+
+        switch (this.activePendingOperation) {
+            case "DIV": {
+                const numerator = this.activeTermProduct * INTERNAL_SCALE_FACTOR;
+                const halfDenominator = this.activeFactorValue / 2n;
+                const adjustment = (this.activeTermProduct < 0n) === (this.activeFactorValue < 0n)
+                    ? halfDenominator
+                    : -halfDenominator;
+                return (numerator + adjustment) / this.activeFactorValue;
+            }
+            case "DIV_INT": {
+                const termValue = this.activeTermProduct;
+                const divisor = this.activeFactorValue;
+                let quotient = termValue / divisor;
+
+                if (this.activePendingStrategy === "euclidean") {
+                    const remainder = termValue % divisor;
+                    if (remainder !== 0n && ((this.activeTermProduct < 0n) !== (this.activeFactorValue < 0n))) {
+                        quotient -= 1n;
+                    }
+                }
+                return quotient * INTERNAL_SCALE_FACTOR;
+            }
+            case "MOD": {
+                const termValue = this.activeTermProduct;
+                const divisor = this.activeFactorValue;
+                const rawMod = termValue % divisor;
+
+                if (this.activePendingStrategy === "euclidean") {
+                    const absDivisor = divisor < 0n ? -divisor : divisor;
+                    return ((rawMod % absDivisor) + absDivisor) % absDivisor;
+                }
+                return rawMod;
+            }
+            case "MULT":
+            default: {
+                const product = this.activeTermProduct * this.activeFactorValue;
+                const halfScale = INTERNAL_SCALE_FACTOR / 2n;
+                const adjustment = product >= 0n ? halfScale : -halfScale;
+                return (product + adjustment) / INTERNAL_SCALE_FACTOR;
+            }
+        }
+    }
+
+    private getActiveTermLaTeX(): string {
+        const num = this.activeTermProductExpression || "1";
+        switch (this.activePendingOperation) {
+            case "DIV":
+                return `\\frac{${num}}{${this.activeFactorExpression}}`;
+            case "DIV_INT":
+                if (this.activePendingStrategy === "euclidean") {
+                    return `\\lfloor \\frac{${num}}{${this.activeFactorExpression}} \\rfloor`;
+                }
+                return `\\operatorname{trunc}\\left(\\frac{${num}}{${this.activeFactorExpression}}\\right)`;
+            case "MOD":
+                if (this.activePendingStrategy === "euclidean") {
+                    return `${num} \\bmod ${this.activeFactorExpression}`;
+                }
+                return `${num} \\text{ rem } ${this.activeFactorExpression}`;
+            case "MULT":
+            default:
+                if (this.activeTermProductExpression) {
+                    return `${this.activeTermProductExpression} \\times ${this.activeFactorExpression}`;
+                }
+                return this.activeFactorExpression;
+        }
+    }
+
+    private getActiveTermUnicode(): string {
+        const num = this.activeTermProductUnicode || "1";
+        switch (this.activePendingOperation) {
+            case "DIV":
+                return `${wrapUnicode(num)} ÷ ${wrapUnicode(this.activeFactorUnicode)}`;
+            case "DIV_INT":
+                if (this.activePendingStrategy === "euclidean") {
+                    return `⌊${wrapUnicode(num)} ÷ ${wrapUnicode(this.activeFactorUnicode)}⌋`;
+                }
+                return `trun(${wrapUnicode(num)} ÷ ${wrapUnicode(this.activeFactorUnicode)})`;
+            case "MOD":
+                if (this.activePendingStrategy === "euclidean") {
+                    return `${wrapUnicode(num)} mod ${wrapUnicode(this.activeFactorUnicode)}`;
+                }
+                return `${wrapUnicode(num)} % ${wrapUnicode(this.activeFactorUnicode)}`;
+            case "MULT":
+            default:
+                if (this.activeTermProductUnicode) {
+                    return `${this.activeTermProductUnicode} × ${wrapUnicode(this.activeFactorUnicode)}`;
+                }
+                return this.activeFactorUnicode;
+        }
+    }
+
+    private getActiveTermVerbal(): string {
+        const num = this.activeTermProductVerbal || "1";
+        switch (this.activePendingOperation) {
+            case "DIV":
+                return `${num}${VERBAL_TOKENS.DIV}${this.activeFactorVerbal}`;
+            case "DIV_INT":
+                if (this.activePendingStrategy === "euclidean") {
+                    return `${num}${VERBAL_TOKENS.DIV_INT_E_MID}${this.activeFactorVerbal}${VERBAL_TOKENS.DIV_INT_E_SUF}`;
+                }
+                return `${num}${VERBAL_TOKENS.DIV_INT_T_MID}${this.activeFactorVerbal}${VERBAL_TOKENS.DIV_INT_T_SUF}`;
+            case "MOD":
+                if (this.activePendingStrategy === "euclidean") {
+                    return `${VERBAL_TOKENS.MOD_E_PRE}${num}${VERBAL_TOKENS.MOD_E_MID}${this.activeFactorVerbal}${VERBAL_TOKENS.MOD_E_SUF}`;
+                }
+                return `${VERBAL_TOKENS.MOD_T_PRE}${num}${VERBAL_TOKENS.MOD_T_MID}${this.activeFactorVerbal}${VERBAL_TOKENS.MOD_T_SUF}`;
+            case "MULT":
+            default:
+                if (this.activeTermProductVerbal) {
+                    return `${this.activeTermProductVerbal}${VERBAL_TOKENS.MULT}${this.activeFactorVerbal}`;
+                }
+                return this.activeFactorVerbal;
+        }
     }
 }

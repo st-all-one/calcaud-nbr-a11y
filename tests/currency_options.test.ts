@@ -45,9 +45,9 @@ describe("Configurações de Output: locale e currency", () => {
         });
 
         it("deve retornar o valor bruto interno via toRawInternalBigInt", () => {
-            // 10.50 -> 10.50 * 10^12 = 10500000000000
+            // 10.50 -> 10.50 * 10^18 = 10500000000000000000
             const output = CalcAUD.from("10.50").commit(2);
-            expect(output.toRawInternalBigInt()).toBe(10500000000000n);
+            expect(output.toRawInternalBigInt()).toBe(10500000000000000000n);
         });
 
         it("deve manter a consistência entre toString e toCentsInBigInt (usando cache)", () => {

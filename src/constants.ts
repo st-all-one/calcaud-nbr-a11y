@@ -16,7 +16,7 @@
  * O uso de 12 casas garante que erros de arredondamento em operações sucessivas
  * não afetem as 6 casas de exibição padrão ou as 2 casas fiscais comuns.
  */
-export const INTERNAL_CALCULATION_PRECISION = 12;
+export const INTERNAL_CALCULATION_PRECISION = 18;
 
 /**
  * Precisão decimal padrão para exibição final ao usuário (6 casas).
