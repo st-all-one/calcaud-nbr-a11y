@@ -1,5 +1,5 @@
 /**
- * CalcAUY Demo - Frontend Script
+ * CalcAUY Demo - Frontend Script (Forense & Lab)
  */
 
 async function init() {
@@ -20,25 +20,10 @@ async function init() {
     btnExecutar.addEventListener("click", async () => {
         const originalText = btnExecutar.textContent;
         btnExecutar.disabled = true;
-        btnExecutar.textContent = "Calculando...";
+        btnExecutar.textContent = "Auditoria em Processo...";
 
         try {
-            // Get code from iframe (using postMessage for sandbox security)
-            const expression = await new Promise((resolve) => {
-                const handler = (event) => {
-                    if (event.data.type === "CODE_RESPONSE") {
-                        window.removeEventListener("message", handler);
-                        resolve(event.data.code);
-                    }
-                };
-                window.addEventListener("message", handler);
-                iframe.contentWindow.postMessage({ type: "GET_CODE" }, "*");
-                
-                setTimeout(() => {
-                    window.removeEventListener("message", handler);
-                    resolve(null);
-                }, 2000);
-            });
+            const expression = await getCodeFromIframe(iframe);
 
             if (!expression) {
                 alert("O editor não respondeu.");
@@ -69,7 +54,7 @@ async function init() {
     });
 
     // Theme Toggle
-    document.getElementById("modo-escuro").addEventListener("click", (e) => {
+    document.getElementById("modo-tema").addEventListener("click", (e) => {
         e.preventDefault();
         const theme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
         document.documentElement.setAttribute("data-theme", theme);
@@ -81,25 +66,44 @@ async function init() {
     });
 }
 
+async function getCodeFromIframe(iframe) {
+    return new Promise((resolve) => {
+        const handler = (event) => {
+            if (event.data.type === "CODE_RESPONSE") {
+                window.removeEventListener("message", handler);
+                resolve(event.data.code);
+            }
+        };
+        window.addEventListener("message", handler);
+        iframe.contentWindow.postMessage({ type: "GET_CODE" }, "*");
+        
+        setTimeout(() => {
+            window.removeEventListener("message", handler);
+            resolve(null);
+        }, 2000);
+    });
+}
+
 function renderExamples(categories) {
     const container = document.getElementById("categories-container");
     container.innerHTML = "";
 
     for (const [groupName, groups] of Object.entries(categories)) {
-        const groupTitle = document.createElement("h3");
-        groupTitle.textContent = groupName.toUpperCase();
-        container.appendChild(groupTitle);
+        const section = document.createElement("div");
+        section.className = "full-width";
+        section.innerHTML = `<h3 style="border-bottom: 2px solid var(--accent); padding-bottom: 0.5rem; margin-top: 2rem;">${groupName}</h3>`;
+        container.appendChild(section);
 
         for (const [method, list] of Object.entries(groups)) {
             list.forEach(ex => {
-                const card = document.createElement("div");
-                card.className = "card";
+                const card = document.createElement("article");
+                card.className = "example-card";
                 card.innerHTML = `
                     <h4>${ex.title}</h4>
-                    <p>${ex.context}</p>
-                    <div class="card-code"><code>${ex.code}</code></div>
+                    <p class="text-dim">${ex.context}</p>
+                    <div class="code-block"><code>${ex.code}</code></div>
                     <div class="card-result">
-                        <strong>Resultado (toStringNumber):</strong> ${ex.outputs.toStringNumber}
+                        <strong>Resultado Consolidado:</strong> ${ex.outputs.toStringNumber}
                     </div>
                 `;
                 container.appendChild(card);
@@ -121,7 +125,12 @@ function updateInteractiveDisplay(data) {
 
     for (const [key, val] of Object.entries(mapping)) {
         const item = container.querySelector(`[data-type="${key}"] .val`);
-        if (item) item.textContent = val;
+        if (item) {
+            item.textContent = val;
+            // Efeito visual de atualização
+            item.parentElement.style.borderColor = "var(--primary)";
+            setTimeout(() => item.parentElement.style.borderColor = "var(--border)", 500);
+        }
     }
 
     const htmlBox = container.querySelector(`[data-type="toHTML"] .val-html`);

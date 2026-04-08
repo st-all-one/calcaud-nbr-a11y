@@ -5,13 +5,13 @@ import { getSubLogger, measureTime } from "../utils/logger.ts";
 
 const logger = getSubLogger("engine");
 
-const MAX_RECURSION_DEPTH: number = 500;
+const MAX_RECURSION_DEPTH = 500;
 
 /**
  * Collapses an AST node into a final RationalNumber.
  * This is the core of the "commit" phase.
  */
-export function evaluate(node: CalculationNode, depth: number = 0): RationalNumber {
+export function evaluate(node: CalculationNode, depth = 0): RationalNumber {
     if (depth > MAX_RECURSION_DEPTH) {
         throw new CalcAUYError(
             "math-overflow",
@@ -78,8 +78,9 @@ function evaluateOperation(
             return values.reduce((acc, val) => acc.mod(val));
         case "divInt":
             return values.reduce((acc, val) => acc.divInt(val));
-        default:
+        default: {
             const unsupported: never = type as never;
             throw new CalcAUYError("corrupted-node", `Operação não suportada: ${unsupported}`);
+        }
     }
 }

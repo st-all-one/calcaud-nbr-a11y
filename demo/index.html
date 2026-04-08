@@ -1,82 +1,103 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcAUY - Showcase & Auditoria</title>
+    <title>CalcAUY - Laboratório Forense de Cálculo</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.ico">
 </head>
 <body>
-    <div id="barra-acessibilidade">
+    <nav id="barra-acessibilidade" role="navigation" aria-label="Acessibilidade">
         <ul>
-            <li><a href="#" id="modo-escuro">☼ Modo Escuro</a></li>
+            <li><a href="#" id="modo-tema">☼ Alternar Tema</a></li>
             <li><a href="#" id="alto-contraste">◐ Alto Contraste</a></li>
+            <li><a href="#examples-gallery">↓ Pular para Exemplos</a></li>
         </ul>
-    </div>
+    </nav>
 
     <div class="page-container">
-        <header>
+        <header class="main-header">
             <h1>CalcAUY: Showcase</h1>
-            <p>Demonstração de precisão racional absoluta e auditabilidade forense.</p>
+            <p>Engenharia de precisão atuarial, auditoria forense e acessibilidade matemática.</p>
         </header>
 
         <main>
-            <section id="sec-interactive">
-                <h2>Simulador Interativo</h2>
+            <!-- Simulador Interativo -->
+            <section id="sec-interactive" aria-labelledby="h2-interactive">
+                <h2 id="h2-interactive">Simulador de Auditoria</h2>
                 <div class="interactive-container">
-                    <div class="editor-box">
-                        <iframe id="editor-iframe" src="editor.html" sandbox="allow-scripts" title="Editor"></iframe>
-                        <button id="btn-executar">Executar e Auditar</button>
+                    
+                    <!-- Coluna Editor -->
+                    <div class="editor-section">
+                        <iframe id="editor-iframe" src="editor.html" sandbox="allow-scripts" title="Editor de Código CalcAUY"></iframe>
+                        <button id="btn-executar" class="btn-primary">Executar e Auditar Cálculo</button>
+                        <p class="text-dim" style="font-size: 0.8rem;">
+                            Dica: Use <code>.setMetadata(key, val)</code> para enriquecer o rastro.
+                        </p>
                     </div>
                     
-                    <div id="res-box" class="interactive-results">
-                        <h3>Resultados</h3>
+                    <!-- Coluna Resultados -->
+                    <div id="res-box" class="results-section">
                         <div class="output-grid" id="interactive-outputs">
-                            <!-- JS will populate this -->
-                            <div class="output-item full-width" data-type="toHTML">
-                                <strong>toHTML():</strong>
+                            
+                            <!-- Rastro Visual Principal -->
+                            <article class="output-card full-width" data-type="toHTML">
+                                <h4><span>Rastro Visual (LaTeX/KaTeX)</span> <small>toHTML()</small></h4>
                                 <div class="val-html">--</div>
-                            </div>
-                            <div class="output-item" data-type="toStringNumber">
-                                <strong>toStringNumber():</strong>
+                            </article>
+
+                            <!-- Valores Numéricos -->
+                            <article class="output-card" data-type="toMonetary">
+                                <h4><span>Monetário Localizado</span> <small>toMonetary()</small></h4>
                                 <span class="val">--</span>
-                            </div>
-                            <div class="output-item" data-type="toMonetary">
-                                <strong>toMonetary():</strong>
+                            </article>
+
+                            <article class="output-card" data-type="toStringNumber">
+                                <h4><span>Decimal Puro</span> <small>toStringNumber()</small></h4>
                                 <span class="val">--</span>
-                            </div>
-                            <div class="output-item" data-type="toLaTeX">
-                                <strong>toLaTeX():</strong>
+                            </article>
+
+                            <!-- Rastros Técnicos -->
+                            <article class="output-card" data-type="toUnicode">
+                                <h4><span>Terminal/Unicode</span> <small>toUnicode()</small></h4>
                                 <span class="val">--</span>
-                            </div>
-                            <div class="output-item" data-type="toUnicode">
-                                <strong>toUnicode():</strong>
-                                <span class="val">--</span>
-                            </div>
-                            <div class="output-item full-width" data-type="toVerbalA11y">
-                                <strong>toVerbalA11y():</strong>
-                                <span class="val">--</span>
-                            </div>
-                            <div class="output-item full-width" data-type="toAuditTrace">
-                                <strong>toAuditTrace():</strong>
+                            </article>
+
+                            <article class="output-card" data-type="toLaTeX">
+                                <h4><span>String LaTeX</span> <small>toLaTeX()</small></h4>
+                                <span class="val" style="font-size: 0.85rem;">--</span>
+                            </article>
+
+                            <!-- Acessibilidade -->
+                            <article class="output-card full-width" data-type="toVerbalA11y">
+                                <h4><span>Memória de Cálculo Falada (A11y)</span> <small>toVerbalA11y()</small></h4>
+                                <span class="val" style="font-size: 0.95rem; color: var(--accent);">--</span>
+                            </article>
+
+                            <!-- Auditoria JSON -->
+                            <article class="output-card full-width" data-type="toAuditTrace">
+                                <h4><span>Rastro Forense (Snapshot AST)</span> <small>toAuditTrace()</small></h4>
                                 <pre class="val-json">--</pre>
-                            </div>
+                            </article>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section id="examples-gallery">
-                <h2>Galeria de Exemplos</h2>
-                <div id="categories-container">
-                    <p>Carregando exemplos...</p>
+            <!-- Galeria de Exemplos -->
+            <section id="examples-gallery" aria-labelledby="h2-examples">
+                <h2 id="h2-examples">Biblioteca de Engenharia</h2>
+                <p class="text-dim">Cenários reais resolvidos com rigor matemático.</p>
+                <div id="categories-container" class="examples-grid">
+                    <!-- JS will populate this -->
                 </div>
             </section>
         </main>
 
-        <footer>
-            <p>CalcAUY - 2026 - Licença MPL-2.0</p>
+        <footer class="main-footer">
+            <p>CalcAUY Engineering &copy; 2026. Licença MIT. <br>
+            Desenvolvido para ambientes de missão crítica.</p>
         </footer>
     </div>
 

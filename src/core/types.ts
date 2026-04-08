@@ -34,11 +34,23 @@ export interface KaTeXOptions {
 }
 
 /**
+ * Supported Currencies based on Locales, allowing custom strings as well.
+ */
+export type CalcAUYCurrency =
+    | "BRL"
+    | "USD"
+    | "EUR"
+    | "RUB"
+    | "CNY"
+    | "JPY"
+    | (string & undefined);
+
+/**
  * Global configuration options for outputs.
  */
 export interface OutputOptions {
     decimalPrecision?: number;
     locale?: CalcAUYLocale;
-    currency?: string;
+    currency?: CalcAUYCurrency;
     roundStrategy?: RoundingStrategy;
 }

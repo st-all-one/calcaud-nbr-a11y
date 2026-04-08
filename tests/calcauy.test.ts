@@ -25,7 +25,10 @@ describe("CalcAUY - Integração e Auditoria", () => {
             const sub = CalcAUY.from(2).add(3);
             const res = CalcAUY.from(10).mult(sub).commit({ roundStrategy: "NBR5891" });
             assertEquals(res.toStringNumber(), "50.0000");
-            assertEquals(res.toLaTeX(), "\\text{round}_{\\text{NBR-5891}}(10 \\times \\left( 2 + 3 \\right), 4) = 50.0000");
+            assertEquals(
+                res.toLaTeX(),
+                "\\text{round}_{\\text{NBR-5891}}(10 \\times \\left( 2 + 3 \\right), 4) = 50.0000",
+            );
         });
     });
 
@@ -94,10 +97,9 @@ describe("CalcAUY - Integração e Auditoria", () => {
             assertEquals(res.toUnicode(), "roundₙᵦᵣ₋₅₈₉₁(10 + 5, 4) = 15.0000");
         });
 
-
         it("deve exportar múltiplos formatos via toJSON", () => {
             const res = CalcAUY.from(10).add(5).commit({ roundStrategy: "NBR5891" });
-            const json: any = res.toJSON(["toStringNumber", "toLaTeX"]);
+            const json: any = JSON.parse(res.toJSON(["toStringNumber", "toLaTeX"]));
 
             assertEquals(json["toStringNumber"], "15.0000");
             assertEquals(json["toLaTeX"], "\\text{round}_{\\text{NBR-5891}}(10 + 5, 4) = 15.0000");
@@ -109,7 +111,10 @@ describe("CalcAUY - Integração e Auditoria", () => {
             const res = CalcAUY.from(16).pow("1/2").commit();
             assertEquals(res.toLaTeX(), "\\text{round}_{\\text{NBR-5891}}(\\sqrt{16}, 4) = 4.0000");
             assertEquals(res.toUnicode(), "roundₙᵦᵣ₋₅₈₉₁(√16, 4) = 4.0000");
-            assertEquals(res.toVerbalA11y({ locale: "pt-BR" }), "raiz quadrada de 16 é igual a 4 vírgula 0000 (Arredondamento: NBR-5891 para 4 casas decimais).");
+            assertEquals(
+                res.toVerbalA11y({ locale: "pt-BR" }),
+                "raiz quadrada de 16 é igual a 4 vírgula 0000 (Arredondamento: NBR-5891 para 4 casas decimais).",
+            );
         });
 
         it("deve renderizar raiz cúbica com numerador diferente de 1 (2/3)", () => {
@@ -117,7 +122,10 @@ describe("CalcAUY - Integração e Auditoria", () => {
             // 8^(2/3) = (root3(8))^2 = 2^2 = 4
             assertEquals(res.toLaTeX(), "\\text{round}_{\\text{NBR-5891}}(\\sqrt[3]{{8}^{2}}, 4) = 4.0000");
             assertEquals(res.toUnicode(), "roundₙᵦᵣ₋₅₈₉₁(∛(8²), 4) = 4.0000");
-            assertEquals(res.toVerbalA11y({ locale: "pt-BR" }), "raiz cúbica de 8 elevado a 2 é igual a 4 vírgula 0000 (Arredondamento: NBR-5891 para 4 casas decimais).");
+            assertEquals(
+                res.toVerbalA11y({ locale: "pt-BR" }),
+                "raiz cúbica de 8 elevado a 2 é igual a 4 vírgula 0000 (Arredondamento: NBR-5891 para 4 casas decimais).",
+            );
         });
 
         it("deve renderizar raiz enésima complexa (3/6)", () => {
@@ -131,7 +139,10 @@ describe("CalcAUY - Integração e Auditoria", () => {
         it("deve lidar com o caso complexo do usuário (12^2^3/6) com agrupamento", () => {
             const res = CalcAUY.from(12).pow(2).group().pow("3/6").commit();
             // (12^2)^(3/6) = (144)^(1/2) = 12
-            assertEquals(res.toLaTeX(), "\\text{round}_{\\text{NBR-5891}}(\\sqrt[6]{{\\left( 12^{2} \\right)}^{3}}, 4) = 12.0000");
+            assertEquals(
+                res.toLaTeX(),
+                "\\text{round}_{\\text{NBR-5891}}(\\sqrt[6]{{\\left( 12^{2} \\right)}^{3}}, 4) = 12.0000",
+            );
             assertEquals(res.toUnicode(), "roundₙᵦᵣ₋₅₈₉₁(⁶√((12²)³), 4) = 12.0000");
         });
     });
@@ -150,10 +161,16 @@ describe("CalcAUY - Integração e Auditoria", () => {
             assertEquals(resFluent.toStringNumber(), expectedValue);
             assertEquals(resParser.toStringNumber(), expectedValue);
 
-            // O Fluent API terá parênteses extras apenas na raiz da instância injetada. 
+            // O Fluent API terá parênteses extras apenas na raiz da instância injetada.
             // Note: Power now uses braces ^{...}
-            assertEquals(resFluent.toLaTeX(), "\\text{round}_{\\text{NBR-5891}}(2 + 5 \\times 3^{\\left( 2^{2^{2}} \\right)}, 4) = 215233607.0000");
-            assertEquals(resParser.toLaTeX(), "\\text{round}_{\\text{NBR-5891}}(2 + 5 \\times 3^{2^{2^{2}}}, 4) = 215233607.0000");
+            assertEquals(
+                resFluent.toLaTeX(),
+                "\\text{round}_{\\text{NBR-5891}}(2 + 5 \\times 3^{\\left( 2^{2^{2}} \\right)}, 4) = 215233607.0000",
+            );
+            assertEquals(
+                resParser.toLaTeX(),
+                "\\text{round}_{\\text{NBR-5891}}(2 + 5 \\times 3^{2^{2^{2}}}, 4) = 215233607.0000",
+            );
         });
     });
 });

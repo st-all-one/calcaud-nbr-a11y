@@ -58,10 +58,7 @@ const SUBSCRIPTS: Record<string, string> = {
     "t": "ₜ",
     "u": "ᵤ",
     "v": "ᵥ",
-    "w": "₝", // Unicode 17.0
     "x": "ₓ",
-    "y": "₞", // Unicode 17.0 (fallback to gamma ᵧ if needed)
-    "z": "₟", // Unicode 17.0
     // Standard Latin subscripts for c, d, f, g, q are still missing in Unicode.
 };
 

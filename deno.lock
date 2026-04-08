@@ -379,6 +379,13 @@
           "npm:codemirror@^6.0.1",
           "npm:katex@~0.16.40"
         ]
+      },
+      "tests": {
+        "dependencies": [
+          "jsr:@logtape/logtape@^2.0.4",
+          "jsr:@std/assert@^1.0.19",
+          "jsr:@std/testing@^1.0.17"
+        ]
       }
     }
   }
