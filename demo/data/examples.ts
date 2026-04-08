@@ -1,5 +1,5 @@
 /**
- * CalcAUY Demo - Categorized Examples
+ * CalcAUY Demo - Biblioteca de Engenharia (Exemplos Reais)
  * @module
  */
 
@@ -8,81 +8,49 @@ import { mapAllOutputs } from "../logic/mapper.ts";
 
 export const getCategorizedExamples = async () => {
     const examples: Record<string, Record<string, any>> = {
-        operations: {
-            add: [
+        "Finanças e Amortização": {
+            juros_compostos: [
                 {
-                    title: "Soma Simples",
-                    context: "Adição de valores decimais.",
-                    code: 'CalcAUY.from("10.50").add(5).commit()',
-                    outputs: await mapAllOutputs(CalcAUY.from("10.50").add(5).commit())
-                },
-                {
-                    title: "Folha de Pagamento",
-                    context: "Salário + Bônus - Descontos.",
-                    code: 'CalcAUY.from(3000).add(500).sub(100).commit()',
-                    outputs: await mapAllOutputs(CalcAUY.from(3000).add(500).sub(100).commit())
+                    title: "Juros Compostos (Auditoria Completa)",
+                    context: "Cálculo de montante com taxa de 2% a.m. sobre capital de R$ 5.000,00.",
+                    code: 'CalcAUY.from(5000).mult(CalcAUY.from(1).add("0.02").group().pow(12)).setMetadata("formula", "M = P(1+i)^n").commit({ roundStrategy: "HALF_EVEN" })',
+                    outputs: await mapAllOutputs(CalcAUY.from(5000).mult(CalcAUY.from(1).add("0.02").group().pow(12)).setMetadata("formula", "M = P(1+i)^n").commit({ roundStrategy: "HALF_EVEN" }))
                 }
             ],
-            mult: [
+            slicing: [
                 {
-                    title: "Juros Simples",
-                    context: "Principal * Taxa * Tempo.",
-                    code: 'CalcAUY.from(1000).mult("0.05").mult(12).commit()',
-                    outputs: await mapAllOutputs(CalcAUY.from(1000).mult("0.05").mult(12).commit())
-                }
-            ],
-            pow: [
-                {
-                    title: "Juros Compostos",
-                    context: "P * (1 + i)^n",
-                    code: 'CalcAUY.from(1000).mult(CalcAUY.from(1).add("0.05").group().pow(12)).commit()',
-                    outputs: await mapAllOutputs(CalcAUY.from(1000).mult(CalcAUY.from(1).add("0.05").group().pow(12)).commit())
-                },
-                {
-                    title: "Raiz Quadrada",
-                    context: "Elevado a 1/2.",
-                    code: 'CalcAUY.from(81).pow("1/2").commit()',
-                    outputs: await mapAllOutputs(CalcAUY.from(81).pow("1/2").commit())
-                }
-            ],
-            divInt: [
-                {
-                    title: "Divisão Inteira Euclidiana",
-                    context: "-10 // 3 = -4 (sempre arredonda para baixo)",
-                    code: 'CalcAUY.from("-10").divInt(3).commit()',
-                    outputs: await mapAllOutputs(CalcAUY.from("-10").divInt(3).commit())
-                }
-            ],
-            mod: [
-                {
-                    title: "Módulo Euclidiano",
-                    context: "-10 % 3 = 2 (sempre positivo)",
-                    code: 'CalcAUY.from("-10").mod(3).commit()',
-                    outputs: await mapAllOutputs(CalcAUY.from("-10").mod(3).commit())
+                    title: "Rateio de Centavos (Maior Resto)",
+                    context: "Divisão de R$ 10,00 entre 3 parceiros sem perda de precisão.",
+                    code: 'CalcAUY.from(10).commit().toSlice(3, { decimalPrecision: 2 })',
+                    outputs: { toStringNumber: '["3.34", "3.33", "3.33"] (Soma exata: 10.00)' }
                 }
             ]
         },
-        outputs: {
-            locales: [
+        "Engenharia e Ciência": {
+            torre_potencia: [
                 {
-                    title: "Internacionalização (pt-BR)",
-                    context: "Formatação brasileira.",
-                    code: 'CalcAUY.from("1234.56").commit()',
-                    outputs: await mapAllOutputs(CalcAUY.from("1234.56").commit())
-                },
-                {
-                    title: "Internacionalização (en-US)",
-                    context: "Formatação americana.",
-                    code: 'CalcAUY.from("1234.56").commit()',
-                    outputs: await mapAllOutputs(CalcAUY.from("1234.56").commit()) // Locale change handled in mapper/output call if needed
+                    title: "Torre de Potência (Caso Extremo)",
+                    context: "Demonstração de associatividade à direita e precisão interna de 50 casas.",
+                    code: 'CalcAUY.from(2).pow(3).pow(2).commit()',
+                    outputs: await mapAllOutputs(CalcAUY.from(2).pow(3).pow(2).commit())
                 }
             ],
-            rounding: [
+            raizes: [
                 {
-                    title: "Arredondamento NBR-5891",
-                    context: "Critério de desempate ao par.",
-                    code: 'CalcAUY.from("1.225").commit({ roundStrategy: "NBR5891" })',
-                    outputs: await mapAllOutputs(CalcAUY.from("1.225").commit({ roundStrategy: "NBR5891" }))
+                    title: "Raiz Enésima Complexa",
+                    context: "Cálculo de raiz 6-ésima de 12 elevado ao cubo.",
+                    code: 'CalcAUY.from(12).pow("3/6").commit()',
+                    outputs: await mapAllOutputs(CalcAUY.from(12).pow("3/6").commit())
+                }
+            ]
+        },
+        "Compliance e Metadados": {
+            impostos: [
+                {
+                    title: "ICMS com Rastro de Lei",
+                    context: "Aplicação de alíquota com metadados vinculados a artigos jurídicos.",
+                    code: 'CalcAUY.from(1250.45).mult("0.18").setMetadata("lei", "Art. 155 CF/88").setMetadata("aliq_tipo", "interestadual").commit()',
+                    outputs: await mapAllOutputs(CalcAUY.from(1250.45).mult("0.18").setMetadata("lei", "Art. 155 CF/88").setMetadata("aliq_tipo", "interestadual").commit())
                 }
             ]
         }

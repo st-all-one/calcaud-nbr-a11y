@@ -67,15 +67,15 @@ export function renderAST(
                     baseWithPow = `(${ops[0]}${toSuperscript(num)})`;
                 }
 
-                if (den === "2") return `√${baseWithPow}`;
-                if (den === "3") return `∛${baseWithPow}`;
-                if (den === "4") return `∜${baseWithPow}`;
+                if (den === "2") { return `√${baseWithPow}`; }
+                if (den === "3") { return `∛${baseWithPow}`; }
+                if (den === "4") { return `∜${baseWithPow}`; }
                 return `${toSuperscript(den)}√${baseWithPow}`;
             }
             if (format === "verbal" && loc) {
                 const baseVerbal = num === "1" ? ops[0] : `${ops[0]} ${loc.operators.pow} ${num}`;
-                if (den === "2") return `${loc.phrases.root_square}${baseVerbal}`;
-                if (den === "3") return `${loc.phrases.root_cubic}${baseVerbal}`;
+                if (den === "2") { return `${loc.phrases.root_square}${baseVerbal}`; }
+                if (den === "3") { return `${loc.phrases.root_cubic}${baseVerbal}`; }
                 const rootN = loc.phrases.root_n.replace("{den}", den);
                 return `${rootN}${baseVerbal}`;
             }

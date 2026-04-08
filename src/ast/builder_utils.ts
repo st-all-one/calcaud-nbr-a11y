@@ -27,13 +27,20 @@ export function attachOp(target: CalculationNode, type: OperationType, right: Ca
     // Golden Rule: If the new operation has higher precedence (smaller value),
     // or if it's power (right-associative), it must "dive" into the right operand.
     if (newPrec < currentPrec || (type === "pow" && target.type === "pow")) {
-        const operands: CalculationNode[] = [...target.operands];
-        const last: CalculationNode = operands.pop()!;
+        const lastIndex = target.operands.length - 1;
+        const last = target.operands[lastIndex];
+
+        if (!last) {
+            // Fallback safety (should not happen in valid AST)
+            return { kind: "operation", type, operands: [target, right] };
+        }
+
+        const otherOperands = target.operands.slice(0, lastIndex);
         const updatedLast: CalculationNode = attachOp(last, type, right);
 
         return {
             ...target,
-            operands: [...operands, updatedLast],
+            operands: [...otherOperands, updatedLast],
         };
     }
 

@@ -19,9 +19,11 @@ export function getSubLogger(subName: string): Logger {
  */
 export function measureTime<T>(fn: () => T): [T, string] {
     // @ts-ignore: Temporal is native in modern Deno but might lack types in some environments
+    // deno-lint-ignore no-undef
     const start = Temporal.Now.instant();
     const result = fn();
-    // @ts-ignore: Temporal is native in modern Deno but might lack types in some environments
+    // @ts-ignore: Temporal is native in modern Deno but might lack types in some environment
+    // deno-lint-ignore no-undef
     const end = Temporal.Now.instant();
     const duration = end.since(start);
     // @ts-ignore: Duration is calculated using Temporal's native API

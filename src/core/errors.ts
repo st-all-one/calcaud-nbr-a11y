@@ -20,14 +20,27 @@ export interface ErrorContext {
 }
 
 /**
- * Custom Error for CalcAUY following Problem Details for HTTP APIs (RFC 7807).
+ * Erro customizado da CalcAUY seguindo o padrão RFC 7807 (Problem Details).
+ * 
+ * **Engenharia:** Diferente de um erro genérico, o CalcAUYError é serializável e 
+ * projetado para transporte via APIs HTTP. Ele inclui um contexto técnico detalhado
+ * que pode conter a AST parcial ou o input que causou a falha, facilitando a 
+ * depuração forense.
+ * 
+ * @class
  */
 export class CalcAUYError extends Error {
+    /** URI que identifica o tipo do erro. */
     public readonly type: string;
+    /** Resumo curto e legível por humanos. */
     public readonly title: string;
+    /** Código de status HTTP sugerido. */
     public readonly status: number;
+    /** Explicação detalhada da ocorrência. */
     public readonly detail: string;
+    /** UUID único da ocorrência para correlação em logs. */
     public readonly instance: string;
+    /** Dados técnicos contextuais (AST, operação, input). */
     public readonly context: ErrorContext;
 
     public constructor(
@@ -66,6 +79,47 @@ export class CalcAUYError extends Error {
         this.name = "CalcAUYError";
     }
 
+    /**
+     * Converte o erro para um objeto plano pronto para serialização JSON.
+     * 
+     * @example Exemplo Simples: Captura de Erro
+     * ```ts
+     * try {
+     *   CalcAUY.from(10).div(0).commit();
+     * } catch (err) {
+     *   if (err instanceof CalcAUYError) {
+     *     console.error(err.title); // "Divisão por Zero Detectada"
+     *   }
+     * }
+     * ```
+     * 
+     * @example Resposta de API com Detalhes
+     * ```ts
+     * app.onError((err) => {
+     *   if (err instanceof CalcAUYError) {
+     *     return Response.json(err.toJSON(), { status: err.status });
+     *   }
+     * });
+     * ```
+     * 
+     * @example Cenário Real: Validação de Input de Usuário
+     * ```ts
+     * // Erro ao tentar processar string malformada como "10..5"
+     * try {
+     *   CalcAUY.parseExpression(userInput);
+     * } catch (err) {
+     *   showUIFeedback(err.detail); 
+     * }
+     * ```
+     * 
+     * @example Cenário Real Complexo: Debug em Produção via Sentry
+     * ```ts
+     * Sentry.captureException(err, {
+     *   extra: err.context, // Inclui a AST que causou o problema
+     *   tags: { error_type: err.type }
+     * });
+     * ```
+     */
     public toJSON(): Record<string, unknown> {
         return {
             type: this.type,
