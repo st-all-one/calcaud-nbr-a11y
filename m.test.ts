@@ -1,22 +1,22 @@
 import { CalcAUY } from "./mod.ts";
-import { configure, getConsoleSink, type LogRecord } from "@logtape";
+// import { configure, getConsoleSink, type LogRecord } from "@logtape";
 
-await configure({
-    sinks: {
-        console: getConsoleSink({
-            formatter(r: LogRecord): unknown[] {
-                return [r.properties];
-            },
-        }),
-    },
-    loggers: [
-        {
-            category: "calc-auy",
-            lowestLevel: "debug",
-            sinks: ["console"],
-        },
-    ],
-});
+// await configure({
+//     sinks: {
+//         console: getConsoleSink({
+//             formatter(r: LogRecord): unknown[] {
+//                 return [r.properties];
+//             },
+//         }),
+//     },
+//     loggers: [
+//         {
+//             category: "calc-auy",
+//             lowestLevel: "debug",
+//             sinks: ["console"],
+//         },
+//     ],
+// });
 
 const calc = CalcAUY.from(100).pow("3/7")
     .setMetadata("stall", "teste")
