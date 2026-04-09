@@ -1,12 +1,29 @@
-import { describe, it } from "@std/testing/bdd";
-import { assertEquals, assertStringIncludes, assertThrows } from "@std/assert";
+import { describe, it, beforeEach } from "@std/testing/bdd";
+import { assertEquals, assertStringIncludes, assertThrows, assert } from "@std/assert";
 import { CalcAUY } from "../mod.ts";
 import { CalcAUYError } from "../src/core/errors.ts";
+import { getSubLogger } from "../src/utils/logger.ts"; // Import for mocking
+import { loggingPolicy } from "../src/utils/sanitizer.ts"; // Import for mocking
+import { CalcAUYOutput, ICalcAUYCustomOutputContext, ICalcAUYCustomOutput } from "../src/output.ts"; // Import CalcAUYOutput and its interfaces
+
+// Type for valid log levels
+type LogLevel = "trace" | "debug" | "info" | "warning" | "error" | "fatal";
+
+// Mock logger.isEnabledFor for testing logging calls.
+const outputLogger = getSubLogger("output"); // Use output sublogger
+const originalIsEnabledFor = outputLogger.isEnabledFor;
+const originalLoggingPolicySensitive = loggingPolicy.sensitive; // Store original state
 
 describe("CalcAUYOutput - HTML & Image Generation", () => {
     const mockKatex = {
         renderToString: (latex: string) => `<span class="katex">${latex}</span>`,
     };
+
+    // Restore mocks and logging policy after each test
+    beforeEach(() => {
+        outputLogger.isEnabledFor = originalIsEnabledFor;
+        loggingPolicy.sensitive = originalLoggingPolicySensitive; // Reset logging policy
+    });
 
     it("toHTML deve lançar erro se o katex for inválido", () => {
         const res = CalcAUY.from(10).add(5).commit({ roundStrategy: "NBR5891" });
@@ -48,5 +65,98 @@ describe("CalcAUYOutput - HTML & Image Generation", () => {
         const heightMatch = svg.match(/height="(\d+)"/);
         const height = heightMatch ? parseInt(heightMatch[1]) : 0;
         assertEquals(height >= 80, true);
+    });
+});
+
+describe("CalcAUYOutput - Output Methods and Customization", () => {
+    // Restore mocks and logging policy after each test
+    beforeEach(() => {
+        outputLogger.isEnabledFor = originalIsEnabledFor;
+        loggingPolicy.sensitive = originalLoggingPolicySensitive; // Reset logging policy
+    });
+
+    it("deve retornar o numerador interno bruto como BigInt", () => {
+        const res = CalcAUY.from(10).div(3).commit();
+        assertEquals(res.toRawInternalBigInt(), 10n); // Numerator of 10/3 is 10n
+    });
+
+    it("deve formatar o resultado como valor monetário padrão (pt-BR, BRL)", () => {
+        const res = CalcAUY.from(1234.56).commit();
+        assertEquals(res.toMonetary({ decimalPrecision: 2 }), "R$ 1.234,56");
+    });
+
+    it("deve formatar o resultado como valor monetário com opções customizadas (en-US, USD, 0 casas decimais)", () => {
+        const res = CalcAUY.from(1234.567).commit();
+        // Use a known locale for consistent output in different environments
+        assertEquals(res.toMonetary({ locale: "en-US", currency: "USD", decimalPrecision: 0 }), "$1,235");
+        assertEquals(res.toMonetary({ locale: "en-US", currency: "EUR", decimalPrecision: 2 }), "€1,234.57");
+    });
+
+    it("toJSON: deve retornar a representação JSON com as chaves padrão e excluir as chaves de output", () => {
+        const res = CalcAUY.from(10).add(5).commit();
+        const json: any = JSON.parse(res.toJSON()); // JSON.parse here
+
+        // Check for default keys
+        assert(json.toStringNumber);
+        assert(json.toScaledBigInt);
+        assert(json.toMonetary);
+        assert(json.toLaTeX);
+        assert(json.toUnicode);
+        assert(json.toVerbalA11y);
+        assert(json.toAuditTrace);
+
+        // Check for excluded keys
+        assert(json.toJSON === undefined); // These methods are not included by default
+        assert(json.toCustomOutput === undefined);
+        assert(json.toHTML === undefined);
+        assert(json.toImageBuffer === undefined);
+
+        // Verify some values
+        assertEquals(json.toStringNumber, "15.0000");
+    });
+
+    it("deve permitir processamento de saída customizado via processor", () => {
+        const res = CalcAUY.from(10).div(3).commit();
+
+        interface CustomOutput {
+            numerator: string;
+            denominator: string;
+            latexFormula: string;
+            decimal: string;
+        }
+
+        const customProcessor: ICalcAUYCustomOutput<CustomOutput> = function(this: CalcAUYOutput, context: ICalcAUYCustomOutputContext): CustomOutput {
+            return {
+                numerator: context.result.n.toString(),
+                denominator: context.result.d.toString(),
+                latexFormula: context.audit.latex,
+                decimal: context.methods.toStringNumber(context.options),
+            };
+        };
+
+        const customResult = res.toCustomOutput(customProcessor);
+
+        assertEquals(customResult.numerator, "10");
+        assertEquals(customResult.denominator, "3");
+        assertStringIncludes(customResult.latexFormula, "\\text{round}_{\\text{NBR-5891}}(\\frac{10}{3}, 4) = 3.3333"); // Corrected LaTeX string
+        assertEquals(customResult.decimal, "3.3333");
+    });
+
+    it("deve chamar logger.info quando um método de output é invocado e o info está habilitado", () => {
+        let infoCalled = false;
+        outputLogger.isEnabledFor = (level: LogLevel) => {
+            if (level === "info") {
+                infoCalled = true;
+                return true;
+            }
+            return false; // Do not call originalIsEnabledFor to prevent TypeError
+        };
+
+        CalcAUY.from(10).commit().toMonetary();
+        assertEquals(infoCalled, true, "logger.info should have been called for toMonetary");
+
+        infoCalled = false; // Reset
+        CalcAUY.from(10).commit().toRawInternalBigInt();
+        assertEquals(infoCalled, true, "logger.info should have been called for toRawInternalBigInt");
     });
 });

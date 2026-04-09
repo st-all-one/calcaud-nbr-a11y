@@ -231,7 +231,9 @@ export class CalcAUYOutput {
         });
     }
     public toRawInternalBigInt(): bigint {
-        return this.#result.n;
+        return this.instrument("toRawInternalBigInt", "", () => {
+            return this.#result.n;
+        });
     }
 
     /**
