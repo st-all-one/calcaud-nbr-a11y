@@ -168,19 +168,20 @@ A `CalcAUY` busca neutralizar essa imprecisão ao tratar o cálculo como um **ar
 > ┌───────────────────────────────┬─────────────────────────────────────────┐
 > │ (idx)                         │ Values                                  │
 > ├───────────────────────────────┼─────────────────────────────────────────┤
-> │ 1_cpu_limit_complex_root      │ "5.1747ms"                              │
-> │ 2_extensive_ast_depth         │ "3.1388ms"                              │
-> │ 3_costly_repeated_pow         │ "1656.2201ms (iterations: 100000)"      │
-> │ 4_simple_real_repeated        │ "453.0635ms (iterations: 100000)"       │
-> │ 5_metadata_cloning_stress     │ "67.5408ms (metadata_keys: 1000)"       │
-> │ 6_rational_explosion_gcd      │ "0.2900ms"                              │
-> │ 7_slicing_massacre            │ "70.4730ms (slices: 100000)"            │
-> │ 8_burst_concurrency_ddos      │ "836.7753ms (concurrent_tasks: 100000)" │
-> │ 9_batch_processing_controlled │ "796.4584ms (total_tasks: 100000)"      │
-> │ 10_logging_policy_race_stress │ "979.5450ms (errors: 0)"                │
-> │ 11_bigint_limit_torture       │ "0.8179ms (caught_overflow: true)"      │
-> │ 12_malicious_json_hydration   │ "1.2533ms (deflected: true)"            │
+> │ 1_cpu_limit_complex_root      │ "4.8378ms"                              │
+> │ 2_extensive_ast_depth         │ "1.9384ms"                              │
+> │ 3_costly_repeated_pow         │ "709.2422ms (iterations: 100000)"       │
+> │ 4_simple_real_repeated        │ "249.1500ms (iterations: 100000)"       │
+> │ 5_metadata_cloning_stress     │ "67.2424ms (metadata_keys: 1000)"       │
+> │ 6_rational_explosion_gcd      │ "0.2247ms"                              │
+> │ 7_slicing_massacre            │ "39.0339ms (slices: 100000)"            │
+> │ 8_burst_concurrency_ddos      │ "556.6375ms (concurrent_tasks: 100000)" │
+> │ 9_batch_processing_controlled │ "530.2699ms (total_tasks: 100000)"      │
+> │ 10_logging_policy_race_stress │ "16.5692ms (errors: 0)"                 │
+> │ 11_bigint_limit_torture       │ "0.7201ms (caught_overflow: true)"      │
+> │ 12_malicious_json_hydration   │ "1.2668ms (deflected: true)"            │
 > └───────────────────────────────┴─────────────────────────────────────────┘
+> 
 > ```
 <details>
 <summary><b>🔍 Detalhes do Hardware </b></summary>
