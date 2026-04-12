@@ -7,7 +7,6 @@
         "include": [
             "mod.ts",
             "src",
-            "docs",
             "deno.jsonc",
             "README.md",
             "LICENSE"
