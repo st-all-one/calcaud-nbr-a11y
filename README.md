@@ -119,37 +119,37 @@ A `CalcAUY` busca neutralizar essa imprecisão ao tratar o cálculo como um **ar
 > // 2026-04-10
 > ❯ deno task coverage:dev
 >
-> ok | 16 passed (215 steps) | 0 failed (12s)
+> ok | 21 passed (247 steps) | 0 failed (50s)
 >
 > | File                               | Branch % | Function % | Line % |
 > | ---------------------------------- | -------- | ---------- | ------ |
 > | mod.ts                             |    100.0 |      100.0 |  100.0 |
-> | src/ast/builder_utils.ts           |     95.2 |      100.0 |   88.2 |
+> | src/ast/builder_utils.ts           |    100.0 |      100.0 |  100.0 |
 > | src/ast/engine.ts                  |     97.6 |      100.0 |   97.7 |
-> | src/builder.ts                     |     94.1 |      100.0 |   95.4 |
+> | src/builder.ts                     |     94.7 |      100.0 |   95.4 |
 > | src/core/constants.ts              |    100.0 |      100.0 |  100.0 |
 > | src/core/errors.ts                 |    100.0 |      100.0 |  100.0 |
 > | src/core/metadata.ts               |    100.0 |      100.0 |  100.0 |
-> | src/core/rational.ts               |     92.4 |      100.0 |   96.8 |
+> | src/core/rational.ts               |     92.1 |      100.0 |   96.1 |
 > | src/i18n/i18n.ts                   |     50.0 |      100.0 |  100.0 |
-> | src/output.ts                      |     93.0 |      100.0 |   98.2 |
-> | src/output_internal/image_utils.ts |     75.0 |      100.0 |   96.6 |
-> | src/output_internal/renderer.ts    |     93.1 |      100.0 |   82.5 |
+> | src/output.ts                      |     87.3 |      100.0 |   96.2 |
+> | src/output_internal/image_utils.ts |     75.0 |      100.0 |   96.2 |
+> | src/output_internal/renderer.ts    |     93.3 |      100.0 |   82.5 |
 > | src/output_internal/slicer.ts      |     69.2 |      100.0 |   87.8 |
-> | src/parser/lexer.ts                |     83.7 |      100.0 |   81.8 |
+> | src/parser/lexer.ts                |     97.3 |      100.0 |   99.0 |
 > | src/parser/parser.ts               |     90.2 |      100.0 |   93.6 |
-> | src/rounding/rounding.ts           |     86.2 |      100.0 |   87.3 |
-> | src/utils/batch.ts                 |     77.8 |      100.0 |   88.5 |
+> | src/rounding/rounding.ts           |     89.7 |      100.0 |   91.7 |
+> | src/utils/batch.ts                 |     77.8 |      100.0 |   88.9 |
 > | src/utils/logger.ts                |    100.0 |      100.0 |  100.0 |
-> | src/utils/sanitizer.ts             |     98.6 |      100.0 |   98.9 |
-> | src/utils/unicode.ts               |     75.0 |      100.0 |  100.0 |
-> | All files                          |     92.3 |      100.0 |   95.0 |
+> | src/utils/sanitizer.ts             |     98.8 |      100.0 |   99.0 |
+> | src/utils/unicode.ts               |     80.0 |      100.0 |  100.0 |
+> | All files                          |     93.6 |      100.0 |   96.3 |
 > ```
 
 **🛡️ Code Quality (SonarQube)**
-> IMG
->
-> Link, 2026-04-xx
+> 2026-04-11
+> [![Resultado do SonarQube Scanner de 11 de Abril de 2026, indicando: 0 issues Security, 0 issues Reliability, 0 issues Maintainability, 95.5% Coverage, 7.5% Duplications, 0 Security Hotspots](.github/assets/sonarqube_2026_04_11.png)](#)
+
 
 **📛 Stress Test**
 > ```bash
