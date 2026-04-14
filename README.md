@@ -106,11 +106,11 @@ A **`CalcAUD`** neutraliza esses riscos ao transformar o processo de cálculo em
 
 - **Conformidade Normativa**: Motor nativo para a [`ABNT NBR 5891`](https://pt.wikipedia.org/wiki/Arredondamento#Norma_ABNT_NBR_5891) e algoritmos de rateio por `Maior Resto`, assegurando que divisões monetárias e arredondamentos sigam padrões atuariais e legais sem desvios acumulados.
 
-- **Segurança Estrutural**: Proteção nativa contra vetores de ataque comuns, como `JSON Bombs` e `Stack Overflow`. A biblioteca opera sob o dogma de **Desambiguidade por Design** e **Fail Fast** no padrão [`RFC 7807 enriquecido`](https://datatracker.ietf.org/doc/html/rfc7807), mitigando ataques e facilitando o debug.
+- **Segurança Estrutural**: Proteção nativa contra vetores de ataque comuns, como `JSON Bombs` e `Stack Overflow`. A biblioteca opera sob o dogma de **Desambiguidade por Design** e **Fail Fast** no padrão [`RFC 7807`](https://datatracker.ietf.org/doc/html/rfc7807), mitigando ataques e facilitando o debug.
 
 ### 2. Auditabilidade Forense
 
-- **AST e Metadados**: Cada etapa do cálculo constrói uma **Árvore de Sintaxe Abstrata (AST) imutável**. Essa estrutura permite a **"hibernação"** de cálculos complexos em `JSON` para armazenamento e posterior **reidratação"**, permitindo adicionar metadados estruturados em cada etapa para autoria e contextualização de negócio.
+- **AST e Metadados**: Cada etapa do cálculo constrói uma **Árvore de Sintaxe Abstrata (AST) imutável**. Essa estrutura permite a **"hibernação"** de cálculos complexos em `JSON` para armazenamento e posterior **"reidratação"**, permitindo adicionar metadados estruturados em cada etapa para autoria e contextualização de negócio.
 
 - **Outputs Multiformato**: Através de processadores de saída, a biblioteca traduz a lógica interna em representações auditáveis, técnicas e inclusivas:
     - `toUnicode()`: Representação visual para interfaces de terminal (CLI).
@@ -123,7 +123,7 @@ A **`CalcAUD`** neutraliza esses riscos ao transformar o processo de cálculo em
 
 - **Tipagem Estrita**: Desenvolvida sob o `Strict Mode máximo` do TypeScript, a lib utiliza `Type Guards` e campos privados para garantir que a integridade dos dados seja mantida do código à transpilação.
 
-- **Performance sob Carga**: O utilitário `.processBatch(...)` gerencia demandas massivos utilizando `scheduler.yield()`, equilibrando o alto throughput com a responsividade do servidor, evitando bloqueios do Event Loop.
+- **Performance sob Carga**: O utilitário `.processBatch(...)` gerencia demandas massivas utilizando `scheduler.yield()`, equilibrando o alto _throughput_ com a responsividade do servidor, evitando bloqueios do `Event Loop`.
 
 - **Matemática Semântica (A11y)**: Tradução automática da lógica matemática para narração humana em 7 idiomas. Permitindo conformidade com normas de acessibilidade digital (`WCAG/eMAG`), garantindo que os cálculos sejam compreendidos por máquinas, auditores e usuários de tecnologias assistivas.
 
