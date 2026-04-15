@@ -1,12 +1,18 @@
+/* Create by Stallone L. S. (@st-all-one) - 2026 - License: MPL-2.0
+ *
+ * Copyright (c) 2026, Stallone L. S. (@st-all-one)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 import { CalcAUYError } from "./errors.ts";
 
 /**
  * Realiza a validação profunda de metadados para garantir que sejam estritamente
  * serializáveis e livres de lógica ou referências circulares.
  *
- * **Engenharia:** Esta validação garante que o rastro de auditoria possa ser convertido
- * para JSON sem perda de dados ou erros de recursão, proibindo tipos não-determinísticos
- * como funções, classes ou BigInts puros.
+ * Proibe tipos não-determinísticos como funções, classes ou BigInts puros.
  */
 export function validateMetadata(value: unknown, seen = new Set<unknown>()): void {
     if (value === null || value === undefined) {

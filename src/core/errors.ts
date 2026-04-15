@@ -1,6 +1,10 @@
 /**
- * CalcAUY - Sistema de Erros e Diagnósticos (RFC 7807)
- * @module
+ * Create by Stallone L. S. (@st-all-one) - 2026 - License: MPL-2.0
+ *
+ * Copyright (c) 2026, Stallone L. S. (@st-all-one)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 import { getSubLogger } from "../utils/logger.ts";
@@ -27,12 +31,7 @@ export interface ErrorContext {
 }
 
 /**
- * Erro customizado da CalcAUY seguindo o padrão RFC 7807 (Problem Details).
- *
- * **Engenharia:** Diferente de um erro genérico, o CalcAUYError é serializável e
- * projetado para transporte via APIs HTTP. Ele inclui um contexto técnico detalhado
- * que pode conter a AST parcial ou o input que causou a falha, facilitando a
- * depuração forense.
+ * Erro customizado da CalcAUY seguindo o padrão RFC 7807.
  *
  * @class
  */
@@ -85,7 +84,7 @@ export class CalcAUYError extends Error {
         this.title = titleMap[category];
         this.name = "CalcAUYError";
 
-        // Telemetria Automática Sanitizada (Rigor specs/11 e specs/12)
+        // Telemetria Sanitizada
         if (logger.isEnabledFor("error")) {
             logger.error("CalcAUY Exception Triggered", {
                 error_type: this.type,
@@ -117,24 +116,6 @@ export class CalcAUYError extends Error {
      *   if (err instanceof CalcAUYError) {
      *     return Response.json(err.toJSON(), { status: err.status });
      *   }
-     * });
-     * ```
-     *
-     * @example Cenário Real: Validação de Input de Usuário
-     * ```ts
-     * // Erro ao tentar processar string malformada como "10..5"
-     * try {
-     *   CalcAUY.parseExpression(userInput);
-     * } catch (err) {
-     *   showUIFeedback(err.detail);
-     * }
-     * ```
-     *
-     * @example Cenário Real Complexo: Debug em Produção via Sentry
-     * ```ts
-     * Sentry.captureException(err, {
-     *   extra: err.context, // Inclui a AST que causou o problema
-     *   tags: { error_type: err.type }
      * });
      * ```
      */

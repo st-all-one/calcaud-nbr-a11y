@@ -1,11 +1,9 @@
-/**
- * CalcAUY - Estrutura da Árvore de Sintaxe Abstrata (AST)
+/* Create by Stallone L. S. (@st-all-one) - 2026 - License: MPL-2.0
  *
- * A AST é o coração da auditabilidade da CalcAUY. Diferente de uma execução
- * imediata, a árvore preserva a estrutura original da fórmula, permitindo
- * reconstruir o "rastro de pensamento" do cálculo para fins legais e técnicos.
- *
- * @module
+ * Copyright (c) 2026, Stallone L. S. (@st-all-one)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 /** Tipos de nós fundamentais da árvore. */
