@@ -1,55 +1,34 @@
-# Guia de Início Rápido: O Universo CalcAUY
+# CalcAUY: Documentação Técnica de Engenharia
 
-Bem-vindo à **CalcAUY** (Audit + A11y). Se você trabalha com sistemas financeiros, contábeis ou fiscais, sabe que o tipo `number` do JavaScript é seu maior inimigo. Este guia vai te ensinar a dominar a precisão absoluta em poucos minutos.
+A **CalcAUY** (Audit + A11y) é uma engine de cálculo matemático de alta precisão baseada em Árvore de Sintaxe Abstrata (AST) e aritmética racional. O projeto visa substituir o modelo de ponto flutuante (IEEE 754) por uma estrutura auditável e de precisão absoluta.
 
-## 1. Por que não usar `number`?
+## 1. Princípios de Operação
 
-No JavaScript/TypeScript padrão:
-```ts
-console.log(0.1 + 0.2); // 0.30000000000000004 ❌
-```
-Esse erro de "1 centavo" pode causar prejuízos milionários em faturas ou inconsistências em laudos jurídicos.
+O funcionamento da engine fundamenta-se em três pilares:
 
-**Com CalcAUY:**
-```ts
-import { CalcAUY } from "calc-auy";
+1.  **Aritmética Racional:** Todos os números são processados como frações de BigInt (`n/d`), eliminando erros de arredondamento intermediário e mantendo a integridade matemática durante todo o fluxo.
+2.  **AST Imutável:** O cálculo é tratado como um objeto de dados (árvore) e não como um resultado volátil. Cada operação gera uma nova representação do estado, preservando a lógica da fórmula.
+3.  **Audit Trace Nativo:** Cada nó da árvore suporta metadados contextuais, permitindo a reconstrução histórica de cada decisão matemática para fins de auditoria forense.
 
-const res = CalcAUY.from(0.1).add(0.2).commit();
-console.log(res.toStringNumber()); // "0.30" ✅ (Precisão Racional Exata)
-```
+## 2. Fluxo Processual de Dados
 
-## 2. O Momento Mágico (O Rastro)
+O ciclo de vida do dado na CalcAUY é dividido em quatro etapas sequenciais e desacopladas:
 
-A CalcAUY não apenas calcula; ela **explica** o cálculo.
+| Fase | Descrição Técnica | Saída Principal |
+| :--- | :--- | :--- |
+| **Ingestão** | Normalização de inputs (strings, BigInt) para a forma racional pura. | `LiteralNode` |
+| **Construção** | Montagem da AST via Fluent API ou Parser. Anexação de metadados. | `CalcAUY` (Building AST) |
+| **Colapso** | Execução recursiva da árvore com simplificação via MDC (GCD). | `CalcAUYOutput` |
+| **Representação** | Geração de multiformatos (LaTeX, A11y, Monetário, Imagem). | Rendered Output |
 
-```ts
-const fatura = CalcAUY.from(1000)
-  .add(50).setMetadata("motivo", "Taxa de Entrega")
-  .mult("1.10").setMetadata("taxa", "Juros de Mora")
-  .commit({ roundStrategy: "NBR5891" });
+## 3. Estrutura da Wiki
 
-// 1. O valor para o banco (BigInt em centavos)
-console.log(fatura.toScaledBigInt({ decimalPrecision: 2 })); // 115500n
+Para aprofundamento técnico, os módulos abaixo detalham cada aspecto da engine:
 
-// 2. O rastro para o Laudo Pericial (LaTeX)
-console.log(fatura.toLaTeX()); // \text{round}_{NBR}((1000 + 50) * 1.10, 2) = 1155.00
-
-// 3. Acessibilidade para deficientes visuais (Verbal)
-console.log(fatura.toVerbalA11y()); // "mil e cinquenta, multiplicado por um vírgula dez..."
-```
-
-## 3. Construir vs. Executar (O Conceito de AST)
-
-Diferente de calculadoras comuns, a CalcAUY funciona em duas fases:
-
-1.  **Fase de Build (AST):** Você monta a fórmula. Cada método (`.add`, `.mult`) apenas anexa um "nó" a uma árvore de dados imutável. Nada é calculado ainda. Isso permite anexar metadados e persistir o cálculo.
-2.  **Fase de Commit:** O motor percorre a árvore, simplifica as frações matemáticas e gera o resultado final com a estratégia de arredondamento escolhida.
-
-## 4. Próximos Passos
-
--   **[Casos Reais e Exemplos](./examples.md):** Veja como aplicar em ICMS, Folha de Pagamento e Rateios.
--   **[Guia de Auditoria e PII](./audit.md):** Aprenda a gerar provas matemáticas e proteger dados sensíveis.
--   **[Especificações Técnicas](./specs.md):** Mergulhe nos detalhes matemáticos do nosso motor racional.
+-   **[Ciclo de Vida do Dado](wiki/lifecycle.md):** Detalhamento das fases de ingestão, construção e colapso.
+-   **[Motor e Representação Interna](wiki/engine.md):** O funcionamento do `RationalNumber` e a estrutura da AST.
+-   **[Persistência e Hibernação](wiki/persistence.md):** Como serializar e reidratar cálculos complexos sem perda de contexto.
+-   **[Auditoria e Segurança](wiki/audit-security.md):** O rastro forense, proteção de PII e telemetria.
 
 ---
-**Dica de Ouro:** Sempre prefira passar strings numéricas como `"10.50"` para a biblioteca em vez de números puros, garantindo que nenhum erro de precisão entre na engine.
+**Nota:** A integridade matemática depende da observância rigorosa das regras de input e precedência definidas nestas especificações.
