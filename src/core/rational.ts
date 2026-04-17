@@ -55,7 +55,7 @@ const sessionStack: RationalCacheSession[] = [];
  */
 export class RationalCacheSession implements Disposable {
     readonly #cache = new Map<string | bigint, RationalNumber>();
-    readonly #extraCache = new Map<string, any>();
+    readonly #extraCache = new Map<string, unknown>();
 
     constructor() {
         sessionStack.push(this);
@@ -77,11 +77,11 @@ export class RationalCacheSession implements Disposable {
     }
 
     /** Armazena um objeto genérico no cache extra da sessão. */
-    setExtra(key: string, value: any): void {
+    setExtra(key: string, value: unknown): void {
         this.#extraCache.set(key, value);
     }
 
-    [Symbol.dispose]() {
+    [Symbol.dispose](): void {
         this.#cache.clear();
         this.#extraCache.clear();
         sessionStack.pop();
@@ -231,7 +231,7 @@ export class RationalNumber {
             }
 
             const strVal = value.toString();
-            
+
             // Prioridade 1: Cache de Sessão (Escopado)
             const activeSession = sessionStack[sessionStack.length - 1];
             const sessionCached = activeSession?.get(strVal);
@@ -250,7 +250,7 @@ export class RationalNumber {
             }
 
             const res = new RationalNumber(value, 1n);
-            
+
             // Armazenamento
             if (activeSession) {
                 activeSession.set(strVal, res);
@@ -259,7 +259,7 @@ export class RationalNumber {
                 globalLiteralCache.set(strVal, new WeakRef(res));
                 cacheRegistry.register(res, strVal);
             }
-            
+
             return res;
         }
 

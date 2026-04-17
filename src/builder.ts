@@ -14,11 +14,7 @@ import type {
     OperationType,
     RationalValue,
 } from "./ast/types.ts";
-import {
-    createCacheSession,
-    getActiveSession,
-    RationalNumber,
-} from "./core/rational.ts";
+import { createCacheSession, getActiveSession, RationalNumber } from "./core/rational.ts";
 import { validateMetadata } from "./core/metadata.ts";
 import type { RoundingStrategy } from "./core/constants.ts";
 import { evaluate } from "./ast/engine.ts";

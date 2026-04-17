@@ -10,7 +10,7 @@
 
 </div>
 
-A **CalcAUY** é uma infraestrutura em **TypeScript** projetada para neutralizar a imprecisão do padrão **IEEE 754**, assegurando integridade atuarial através da **Imutabilidade estrita e Árvore de Sintaxe Abstrata (AST)**, transformando cada operação em uma evidência matemática confiável, transparente, inclusiva e auditável.
+A **CalcAUY** é uma infraestrutura em **TypeScript** projetada para neutralizar a imprecisão do padrão **IEEE 754**, assegurando integridade atuarial através da **Imutabilidade estrita e Árvore de Sintaxe Abstrata (AST)**, transformando cada operação matemática em uma evidência confiável, transparente, inclusiva e auditável.
 
 ---
 
@@ -51,13 +51,12 @@ const montante = CalcAUY
     .from(capitalInicial)
     .mult(
         CalcAUY.from(1)
-            .add(taxaJurosAnual)
+            .add(taxaJurosAnual).setMetadata("ref", "SELIC, mar/26")
             .group()
             .pow(anosDecorridos),
     )
     .setMetadata("meta", {
         data_de_calculo: new Date().toISOString(),
-        referencia: "Juros de 14,75% a.a. (SELIC, Mar/26)",
         "usuário": { id: 99, calc_token: crypto.randomUUID(), username: "st-all-one" },
     });
 
@@ -77,18 +76,20 @@ console.log(resultado.toVerbalA11y());
 const ASTSerializadaAuditavel = resultado.toAuditTrace();
 console.log(ASTSerializadaAuditavel);
 /*
-{"ast":{"kind":"operation","type":"mul","operands":[{"kind":"literal","value":{"n":"10000","d":"1"},"originalInput":"10000"},{"kind":"group","child":{"kind":"operation","type":"pow","operands":[{"kind":"group","child":{"kind":"operation","type":"add","operands":[{"kind":"literal","value":{"n":"1","d":"1"},"originalInput":"1"},{"kind":"literal","value":{"n":"59","d":"400"},"originalInput":"14.75%"}]}},{"kind":"literal","value":{"n":"3","d":"1"},"originalInput":"3"}]}}],"metadata":{"meta":{"data_de_calculo":"2026-04-13T23:40:09.420Z","referencia":"Juros de 14,75% a.a. (SELIC, Mar/26)","usuário":{"id":99,"calc_token":"7ee11b72-d029-4523-a71e-6cc86c4c03d9","username":"st-all-one"}}}},"finalResult":{"n":"96702579","d":"6400"},"strategy":"NBR5891"}
+{"ast":{"kind":"operation","type":"mul","operands":[{"kind":"literal","value":{"n":"10000","d":"1"},"originalInput":"10000"},{"kind":"group","child":{"kind":"operation","type":"pow","operands":[{"kind":"group","child":{"kind":"operation","type":"add","operands":[{"kind":"literal","value":{"n":"1","d":"1"},"originalInput":"1"},{"kind":"literal","value":{"n":"59","d":"400"},"originalInput":"14.75%"}],"metadata":{"ref":"SELIC, mar/26"}}},{"kind":"literal","value":{"n":"3","d":"1"},"originalInput":"3"}]}}],"metadata":{"meta":{"data_de_calculo":"2026-04-17T09:03:46.572Z","usuário":{"id":99,"calc_token":"bfda705a-5ac6-40ac-9ef8-35e9a79f1446","username":"st-all-one"}}}},"finalResult":{"n":"96702579","d":"6400"},"strategy":"NBR5891"}
 */
 
 // == Reabertura do cálculo ==
-const reabertura = CalcAUY.hydrate(ASTSerializadaAuditavel).setMetadata("review", {
-    status: "aprovado",
-    usuario: { id: 1, date: new Date().toISOString(), username: "One" },
-}).commit({ roundStrategy: JSON.parse(ASTSerializadaAuditavel).strategy });
+const reabertura = CalcAUY.hydrate(ASTSerializadaAuditavel)
+    .setMetadata("review", {
+        status: "aprovado",
+        usuario: { id: 1, date: new Date().toISOString(), username: "One" },
+    })
+    .commit({ roundStrategy: JSON.parse(ASTSerializadaAuditavel).strategy });
 
 console.log(reabertura.toAuditTrace());
 /*
-{"ast":{"kind":"operation","type":"mul","operands":[{"kind":"literal","value":{"n":"10000","d":"1"},"originalInput":"10000"},{"kind":"group","child":{"kind":"operation","type":"pow","operands":[{"kind":"group","child":{"kind":"operation","type":"add","operands":[{"kind":"literal","value":{"n":"1","d":"1"},"originalInput":"1"},{"kind":"literal","value":{"n":"59","d":"400"},"originalInput":"14.75%"}]}},{"kind":"literal","value":{"n":"3","d":"1"},"originalInput":"3"}]}}],"metadata":{"meta":{"data_de_calculo":"2026-04-13T23:40:09.420Z","referencia":"Juros de 14,75% a.a. (SELIC, Mar/26)","usuário":{"id":99,"calc_token":"7ee11b72-d029-4523-a71e-6cc86c4c03d9","username":"st-all-one"}},"review":{"status":"aprovado","usuario":{"id":1,"date":"2026-04-13T23:40:09.451Z","username":"One"}}}},"finalResult":{"n":"96702579","d":"6400"},"strategy":"NBR5891"}
+{"ast":{"kind":"operation","type":"mul","operands":[{"kind":"literal","value":{"n":"10000","d":"1"},"originalInput":"10000"},{"kind":"group","child":{"kind":"operation","type":"pow","operands":[{"kind":"group","child":{"kind":"operation","type":"add","operands":[{"kind":"literal","value":{"n":"1","d":"1"},"originalInput":"1"},{"kind":"literal","value":{"n":"59","d":"400"},"originalInput":"14.75%"}],"metadata":{"ref":"SELIC, mar/26"}}},{"kind":"literal","value":{"n":"3","d":"1"},"originalInput":"3"}]}}],"metadata":{"meta":{"data_de_calculo":"2026-04-17T09:03:46.572Z","usuário":{"id":99,"calc_token":"bfda705a-5ac6-40ac-9ef8-35e9a79f1446","username":"st-all-one"}},"review":{"status":"aprovado","usuario":{"id":1,"date":"2026-04-17T09:03:46.601Z","username":"One"}}}},"finalResult":{"n":"96702579","d":"6400"},"strategy":"NBR5891"}
 */
 ```
 
@@ -96,13 +97,13 @@ console.log(reabertura.toAuditTrace());
 
 No desenvolvimento de softwares, o uso do padrão **IEEE 754** (`number/float`) introduz um risco sistêmico. Imprecisãos binárias, como o clássico `0.1 + 0.2 !== 0.3`, não são meras curiosidades matemáticas; em escala, transformam-se em rombos financeiros, falhas de compliance e passivos jurídicos. Garantir a exatidão é o ponto de partida; **provar como o cálculo foi feito** é o que garante segurança jurídica para aplicação.
 
-A **`CalcAUY`** elimina esses riscos ao tratar cada operação como um **artefato auditável**, resolvendo a falta de transparência dos motores convencionais ao fornecer evidências enriquecíveis e verificáveis de **todas as etapas** que compõem o resultado, facilitando a conformidade técnica e prevenção jurídica da aplicação.
+A **`CalcAUY`** elimina esses riscos ao tratar cada operação como um **artefato auditável**, resolvendo a falta de transparência dos motores convencionais ao fornecer evidências de **todas as etapas** que compõem o resultado, facilitando a conformidade técnica e jurídica da aplicação.
 
 O que torna isso possível é a implementação destes três pilares:
 
 ### 1. Integridade Matemática
 
-- **Aritmética Racional**: Operação baseada em frações exatas `(n/d)` utilizando `BigInt` e executando simplificações via **Algoritmo de Euclides (MCD)** em cada etapa, garantindo precisão absoluta sem overhead.
+- **Aritmética Racional**: Operação baseada em frações exatas `(n/d)` utilizando `BigInt`, com simplificações via **Algoritmo de Euclides (MCD)** em cada etapa, garantindo precisão absoluta sem overhead.
 
 - **Determinismo Lógico**: Implementação rigorosa de **precedência matemática** [`(PEMDAS/BODMAS)`](https://pt.wikipedia.org/wiki/Ordem_de_opera%C3%A7%C3%B5es) com **Associatividade à Direita** para exponenciação, garantindo que as operações respeitem a **intenção do cálculo** com consistência matemática.
 
@@ -110,9 +111,9 @@ O que torna isso possível é a implementação destes três pilares:
 
 ### 2. Auditabilidade Forense
 
-- **AST e Metadados**: Cada etapa do cálculo constrói uma **Árvore de Sintaxe Abstrata (AST) imutável**. Essa estrutura permite inserir metadados estruturados para contextualização profunda e persistente de cada etapa do cálculo.
+- **AST e Metadados**: Cada etapa do cálculo constrói uma **Árvore de Sintaxe Abstrata (AST) imutável**. Essa estrutura permite inserir metadados para contextualização profunda e persistente de cada etapa do cálculo.
 
-- **Integridade**: JSON-friendly por padrão para garantia de persistência de dados lossless. Adicionando o método `.hydrate()` para reativação e continuidade segura da AST. 
+- **Integridade**: Serialização otimizada para `JSON`, assegurando o armazenamento integral da árvore de operações. Através do método `.hydrate()`, a biblioteca reconstrói o estado exato da AST, possibilitando a reativação do cálculo.
 
 - **Outputs Multiformato**: Através de processadores de saída, a biblioteca traduz a lógica interna em representações úteis para fins técnicos, inclusivos e de auditoria.
     - `toUnicode()`: Representação visual para interfaces de terminal (CLI).
@@ -125,11 +126,11 @@ O que torna isso possível é a implementação destes três pilares:
 
 - **Tipagem Estrita**: Desenvolvida sob o `Strict Mode máximo` do TypeScript, a lib utiliza `Type Guards` e campos privados para garantir que a integridade dos dados seja mantida do código à transpilação.
 
-- **Segurança Estrutural**: Construída sob o dogma de **Zero tolerânica a Ambiguidades**, a **`CalcAUY`** aplica um parser rigoroso em todos os inputs, retornando erros no padrão [`RFC 7807`](https://datatracker.ietf.org/doc/html/rfc7807) diante de qualquer inconsistência identificada, além de implementar táticas de contenção a ataques como `JSON Bombs` e `Stack Overflow`.
+- **Segurança Estrutural**: Construída sob o dogma de **Zero tolerânica a Ambiguidades**, a **`CalcAUY`** aplica **parsers** rigorosos em todos os inputs, retornando erros no padrão [`RFC 7807`](https://datatracker.ietf.org/doc/html/rfc7807) diante de qualquer inconsistência; além de implementar táticas de contenção a ataques como `JSON Bombs` e `Stack Overflow`.
 
-- **Estabilidade**: Implementa o utilitário `ProcessBatchAUY(...)`, uma engine de alto desempenho para lidar com volumes industriais (1M+ registros), operando em complexidade `O(N)`. Utiliza **Workers Lógicos e Reducers Nativos** para maximizar a vazão e mitigar latências de I/O (Banco de Dados/APIs), garantindo a responsividade total do sistema via `scheduler.yield()` sem comprometer o `Event Loop`.
+- **Estabilidade**: Fornece o utilitário `ProcessBatchAUY(...)`, um motor de alta vazão projetado para processar volumes massivos _(1M+ registros)_ e fluxos contínuos (`Streaming`) sob complexidade `O(N)`. A arquitetura utiliza **Workers Lógicos** para paralelismo assíncrono e **Redutores** para economia de memória, garantindo a responsividade da aplicação via `scheduler.yield()`, o que previne o bloqueio do `Event Loop` mesmo durante picos de processamento intensivo.
 
-- **Matemática Semântica**: Tradução embutida da lógica matemática para narração humana em 8 idiomas. Permitindo conformidade com normas de acessibilidade digital (`WCAG/eMAG`) e garantindo que os cálculos sejam compreendidos por máquinas, auditores e usuários de tecnologias assistivas.
+- **Matemática Semântica**: Fornece o método de output `.toVerbalA11y()` para tradução da AST em linguagem natural em 8 idiomas. A funcionalidade promove a inclusão e a transparência ao alinhar o sistema às diretrizes `WCAG/eMAG`, transformando a AST em informações legíveis para máquinas, especialistas e leitores de tela.
 
 ## 🔍 Testes
 

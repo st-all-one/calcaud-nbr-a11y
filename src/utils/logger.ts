@@ -42,7 +42,7 @@ export class TelemetrySpan implements Disposable {
     }
 
     /** Finaliza o span e emite o log de performance. */
-    [Symbol.dispose]() {
+    [Symbol.dispose](): void {
         if (!this.#logger.isEnabledFor("info")) { return; }
 
         const end = performance.now();
