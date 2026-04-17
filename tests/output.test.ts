@@ -150,14 +150,14 @@ describe("CalcAUYOutput - Output Methods and Customization", () => {
                 infoCalled = true;
                 return true;
             }
-            return false; // Do not call originalIsEnabledFor to prevent TypeError
+            return false;
         };
 
         CalcAUY.from(10).commit().toMonetary();
         assertEquals(infoCalled, true, "logger.info should have been called for toMonetary");
 
         infoCalled = false; // Reset
-        CalcAUY.from(10).commit().toRawInternalBigInt();
-        assertEquals(infoCalled, true, "logger.info should have been called for toRawInternalBigInt");
+        CalcAUY.from(10).commit().toLaTeX();
+        assertEquals(infoCalled, true, "logger.info should have been called for toLaTeX");
     });
 });
