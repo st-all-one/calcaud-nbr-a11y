@@ -2,16 +2,20 @@
   "version": "5",
   "specifiers": {
     "jsr:@logtape/logtape@^2.0.4": "2.0.5",
+    "jsr:@logtape/logtape@^2.0.5": "2.0.5",
     "jsr:@std/assert@*": "1.0.19",
     "jsr:@std/assert@^1.0.17": "1.0.19",
     "jsr:@std/assert@^1.0.19": "1.0.19",
     "jsr:@std/async@^1.1.0": "1.2.0",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
+    "jsr:@std/cli@1.0.6": "1.0.6",
     "jsr:@std/crypto@^1.0.5": "1.0.5",
     "jsr:@std/data-structures@^1.0.10": "1.0.10",
     "jsr:@std/encoding@*": "1.0.10",
     "jsr:@std/encoding@^1.0.5": "1.0.10",
     "jsr:@std/expect@*": "1.0.18",
+    "jsr:@std/expect@^1.0.13": "1.0.18",
+    "jsr:@std/fmt@1.0.3": "1.0.3",
     "jsr:@std/fs@^1.0.22": "1.0.23",
     "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/path@^1.0.8": "1.1.4",
@@ -22,13 +26,13 @@
     "npm:@codemirror/autocomplete@^6.16.2": "6.20.1",
     "npm:@codemirror/commands@^6.6.0": "6.10.3",
     "npm:@codemirror/lang-javascript@^6.2.2": "6.2.5",
-    "npm:@codemirror/language@^6.10.1": "6.12.2",
+    "npm:@codemirror/language@^6.12.3": "6.12.3",
     "npm:@codemirror/lint@^6.8.0": "6.9.5",
     "npm:@codemirror/state@^6.4.1": "6.6.0",
-    "npm:@codemirror/view@^6.26.3": "6.40.0",
+    "npm:@codemirror/view@^6.41.0": "6.41.0",
     "npm:codemirror@^6.0.1": "6.0.2",
     "npm:esbuild@*": "0.27.4",
-    "npm:katex@~0.16.40": "0.16.40",
+    "npm:katex@~0.16.45": "0.16.45",
     "npm:puppeteer@*": "22.15.0",
     "npm:puppeteer@^22.15.0": "22.15.0"
   },
@@ -48,6 +52,9 @@
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
     },
+    "@std/cli@1.0.6": {
+      "integrity": "d22d8b38c66c666d7ad1f2a66c5b122da1704f985d3c47f01129f05abb6c5d3d"
+    },
     "@std/crypto@1.0.5": {
       "integrity": "0dcfbb319fe0bba1bd3af904ceb4f948cde1b92979ec1614528380ed308a3b40"
     },
@@ -64,6 +71,9 @@
         "jsr:@std/internal",
         "jsr:@std/path@^1.1.4"
       ]
+    },
+    "@std/fmt@1.0.3": {
+      "integrity": "97765c16aa32245ff4e2204ecf7d8562496a3cb8592340a80e7e554e0bb9149f"
     },
     "@std/fs@1.0.23": {
       "integrity": "3ecbae4ce4fee03b180fa710caff36bb5adb66631c46a6460aaad49515565a37",
@@ -141,8 +151,8 @@
         "@lezer/javascript"
       ]
     },
-    "@codemirror/language@6.12.2": {
-      "integrity": "sha512-jEPmz2nGGDxhRTg3lTpzmIyGKxz3Gp3SJES4b0nAuE5SWQoKdT5GoQ69cwMmFd+wvFUhYirtDTr0/DRHpQAyWg==",
+    "@codemirror/language@6.12.3": {
+      "integrity": "sha512-QwCZW6Tt1siP37Jet9Tb02Zs81TQt6qQrZR2H+eGMcFsL1zMrk2/b9CLC7/9ieP1fjIUMgviLWMmgiHoJrj+ZA==",
       "dependencies": [
         "@codemirror/state",
         "@codemirror/view",
@@ -174,8 +184,8 @@
         "@marijn/find-cluster-break"
       ]
     },
-    "@codemirror/view@6.40.0": {
-      "integrity": "sha512-WA0zdU7xfF10+5I3HhUUq3kqOx3KjqmtQ9lqZjfK7jtYk4G72YW9rezcSywpaUMCWOMlq+6E0pO1IWg1TNIhtg==",
+    "@codemirror/view@6.41.0": {
+      "integrity": "sha512-6H/qadXsVuDY219Yljhohglve8xf4B8xJkVOEWfA5uiYKiTFppjqsvsfR5iPA0RbvRBoOyTZpbLIxe9+0UR8xA==",
       "dependencies": [
         "@codemirror/state",
         "crelt",
@@ -689,8 +699,8 @@
     "json-parse-even-better-errors@2.3.1": {
       "integrity": "sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w=="
     },
-    "katex@0.16.40": {
-      "integrity": "sha512-1DJcK/L05k1Y9Gf7wMcyuqFOL6BiY3vY0CFcAM/LPRN04NALxcl6u7lOWNsp3f/bCHWxigzQl6FbR95XJ4R84Q==",
+    "katex@0.16.45": {
+      "integrity": "sha512-pQpZbdBu7wCTmQUh7ufPmLr0pFoObnGUoL/yhtwJDgmmQpbkg/0HSVti25Fu4rmd1oCR6NGWe9vqTWuWv3GcNA==",
       "dependencies": [
         "commander"
       ],
@@ -994,11 +1004,20 @@
     "https://deno.land/std@0.224.0/internal/format.ts": "0a98ee226fd3d43450245b1844b47003419d34d210fa989900861c79820d21c2",
     "https://deno.land/std@0.224.0/internal/mod.ts": "534125398c8e7426183e12dc255bb635d94e06d0f93c60a297723abe69d3b22e",
     "https://deno.land/std@0.224.0/testing/_test_suite.ts": "f10a8a6338b60c403f07a76f3f46bdc9f1e1a820c0a1decddeb2949f7a8a0546",
-    "https://deno.land/std@0.224.0/testing/bdd.ts": "3e4de4ff6d8f348b5574661cef9501b442046a59079e201b849d0e74120d476b"
+    "https://deno.land/std@0.224.0/testing/bdd.ts": "3e4de4ff6d8f348b5574661cef9501b442046a59079e201b849d0e74120d476b",
+    "https://deno.land/x/sqlite@v3.9.1/build/sqlite.js": "2afc7875c7b9c85d89730c4a311ab3a304e5d1bf761fbadd8c07bbdf130f5f9b",
+    "https://deno.land/x/sqlite@v3.9.1/build/vfs.js": "7f7778a9fe499cd10738d6e43867340b50b67d3e39142b0065acd51a84cd2e03",
+    "https://deno.land/x/sqlite@v3.9.1/mod.ts": "e09fc79d8065fe222578114b109b1fd60077bff1bb75448532077f784f4d6a83",
+    "https://deno.land/x/sqlite@v3.9.1/src/constants.ts": "90f3be047ec0a89bcb5d6fc30db121685fc82cb00b1c476124ff47a4b0472aa9",
+    "https://deno.land/x/sqlite@v3.9.1/src/db.ts": "03d0c860957496eadedd86e51a6e650670764630e64f56df0092e86c90752401",
+    "https://deno.land/x/sqlite@v3.9.1/src/error.ts": "f7a15cb00d7c3797da1aefee3cf86d23e0ae92e73f0ba3165496c3816ab9503a",
+    "https://deno.land/x/sqlite@v3.9.1/src/function.ts": "bc778cab7a6d771f690afa27264c524d22fcb96f1bb61959ade7922c15a4ab8d",
+    "https://deno.land/x/sqlite@v3.9.1/src/query.ts": "d58abda928f6582d77bad685ecf551b1be8a15e8e38403e293ec38522e030cad",
+    "https://deno.land/x/sqlite@v3.9.1/src/wasm.ts": "e79d0baa6e42423257fb3c7cc98091c54399254867e0f34a09b5bdef37bd9487"
   },
   "workspace": {
     "dependencies": [
-      "jsr:@logtape/logtape@^2.0.4"
+      "jsr:@logtape/logtape@^2.0.5"
     ],
     "members": {
       "demo": {
@@ -1008,12 +1027,12 @@
           "npm:@codemirror/autocomplete@^6.16.2",
           "npm:@codemirror/commands@^6.6.0",
           "npm:@codemirror/lang-javascript@^6.2.2",
-          "npm:@codemirror/language@^6.10.1",
+          "npm:@codemirror/language@^6.12.3",
           "npm:@codemirror/lint@^6.8.0",
           "npm:@codemirror/state@^6.4.1",
-          "npm:@codemirror/view@^6.26.3",
+          "npm:@codemirror/view@^6.41.0",
           "npm:codemirror@^6.0.1",
-          "npm:katex@~0.16.40"
+          "npm:katex@~0.16.45"
         ]
       },
       "mini-scripts": {
@@ -1021,7 +1040,7 @@
           "jsr:@std/encoding@^1.0.5",
           "jsr:@std/path@^1.0.8",
           "jsr:@std/uuid@^1.1.0",
-          "npm:katex@~0.16.40",
+          "npm:katex@~0.16.45",
           "npm:puppeteer@^22.15.0"
         ]
       },
@@ -1029,7 +1048,9 @@
         "dependencies": [
           "jsr:@logtape/logtape@^2.0.4",
           "jsr:@std/assert@^1.0.19",
-          "jsr:@std/testing@^1.0.17"
+          "jsr:@std/expect@^1.0.13",
+          "jsr:@std/testing@^1.0.17",
+          "npm:katex@~0.16.45"
         ]
       }
     }
