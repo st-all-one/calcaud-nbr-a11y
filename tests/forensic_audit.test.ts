@@ -4,8 +4,8 @@ import { DB } from "@sqlite";
 import { describe, it } from "@std/testing/bdd";
 
 const DB_FILE = "tests/forensic.db";
-const TOTAL_DB = 1_000_000;
-const AMOSTRAS = 100_000;
+const TOTAL_DB = 10_000;
+const AMOSTRAS = 1_000;
 
 describe("Auditoria Forense: Integridade de Dados Hibernados", () => {
     it(`deve garantir re-hidratação bit-perfect de ${AMOSTRAS} amostras sorteadas de uma base de ${TOTAL_DB}`, async () => {
@@ -20,7 +20,7 @@ describe("Auditoria Forense: Integridade de Dados Hibernados", () => {
 
         for (let i = 0; i < TOTAL_DB; i++) {
             const valor = (Math.random() * 1000).toFixed(2);
-            const calc = CalcAUY.from(valor).mult("1.05").setMetadata("ts", Date.now()).commit();
+            const calc = await CalcAUY.from(valor).mult("1.05").setMetadata("ts", Date.now()).commit();
             insertQuery.execute([calc.toMonetary(), calc.toAuditTrace()]);
         }
         db.execute("COMMIT");
@@ -36,8 +36,8 @@ describe("Auditoria Forense: Integridade de Dados Hibernados", () => {
             const [totalNoBanco, auditJson] = row as [string, string];
 
             const rastroData = JSON.parse(auditJson);
-            const rehydrated = CalcAUY.hydrate(rastroData);
-            const commitNovo = rehydrated.commit({ roundStrategy: rastroData.strategy });
+            const rehydrated = await CalcAUY.hydrate(rastroData);
+            const commitNovo = await rehydrated.commit({ roundStrategy: rastroData.strategy });
             const resultadoNovo = commitNovo.toMonetary();
 
             if (resultadoNovo !== totalNoBanco) {

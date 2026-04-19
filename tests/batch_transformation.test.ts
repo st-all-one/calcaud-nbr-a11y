@@ -15,11 +15,11 @@ Deno.test("Demonstração: Transformação de Massa vs. Consolidação com proce
      * Objetivo: Processar cada fatura individualmente para obter o rastro de auditoria.
      * Útil para: Salvar no banco de dados cada item calculado separadamente.
      */
-    const resultadosIndividuais = await ProcessBatchAUY(faturasBrutas, (fatura) => {
-        return CalcAUY.from(fatura.valor)
+    const resultadosIndividuais = await ProcessBatchAUY(faturasBrutas, async (fatura) => {
+        return (await CalcAUY.from(fatura.valor)
             .mult(CalcAUY.from(1).add(fatura.taxa))
             .setMetadata("invoice_id", fatura.id)
-            .commit();
+            .commit());
     }) as CalcAUYOutput[];
 
     // Validando que o retorno é um array com o mesmo tamanho da entrada
@@ -41,7 +41,7 @@ Deno.test("Demonstração: Transformação de Massa vs. Consolidação com proce
      * Objetivo: Obter apenas o Valor Total Geral das faturas processadas.
      * Útil para: Relatórios de fechamento ou validação de totais.
      */
-    const valorTotalGeral = await ProcessBatchAUY(faturasBrutas, (fatura) => {
+    const valorTotalGeral = await ProcessBatchAUY(faturasBrutas, async (fatura) => {
         // Cada tarefa retorna um objeto CalcAUY pronto para ser somado
         return CalcAUY.from(fatura.valor).mult(CalcAUY.from(1).add(fatura.taxa));
     }, {
@@ -49,7 +49,7 @@ Deno.test("Demonstração: Transformação de Massa vs. Consolidação com proce
         reducer: (acc: CalcAUY, item: CalcAUY) => acc.add(item),
     }) as CalcAUY;
 
-    const totalFinal = valorTotalGeral.commit().toStringNumber();
+    const totalFinal = (await valorTotalGeral.commit()).toStringNumber();
     console.log(`Valor Total Consolidado: ${totalFinal}`);
 
     // Soma esperada: 105 + 216 + 330 = 651

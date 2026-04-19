@@ -1,7 +1,7 @@
 /* Create by Stallone L. S. (@st-all-one) - 2026 - License: MPL-2.0 */
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
-import { CalcAUY, CalcAUYOutput } from "@calcauy";
+import { CalcAUY, type CalcAUYOutput } from "@calcauy";
 import { ProcessBatchAUY } from "@src/utils/batch.ts";
 
 describe("CalcAUY - Testes de Estresse e Performance Extrema", () => {
@@ -43,7 +43,7 @@ describe("CalcAUY - Testes de Estresse e Performance Extrema", () => {
         const end = performance.now();
         results["3_costly_repeated_pow"] = `${(end - start).toFixed(4)}ms (iterations: ${ITERATIONS})`;
 
-        console.log(await res[43].toStringNumber());
+        console.log(res[43].toStringNumber());
     });
 
     it("Cenário 4: Operação Simples Real (Milhares de vezes)", async () => {

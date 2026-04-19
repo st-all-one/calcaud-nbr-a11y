@@ -3,7 +3,7 @@ import { assert, assertEquals, assertStringIncludes, assertThrows } from "@std/a
 import { CalcAUY } from "@calcauy";
 import { CalcAUYError } from "@src/core/errors.ts";
 import { getSubLogger } from "@src/utils/logger.ts"; // Import for mocking
-import { loggingPolicy } from "@src/utils/sanitizer.ts"; // Import for mocking
+import { securityPolicy } from "@src/utils/sanitizer.ts"; // Import for mocking
 import { CalcAUYOutput, ICalcAUYCustomOutput, ICalcAUYCustomOutputContext } from "@src/output.ts"; // Import CalcAUYOutput and its interfaces
 
 // Type for valid log levels
@@ -12,7 +12,7 @@ type LogLevel = "trace" | "debug" | "info" | "warning" | "error" | "fatal";
 // Mock logger.isEnabledFor for testing logging calls.
 const outputLogger = getSubLogger("output"); // Use output sublogger
 const originalIsEnabledFor = outputLogger.isEnabledFor;
-const originalLoggingPolicySensitive = loggingPolicy.sensitive; // Store original state
+const originalsecurityPolicySensitive = securityPolicy.sensitive; // Store original state
 
 describe("CalcAUYOutput - HTML & Image Generation", () => {
     const mockKatex = {
@@ -22,16 +22,16 @@ describe("CalcAUYOutput - HTML & Image Generation", () => {
     // Restore mocks and logging policy after each test
     beforeEach(() => {
         outputLogger.isEnabledFor = originalIsEnabledFor;
-        loggingPolicy.sensitive = originalLoggingPolicySensitive; // Reset logging policy
+        securityPolicy.sensitive = originalsecurityPolicySensitive; // Reset logging policy
     });
 
-    it("toHTML deve lançar erro se o katex for inválido", () => {
-        const res = CalcAUY.from(10).add(5).commit({ roundStrategy: "NBR5891" });
+    it("toHTML deve lançar erro se o katex for inválido", async () => {
+        const res = await CalcAUY.from(10).add(5).commit({ roundStrategy: "NBR5891" });
         assertThrows(() => res.toHTML({} as any), CalcAUYError, "O módulo 'katex' é obrigatório");
     });
 
-    it("toHTML deve gerar HTML com CSS e rastro de auditoria", () => {
-        const res = CalcAUY.from(10).add(5).commit({ roundStrategy: "NBR5891" });
+    it("toHTML deve gerar HTML com CSS e rastro de auditoria", async () => {
+        const res = await CalcAUY.from(10).add(5).commit({ roundStrategy: "NBR5891" });
         const html = res.toHTML(mockKatex, { decimalPrecision: 2 });
 
         assertStringIncludes(html, '<div class="calc-auy-result"');
@@ -42,8 +42,8 @@ describe("CalcAUYOutput - HTML & Image Generation", () => {
         assertStringIncludes(html, "\\text{round}_{\\text{NBR-5891}}(10 + 5, 2) = 15.00");
     });
 
-    it("toImageBuffer deve gerar um buffer contendo SVG com rastro e metadados", () => {
-        const res = CalcAUY.from(10).add(5).commit({ roundStrategy: "NBR5891" });
+    it("toImageBuffer deve gerar um buffer contendo SVG com rastro e metadados", async () => {
+        const res = await CalcAUY.from(10).add(5).commit({ roundStrategy: "NBR5891" });
         const buffer = res.toImageBuffer(mockKatex, { decimalPrecision: 2 });
         const svg = new TextDecoder().decode(buffer);
 
@@ -54,8 +54,8 @@ describe("CalcAUYOutput - HTML & Image Generation", () => {
         assertStringIncludes(svg, "\\text{round}_{\\text{NBR-5891}}(10 + 5, 2) = 15.00");
     });
 
-    it("toImageBuffer deve ajustar altura para frações e raízes", () => {
-        const res = CalcAUY.from(10).div(3).commit({ roundStrategy: "HALF_UP" });
+    it("toImageBuffer deve ajustar altura para frações e raízes", async () => {
+        const res = await CalcAUY.from(10).div(3).commit({ roundStrategy: "HALF_UP" });
         const buffer = res.toImageBuffer(mockKatex);
         const svg = new TextDecoder().decode(buffer);
 
@@ -70,28 +70,28 @@ describe("CalcAUYOutput - Output Methods and Customization", () => {
     // Restore mocks and logging policy after each test
     beforeEach(() => {
         outputLogger.isEnabledFor = originalIsEnabledFor;
-        loggingPolicy.sensitive = originalLoggingPolicySensitive; // Reset logging policy
+        securityPolicy.sensitive = originalsecurityPolicySensitive; // Reset logging policy
     });
 
-    it("deve retornar o resultado arredondado como BigInt", () => {
-        const res = CalcAUY.from(10).div(3).commit();
+    it("deve retornar o resultado arredondado como BigInt", async () => {
+        const res = await CalcAUY.from(10).div(3).commit();
         assertEquals(res.toRawInternalBigInt(), 3n); // 10/3 rounded to 0 decimals is 3
     });
 
-    it("deve formatar o resultado como valor monetário padrão (pt-BR, BRL)", () => {
-        const res = CalcAUY.from(1234.56).commit();
+    it("deve formatar o resultado como valor monetário padrão (pt-BR, BRL)", async () => {
+        const res = await CalcAUY.from(1234.56).commit();
         assertEquals(res.toMonetary({ decimalPrecision: 2 }), "R$ 1.234,56");
     });
 
-    it("deve formatar o resultado como valor monetário com opções customizadas (en-US, USD, 0 casas decimais)", () => {
-        const res = CalcAUY.from(1234.567).commit();
+    it("deve formatar o resultado como valor monetário com opções customizadas (en-US, USD, 0 casas decimais)", async () => {
+        const res = await CalcAUY.from(1234.567).commit();
         // Use a known locale for consistent output in different environments
         assertEquals(res.toMonetary({ locale: "en-US", currency: "USD", decimalPrecision: 0 }), "$1,235");
         assertEquals(res.toMonetary({ locale: "en-US", currency: "EUR", decimalPrecision: 2 }), "€1,234.57");
     });
 
-    it("toJSON: deve retornar a representação JSON com as chaves padrão e excluir as chaves de output", () => {
-        const res = CalcAUY.from(10).add(5).commit();
+    it("toJSON: deve retornar a representação JSON com as chaves padrão e excluir as chaves de output", async () => {
+        const res = await CalcAUY.from(10).add(5).commit();
         const json: any = JSON.parse(res.toJSON()); // JSON.parse here
 
         // Check for default keys
@@ -113,8 +113,8 @@ describe("CalcAUYOutput - Output Methods and Customization", () => {
         assertEquals(json.toStringNumber, "15.00");
     });
 
-    it("deve permitir processamento de saída customizado via processor", () => {
-        const res = CalcAUY.from(10).div(3).commit();
+    it("deve permitir processamento de saída customizado via processor", async () => {
+        const res = await CalcAUY.from(10).div(3).commit();
 
         interface CustomOutput {
             numerator: string;
@@ -143,7 +143,7 @@ describe("CalcAUYOutput - Output Methods and Customization", () => {
         assertEquals(customResult.decimal, "3.33");
     });
 
-    it("deve chamar logger.info quando um método de output é invocado e o info está habilitado", () => {
+    it("deve chamar logger.info quando um método de output é invocado e o info está habilitado", async () => {
         let infoCalled = false;
         outputLogger.isEnabledFor = (level: LogLevel) => {
             if (level === "info") {
@@ -153,11 +153,11 @@ describe("CalcAUYOutput - Output Methods and Customization", () => {
             return false;
         };
 
-        CalcAUY.from(10).commit().toMonetary();
+        (await CalcAUY.from(10).commit()).toMonetary();
         assertEquals(infoCalled, true, "logger.info should have been called for toMonetary");
 
         infoCalled = false; // Reset
-        CalcAUY.from(10).commit().toLaTeX();
+        (await CalcAUY.from(10).commit()).toLaTeX();
         assertEquals(infoCalled, true, "logger.info should have been called for toLaTeX");
     });
 });

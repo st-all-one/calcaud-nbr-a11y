@@ -29,8 +29,8 @@ describe("Benchmark Real: CalcAUY + SQLite (Otimizado)", () => {
         const start = performance.now();
         db.execute("BEGIN TRANSACTION");
 
-        await ProcessBatchAUY(faturasBrutas, (fatura) => {
-            const res = CalcAUY.from(fatura.valor).mult("1.05").commit();
+        await ProcessBatchAUY(faturasBrutas, async (fatura) => {
+            const res = await CalcAUY.from(fatura.valor).mult("1.05").commit();
             query.execute([
                 fatura.id,
                 fatura.valor,

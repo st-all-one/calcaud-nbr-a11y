@@ -101,7 +101,7 @@ describe("Metadados - Validação de Formato", () => {
             "O tipo 'symbol' não é permitido em metadados (apenas primitives, plain objects e arrays).",
         );
         assertThrows(
-            () => validateMetadata(() => {}),
+            () => validateMetadata(async () => {}),
             CalcAUYError,
             "O tipo 'function' não é permitido em metadados (apenas primitives, plain objects e arrays).",
         );

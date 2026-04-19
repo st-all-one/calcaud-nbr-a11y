@@ -20,7 +20,7 @@ describe("Benchmark: Acúmulo Massivo (Reducer)", () => {
             reducer: (acc: CalcAUY, val: CalcAUY) => acc.add(val),
         }) as CalcAUY;
 
-        const output = result.commit();
+        const output = await result.commit();
         const end = performance.now();
 
         const totalAcumulado = output.toStringNumber({ decimalPrecision: 4 });

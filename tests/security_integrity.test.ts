@@ -74,20 +74,20 @@ describe("CalcAUY - Segurança e Integridade (BLAKE3)", () => {
     });
 
     it("deve validar a integridade do commit e do rastro de auditoria", async () => {
-        CalcAUY.setSecurityPolicy({ salt: "prod_salt" });
+        await CalcAUY.setSecurityPolicy({ salt: "prod_salt" });
 
         const res = await CalcAUY.from(10).div(3).commit({ roundStrategy: "TRUNCATE" });
         const auditTrace = res.toAuditTrace();
 
-        // Deve hidratar sem erros
-        const rehydrated = await CalcAUY.hydrate(auditTrace);
-        assertEquals(await ({ decimalPrecision: 4 }), "3.3333");
+        // Deve hidratar sem erros, passando o salt correto
+        const rehydrated = await CalcAUY.hydrate(auditTrace, { salt: "prod_salt" });
+        assertEquals(await (await rehydrated.commit()).toStringNumber({ decimalPrecision: 4 }), "3.3333");
 
         // Violação no resultado final (muda a estratégia no rastro)
         const corruptedAudit = auditTrace.replace('"TRUNCATE"', '"NBR5891"');
         await assertRejects(
             async () => {
-                await CalcAUY.hydrate(corruptedAudit);
+                await CalcAUY.hydrate(corruptedAudit, { salt: "prod_salt" });
             },
             CalcAUYError,
             "Violação de integridade detectada",
@@ -99,13 +99,12 @@ describe("CalcAUY - Segurança e Integridade (BLAKE3)", () => {
         const calc = CalcAUY.from(50);
         const signed = await calc.hibernate();
 
-        const isValid = await CalcAUY.checkSignature(signed);
+        const isValid = await CalcAUY.checkSignature(signed, { salt: "check" });
         assertEquals(isValid, true);
 
-        // Se mudar o salt global, a assinatura deve invalidar
-        CalcAUY.setSecurityPolicy({ salt: "wrong_salt" });
+        // Se usar o salt errado na verificação, a assinatura deve invalidar
         await assertRejects(async () => {
-            await CalcAUY.checkSignature(signed);
-        });
+            await CalcAUY.checkSignature(signed, { salt: "wrong_salt" });
+        }, CalcAUYError, "Violação de integridade detectada");
     });
 });

@@ -7,9 +7,9 @@ const mockKatex = {
 };
 
 describe("Custom A11y Translation", () => {
-    it("deve usar tradução customizada em toVerbalA11y", () => {
+    it("deve usar tradução customizada em toVerbalA11y", async () => {
         const calc = CalcAUY.from("10").add("5");
-        const res = calc.commit();
+        const res = await calc.commit();
 
         const customLoc: CalcAUYLocaleA11y = {
             locale: "custom",
@@ -43,9 +43,9 @@ describe("Custom A11y Translation", () => {
         assertStringIncludes(verbal, "10 somado com 5 resulta em 15 vírgula 00");
     });
 
-    it("deve propagar tradução customizada para toHTML", () => {
+    it("deve propagar tradução customizada para toHTML", async () => {
         const calc = CalcAUY.from("10").add("5");
-        const res = calc.commit();
+        const res = await calc.commit();
 
         const customLoc: CalcAUYLocaleA11y = {
             locale: "custom",
@@ -79,9 +79,9 @@ describe("Custom A11y Translation", () => {
         assertStringIncludes(html, 'aria-label="10 somado com 5 resulta em 15 vírgula 00');
     });
 
-    it("toImageBuffer não deve conter verbalização no SVG", () => {
+    it("toImageBuffer não deve conter verbalização no SVG", async () => {
         const calc = CalcAUY.from("10").add("5");
-        const res = calc.commit();
+        const res = await calc.commit();
 
         const buffer = res.toImageBuffer(mockKatex as any);
         const svg = new TextDecoder().decode(buffer);

@@ -1,8 +1,8 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
-import { CalcAUYError, ErrorCategory, ErrorContext } from "@src/core/errors.ts";
+import { CalcAUYError, type ErrorCategory, type ErrorContext } from "@src/core/errors.ts";
 import { getSubLogger } from "@src/utils/logger.ts";
-import { loggingPolicy } from "@src/utils/sanitizer.ts"; // Import loggingPolicy
+import { securityPolicy } from "@src/utils/sanitizer.ts"; // Import securityPolicy
 
 // Type for valid log levels
 type LogLevel = "trace" | "debug" | "info" | "warning" | "error" | "fatal";
@@ -10,16 +10,16 @@ type LogLevel = "trace" | "debug" | "info" | "warning" | "error" | "fatal";
 // Mock logger.isEnabledFor for testing logging calls.
 const errorLogger = getSubLogger("error");
 const originalIsEnabledFor = errorLogger.isEnabledFor;
-const originalLoggingPolicySensitive = loggingPolicy.sensitive; // Store original state
+const originalsecurityPolicySensitive = securityPolicy.sensitive; // Store original state
 
 describe("CalcAUYError - Gerenciamento de Erros e Telemetria", () => {
     // Restore mocks and logging policy after each test
     beforeEach(() => {
         errorLogger.isEnabledFor = originalIsEnabledFor;
-        loggingPolicy.sensitive = originalLoggingPolicySensitive; // Reset logging policy
+        securityPolicy.sensitive = originalsecurityPolicySensitive; // Reset logging policy
     });
 
-    it("deve criar um CalcAUYError com propriedades RFC 7807 corretas e serializá-lo via toJSON", () => {
+    it("deve criar um CalcAUYError com propriedades RFC 7807 corretas e serializá-lo via toJSON", async () => {
         const category: ErrorCategory = "division-by-zero";
         const detail = "Divisão por zero não permitida.";
         const context: ErrorContext = { operation: "div", rawInput: "1/0", sensitiveData: "secret" };
@@ -55,7 +55,7 @@ describe("CalcAUYError - Gerenciamento de Erros e Telemetria", () => {
         let loggedPayload: any = null;
 
         // Ensure logging policy is sensitive by default
-        loggingPolicy.sensitive = true;
+        securityPolicy.sensitive = true;
 
         // Mock isEnabledFor to enable logging
         errorLogger.isEnabledFor = (level: LogLevel) => {
@@ -109,7 +109,7 @@ describe("CalcAUYError - Gerenciamento de Erros e Telemetria", () => {
 
         // Mock logger.error to check if it's called
         const originalErrorMethod = errorLogger.error;
-        errorLogger.error = (() => { // Use as any to bypass type checking
+        errorLogger.error = (async () => { // Use as any to bypass type checking
             errorCalled = true;
         }) as any;
 

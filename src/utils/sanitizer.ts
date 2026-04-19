@@ -59,34 +59,27 @@ export function setGlobalSecurityPolicy(policy: {
 }
 
 /**
- * Determina se um nó deve ter seus dados ocultados com base na política
- * global ou na sobreposição específica do nó via metadados.
- *
- * @param node Nó a ser verificado.
- * @returns true se deve ocultar, false se deve mostrar.
- */
-function shouldHide(node: CalculationNode): boolean {
-    const nodeOverride = node.metadata?.pii;
-
-    // Se o nó tem uma sobreposição específica (pii: true|false), ela manda.
-    if (typeof nodeOverride === "boolean") {
-        return nodeOverride;
-    }
-
-    // Caso contrário, segue estritamente a política global
-    return securityPolicy.sensitive;
-}
-
-/**
  * Sanitiza a estrutura da AST para logs, removendo valores literais e metadados.
  *
  * @param node Nó da AST a ser sanitizado.
+ * @param parentHide Estado de ocultação herdado do pai (opcional).
  * @returns Objeto sanitizado pronto para log.
  */
-export function sanitizeAST(node: CalculationNode): object {
+export function sanitizeAST(node: CalculationNode, parentHide?: boolean): object {
     if (!node) { return { kind: "null" }; }
 
-    const hide = shouldHide(node);
+    const nodeOverride = node.metadata?.pii;
+    let hide: boolean;
+
+    if (typeof nodeOverride === "boolean") {
+        hide = nodeOverride;
+    } else if (node.kind === "literal" && parentHide !== undefined) {
+        // Literals inherit from parent if no override is present
+        hide = parentHide;
+    } else {
+        // Operations and Groups default to global policy if no override is present
+        hide = securityPolicy.sensitive;
+    }
 
     const sanitized: Record<string, unknown> = {
         kind: node.kind,
@@ -96,10 +89,10 @@ export function sanitizeAST(node: CalculationNode): object {
         sanitized.value = hide ? { n: REDACTED, d: REDACTED } : node.value;
         sanitized.originalInput = hide ? REDACTED : node.originalInput;
     } else if (node.kind === "group") {
-        sanitized.child = sanitizeAST(node.child);
+        sanitized.child = sanitizeAST(node.child, hide);
     } else if (node.kind === "operation") {
         sanitized.type = node.type;
-        sanitized.operands = node.operands.map((op) => sanitizeAST(op));
+        sanitized.operands = node.operands.map((op) => sanitizeAST(op, hide));
     }
 
     if (node.metadata) {

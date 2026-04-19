@@ -1,6 +1,6 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import { assertEquals } from "@std/assert";
-import { loggingPolicy, sanitizeAST, sanitizeObject, setGlobalLoggingPolicy } from "@src/utils/sanitizer.ts";
+import { sanitizeAST, sanitizeObject, securityPolicy, setGlobalSecurityPolicy } from "@src/utils/sanitizer.ts";
 import type { GroupNode, LiteralNode, OperationNode } from "@src/ast/types.ts";
 
 const REDACTED = "[PII]";
@@ -9,15 +9,15 @@ const REDACTED_VALUE = { n: REDACTED, d: REDACTED };
 describe("Sanitizer Utilities", () => {
     beforeEach(() => {
         // Reset to default sensitive state for consistency
-        loggingPolicy.sensitive = true;
+        securityPolicy.sensitive = true;
     });
 
-    it("setGlobalLoggingPolicy deve definir a política global de logging", () => {
-        setGlobalLoggingPolicy({ sensitive: false });
-        assertEquals(loggingPolicy.sensitive, false);
+    it("setGlobalSecurityPolicy deve definir a política global de logging", () => {
+        setGlobalSecurityPolicy({ sensitive: false });
+        assertEquals(securityPolicy.sensitive, false);
 
-        setGlobalLoggingPolicy({ sensitive: true });
-        assertEquals(loggingPolicy.sensitive, true);
+        setGlobalSecurityPolicy({ sensitive: true });
+        assertEquals(securityPolicy.sensitive, true);
     });
 
     describe("sanitizeAST", () => {
@@ -45,8 +45,8 @@ describe("Sanitizer Utilities", () => {
             assertEquals(sanitized.label, REDACTED);
         });
 
-        it("deve mostrar valores literais e metadata quando loggingPolicy.sensitive for false", () => {
-            setGlobalLoggingPolicy({ sensitive: false });
+        it("deve mostrar valores literais e metadata quando securityPolicy.sensitive for false", () => {
+            setGlobalSecurityPolicy({ sensitive: false });
             const node: LiteralNode = {
                 kind: "literal",
                 value: { n: "123", d: "1" },
@@ -110,7 +110,7 @@ describe("Sanitizer Utilities", () => {
             assertEquals(sanitized1.metadata, node1.metadata);
 
             // Caso 2: PII = true no nó (oculta dados, mesmo que global.sensitive = false)
-            setGlobalLoggingPolicy({ sensitive: false });
+            setGlobalSecurityPolicy({ sensitive: false });
             const node2: LiteralNode = {
                 kind: "literal",
                 value: { n: "200", d: "1" },
@@ -129,8 +129,8 @@ describe("Sanitizer Utilities", () => {
             assertEquals(sanitizeObject(undefined), undefined);
         });
 
-        it("deve retornar o objeto original se loggingPolicy.sensitive for false", () => {
-            setGlobalLoggingPolicy({ sensitive: false });
+        it("deve retornar o objeto original se securityPolicy.sensitive for false", () => {
+            setGlobalSecurityPolicy({ sensitive: false });
             const obj = { secret: "data", num: 123 };
             assertEquals(sanitizeObject(obj), obj);
         });

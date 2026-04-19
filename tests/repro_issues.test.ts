@@ -31,7 +31,7 @@ describe("Reproduction of reported issues", () => {
     });
 
     it("should handle complex nested power without BigInt size error", () => {
-        // CalcAUY.from(2).add(5).mult(3).pow(CalcAUY.from(2).pow(2).pow("3/7"))
+        // await CalcAUY.from(2).add(5).mult(3).pow(await CalcAUY.from(2).pow(2).pow("3/7"))
         // Base = 21, Exponent = 4^(3/7) approx 1.811
         const base = RationalNumber.from(21);
         const innerExp = RationalNumber.from(4).pow(RationalNumber.from("3/7"));

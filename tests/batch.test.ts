@@ -6,8 +6,8 @@ import { ProcessBatchAUY } from "@src/utils/batch.ts";
 describe("CalcAUY - Batch Processing", () => {
     it("deve processar um lote de itens corretamente", async () => {
         const items = [10, 20, 30, 40, 50];
-        const results = await ProcessBatchAUY(items, (val) => {
-            return CalcAUY.from(val).add(5).commit().toFloatNumber();
+        const results = await ProcessBatchAUY(items, async (val) => {
+            return (await CalcAUY.from(val).add(5).commit()).toFloatNumber();
         }, { batchSize: 2 });
 
         expect(results).toEqual([15, 25, 35, 45, 55]);
@@ -38,8 +38,8 @@ describe("CalcAUY - Batch Processing", () => {
             yield 30;
         }
 
-        const results = await ProcessBatchAUY(dataStream(), (val) => {
-            return CalcAUY.from(val).add(10).commit().toFloatNumber();
+        const results = await ProcessBatchAUY(dataStream(), async (val) => {
+            return (await CalcAUY.from(val).add(10).commit()).toFloatNumber();
         }, { batchSize: 1 });
 
         expect(results).toEqual([20, 30, 40]);
@@ -80,8 +80,8 @@ describe("CalcAUY - Batch Processing", () => {
 
     it("deve funcionar com grandes volumes sem erros de integridade", async () => {
         const items = Array.from({ length: 5000 }).map(() => "1.5");
-        const results = await ProcessBatchAUY(items, (val) => {
-            return CalcAUY.from(val).mult(2).commit().toStringNumber({ decimalPrecision: 1 });
+        const results = await ProcessBatchAUY(items, async (val) => {
+            return (await CalcAUY.from(val).mult(2).commit()).toStringNumber({ decimalPrecision: 1 });
         }, { batchSize: 1000 });
 
         expect(results.length).toBe(5000);

@@ -8,7 +8,11 @@ describe("AST Builder Utils - Validação e Anexação", () => {
     describe("validateASTNode", () => {
         it("deve lançar erro se o nó for nulo ou não for um objeto", () => {
             assertThrows(() => validateASTNode(null), CalcAUYError, "O nó da AST deve ser um objeto válido.");
-            assertThrows(() => validateASTNode(undefined), CalcAUYError, "O nó da AST deve ser um objeto válido.");
+            assertThrows(
+                () => validateASTNode(undefined),
+                CalcAUYError,
+                "O nó da AST deve ser um objeto válido.",
+            );
             assertThrows(
                 () => validateASTNode("not-an-object"),
                 CalcAUYError,
