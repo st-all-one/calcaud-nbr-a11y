@@ -36,3 +36,9 @@ const calc = CalcAUY.from("R$ 10.50");
 A CalcAUY adota a filosofia de **Ambiguidade Zero**. Tentar "adivinhar" a intenção do usuário diante de uma sintaxe malformada (ex: transformar `10 ++ 5` em `10 + 5`) é perigoso em contextos financeiros.
 
 Auto-correções ocultam bugs na camada de interface ou na lógica de negócio que gera as fórmulas. Se a biblioteca aceitasse expressões duvidosas, o rastro de auditoria (LaTeX/Verbal) não refletiria a entrada real, quebrando o princípio de **Não-Repúdio Técnico**. Por isso, exigimos que o input seja matematicamente perfeito antes de aceitá-lo na AST.
+
+---
+
+## 🔗 Veja também
+- [**Guia de Erros**](../errors.md): Lista completa de exceções da CalcAUY.
+- [**Central de Documentação**](../entrypoint.md): Voltar para a página principal.

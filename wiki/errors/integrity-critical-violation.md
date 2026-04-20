@@ -71,3 +71,9 @@ Se este erro surgir enquanto um auditor externo estiver analisando o sistema:
 ### 4. Correção (Recuperação Segura)
 - **Rollback para Snapshot:** A única forma legítima de corrigir é restaurar o JSON original de um backup de logs onde a assinatura ainda era válida.
 - **Justificativa Documentada:** Se o dado precisar ser corrigido manualmente, crie um NOVO registro de auditoria explicando a correção, em vez de sobrescrever o rastro corrompido.
+
+---
+
+## 🔗 Veja também
+- [**Guia de Erros**](../errors.md): Lista completa de exceções da CalcAUY.
+- [**Central de Documentação**](../entrypoint.md): Voltar para a página principal.

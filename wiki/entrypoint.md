@@ -78,6 +78,10 @@ Como extrair resultados e provas matemáticas após o `commit()`.
 Para cenários que exigem blindagem jurídica e técnica de nível militar.
 *   [**Segurança e Defesa Jurídica**](./security-audit-deep-dive.md): Como usar a lib para proteção contra fraudes e erros de precisão.
 
+### 5. Tratamento de Erros
+Entenda as proteções da engine e como lidar com exceções.
+*   [**Guia de Erros**](./errors.md): Tabela rápida e glossário de exceções da engine.
+
 ---
 
 ## 🛠️ Especificações Técnicas (Rigor de Engenharia)

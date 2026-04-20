@@ -40,3 +40,9 @@ const calc = CalcAUY.from(val as any);
 A CalcAUY opera sob um modelo de **Confiança Zero (Zero Trust)** na camada de ingestão. Se permitíssemos o processamento de objetos complexos ou arrays tentando extrair valores numericos automaticamente (ex: pegando a primeira propriedade de um objeto), estaríamos assumindo um risco de negócio que não pertence à biblioteca matemática.
 
 Valores como `NaN` ou `Infinity` são estados de erro do padrão IEEE 754 que não possuem representação racional real ($n/d$). Tentar "normalizá-los" para `0` ocultaria falhas críticas de upstream. Forçar o erro garante que o desenvolvedor trate a origem do dado, mantendo a cadeia de custódia da informação financeira intacta.
+
+---
+
+## 🔗 Veja também
+- [**Guia de Erros**](../errors.md): Lista completa de exceções da CalcAUY.
+- [**Central de Documentação**](../entrypoint.md): Voltar para a página principal.

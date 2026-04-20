@@ -37,3 +37,9 @@ res.toStringNumber({ decimalPrecision: 1000000 });
 Embora a biblioteca pudesse simplesmente usar `Math.max(0, p)` para tratar precisões negativas, ela opta por lançar um erro para **preservar a intenção do desenvolvedor**. Solicitar uma precisão negativa ou absurdamente alta é geralmente um sinal de erro de cálculo na camada de apresentação.
 
 Se a CalcAUY corrigisse isso silenciosamente, o desenvolvedor nunca saberia que sua lógica de formatação está produzindo valores inesperados. A falha explícita garante que a camada de output seja tão rigorosa quanto a camada de cálculo, mantendo a consistência de ponta a ponta.
+
+---
+
+## 🔗 Veja também
+- [**Guia de Erros**](../errors.md): Lista completa de exceções da CalcAUY.
+- [**Central de Documentação**](../entrypoint.md): Voltar para a página principal.

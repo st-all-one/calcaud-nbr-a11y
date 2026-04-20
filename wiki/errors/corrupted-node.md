@@ -43,3 +43,9 @@ const calc = await CalcAUY.hydrate(ast as any, { salt: "" });
 Uma Árvore de Sintaxe Abstrata (AST) é o "DNA" do cálculo. Se um único nó está faltando uma propriedade ou tem um tipo inválido, a integridade de toda a cadeia matemática está comprometida.
 
 A biblioteca não tenta "reparar" nós corrompidos (ex: assumir que um nó sem tipo é um literal `0`) porque isso invalidaria o rastro de auditoria. Para a CalcAUY, **mais vale um sistema parado do que um sistema que produz cálculos errados silenciosamente**. A falha na hidratação é um mecanismo de autodefesa para evitar que cálculos "zumbis" ou imprevisíveis continuem a ser processados.
+
+---
+
+## 🔗 Veja também
+- [**Guia de Erros**](../errors.md): Lista completa de exceções da CalcAUY.
+- [**Central de Documentação**](../entrypoint.md): Voltar para a página principal.

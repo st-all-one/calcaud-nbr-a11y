@@ -38,3 +38,9 @@ const calc = bigNode.div("1e-1000000");
 Embora o `BigInt` do JavaScript seja teoricamente limitado apenas pela memória disponível, na prática, operações com números de milhões de bits consomem CPU e RAM de forma exponencial. Um único cálculo mal-projetado poderia derrubar um servidor inteiro.
 
 O limite de **1 milhão de bits** é uma guarda de segurança necessária para manter a estabilidade da aplicação host. A CalcAUY não tenta "arredondar" ou "truncar" o overflow porque isso produziria um resultado matemático completamente errado. Em um sistema de auditoria, **um erro explícito de capacidade é preferível a um número silenciosamente errado**.
+
+---
+
+## 🔗 Veja também
+- [**Guia de Erros**](../errors.md): Lista completa de exceções da CalcAUY.
+- [**Central de Documentação**](../entrypoint.md): Voltar para a página principal.

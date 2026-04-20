@@ -35,3 +35,9 @@ const calc = CalcAUY.parseExpression("(-16) ^ (1/4)");
 A `CalcAUY` é uma ferramenta de engenharia financeira e auditoria. O domínio de negócio destas áreas está 100% contido nos **Números Reais**. "Dinheiro imaginário" não existe em balanços contábeis.
 
 Implementar suporte a Números Complexos ($a + bi$) traria um overhead massivo de complexidade ao `RationalNumber` e à AST, sem nenhum ganho prático para o propósito da biblioteca. A biblioteca não tenta "corrigir" (ex: forçando o valor para absoluto) porque isso esconderia erros graves de modelagem matemática na fórmula do usuário. Se você está tirando a raiz de um número negativo, provavelmente sua lógica de negócio tem uma falha estrutural que precisa ser revisada.
+
+---
+
+## 🔗 Veja também
+- [**Guia de Erros**](../errors.md): Lista completa de exceções da CalcAUY.
+- [**Central de Documentação**](../entrypoint.md): Voltar para a página principal.

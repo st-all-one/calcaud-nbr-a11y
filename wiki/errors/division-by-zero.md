@@ -37,3 +37,9 @@ const calc = CalcAUY.from(100).divInt("0");
 Em matemática financeira e contábil, **não existe um valor padrão seguro para divisão por zero**. Retornar `0` seria matematicamente falso, e retornar um valor tendendo ao infinito corromperia o balanço de qualquer transação.
 
 A biblioteca não tenta "resolver" isso automaticamente (por exemplo, adicionando um valor minúsculo ao denominador) porque isso alteraria o resultado final de forma imprevisível e não auditável. Ao lançar a exceção, a CalcAUY força o sistema chamador a decidir qual é a regra de negócio correta para aquele cenário de exceção (ex: cancelar a operação ou usar um fallback definido por lei).
+
+---
+
+## 🔗 Veja também
+- [**Guia de Erros**](../errors.md): Lista completa de exceções da CalcAUY.
+- [**Central de Documentação**](../entrypoint.md): Voltar para a página principal.

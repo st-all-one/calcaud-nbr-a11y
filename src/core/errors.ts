@@ -56,7 +56,9 @@ export class CalcAUYError extends Error {
         context: ErrorContext = {},
     ) {
         super(detail);
-        this.type = `calc-auy/${category}`;
+        // RFC 7807: 'type' deve ser uma URI que identifica o tipo do problema.
+        this.type = `https://github.com/st-all-one/calc-auy/blob/main/wiki/errors/${category}.md`;
+        this.title = category; // 'title' passa a ser o identificador autodescritivo.
         this.detail = detail;
         this.context = context;
         this.instance = `urn:uuid:${crypto.randomUUID()}`;
@@ -72,19 +74,7 @@ export class CalcAUYError extends Error {
             "math-overflow": 422,
         };
 
-        const titleMap: Record<ErrorCategory, string> = {
-            "invalid-syntax": "Erro de Sintaxe Matemática",
-            "unsupported-type": "Tipo de Entrada Não Suportado",
-            "division-by-zero": "Divisão por Zero Detectada",
-            "complex-result": "Resultado Matemático Não Suportado",
-            "invalid-precision": "Precisão Inválida",
-            "corrupted-node": "Estrutura AST Corrompida",
-            "integrity-critical-violation": "Violação Crítica de Integridade",
-            "math-overflow": "Transbordo de Capacidade Matemática",
-        };
-
         this.status = statusMap[category];
-        this.title = titleMap[category];
         this.name = "CalcAUYError";
 
         // Telemetria Sanitizada
