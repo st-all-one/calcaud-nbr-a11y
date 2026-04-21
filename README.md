@@ -2,7 +2,7 @@
 
 # CalcAUY
 
-**Infraestrutura de Cálculo AST para Engenharia Financeira e Inclusão Digital**
+**Infraestrutura Aritmética AST para Segurança Jurídica e Inclusividade Digital**
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-2b3a42?style=for-the-badge)](https://opensource.org/licenses/MPL-2.0)
 [![JSR](https://img.shields.io/badge/JSR-F7DF1E?style=for-the-badge&logo=jsr&logoColor=000)](https://jsr.io/@st-all-one/calc-auy)
@@ -10,15 +10,15 @@
 
 </div>
 
-A **CalcAUY** é uma infraestrutura em **TypeScript** projetada para neutralizar a imprecisão do padrão **IEEE 754**, assegurando integridade atuarial através da **Imutabilidade estrita e Árvore de Sintaxe Abstrata (AST)**, transformando cada operação matemática em uma evidência confiável, transparente, inclusiva e auditável.
+A **`CalcAUY`** é uma infraestrutura aritmética que resolve o risco sistêmico do padrão **IEEE 754** ao fundir precisão racional, integridade criptográfica e rastreabilidade total. Através de uma arquitetura baseada em **Imutabilidade Estrita e Árvore de Sintaxe Abstrata (AST)**, a biblioteca permite cálculos determinísticos, contextualizados e com lacre de integridade, servindo como evidência matemática confiável, transparente, inclusiva e auditável.
 
 ---
 
 ## 📖 Documentação
 
-- [Entendendo a CalcAUY](./docs/start.md)
-- [Exemplos de uso](./docs/examples.md)
-- [Especificações](./docs/specs.md)
+- [Entendendo a CalcAUY]()
+- [Casos de uso]()
+- [Segurança e Auditabilidade]()
 
 ## 🛩️ Demonstração
 
@@ -42,9 +42,12 @@ import { CalcAUY } from "@st-all-one/calc-auy";
 
 // ==== Cálculo de Juros Compostos ====
 
-// Política de segurança (opcional)
-const SALT = "MY-SECRET-SALT";
-const BaseSegura = CalcAUY.setSecurityPolicy({ salt: SALT });
+// Política de segurança (Lacre global)
+const SALT = "MY-SECRET-SALT-2026";
+const ENCODER = "HEX";
+const ROUNDING_STRATEGY = "NBR5891";
+
+const SafeCalc = CalcAUY.setSecurityPolicy({ salt: SALT, encoder: ENCODER });
 
 // == Parâmetros ==
 const capitalInicial = 10_000.00;
@@ -52,25 +55,25 @@ const taxaJurosAnual = "14.75%";
 const anosDecorridos = 3;
 
 // Construção da AST de cálculo [ M = C * (1 + j)^t ]
-const montante = BaseSegura
+const montante = SafeCalc
     .from(capitalInicial)
     .mult(
-        CalcAUY.from(1)
+        SafeCalc.from(1)
             .add(taxaJurosAnual).setMetadata("ref", "SELIC, mar/26")
             .group()
             .pow(anosDecorridos),
     )
     .setMetadata("meta", {
-        data_de_calculo: new Date().toISOString(),
-        usuário: { id: 99, calc_token: crypto.randomUUID(), username: "st-all-one" },
+        data_de_calculo: "2026-04-21T09:00:00.000Z",
+        usuário: { id: 99, calc_token: "...UUID...", username: "st-all-one" },
     });
 
 // Colapso da AST e definição estratégia de arredondamento
-const resultado = await montante.commit({ roundStrategy: "NBR5891" });
+const resultado = await montante.commit({ roundStrategy: ROUNDING_STRATEGY });
 
-// Extração dos Outputs
+// == Extração dos Outputs ==
 console.log(resultado.toMonetary());
-// R$ 15.109,78
+// R$ 15.109,78
 
 console.log(resultado.toUnicode());
 // roundₙᵦᵣ₋₅₈₉₁(10000 × ((1 + 14.75%)³), 2) = 15109.78
@@ -78,76 +81,123 @@ console.log(resultado.toUnicode());
 console.log(resultado.toVerbalA11y());
 // 10000 multiplicado por abre parênteses abre parênteses 1 mais 14.75% fecha parênteses elevado a 3 fecha parênteses é igual a 15109 vírgula 78 (Arredondamento: NBR-5891 para 2 casas decimais).
 
-const ASTSerializadaAuditavel = resultado.toAuditTrace();
-console.log(ASTSerializadaAuditavel);
+const RastroAuditavel = resultado.toAuditTrace();
+console.log(RastroAuditavel);
 /*
-{"ast":{"kind":"operation","type":"mul","operands":[{"kind":"literal","value":{"n":"10000","d":"1"},"originalInput":"10000"},{"kind":"group","child":{"kind":"operation","type":"pow","operands":[{"kind":"group","child":{"kind":"operation","type":"add","operands":[{"kind":"literal","value":{"n":"1","d":"1"},"originalInput":"1"},{"kind":"literal","value":{"n":"59","d":"400"},"originalInput":"14.75%"}],"metadata":{"ref":"SELIC, mar/26"}}},{"kind":"literal","value":{"n":"3","d":"1"},"originalInput":"3"}]}}],"metadata":{"meta":{"data_de_calculo":"2026-04-19T20:45:53.017Z","usuário":{"id":99,"calc_token":"a5978a62-d6fa-4523-b1d5-6152e0a44757","username":"st-all-one"}}}},"finalResult":{"n":"96702579","d":"6400"},"strategy":"NBR5891","signature":"bbf386362c0a27340c748d77c9a3a72f1a8e7f2c8481fbe3ff9badb4e959ec7d"}
+{"ast":{"kind":"operation","type":"mul","operands":[{"kind":"literal","value":{"n":"10000","d":"1"},"originalInput":"10000"},{"kind":"group","child":{"kind":"operation","type":"pow","operands":[{"kind":"group","child":{"kind":"operation","type":"add","operands":[{"kind":"literal","value":{"n":"1","d":"1"},"originalInput":"1"},{"kind":"literal","value":{"n":"59","d":"400"},"originalInput":"14.75%"}],"metadata":{"ref":"SELIC, mar/26"}}},{"kind":"literal","value":{"n":"3","d":"1"},"originalInput":"3"}]}}],"metadata":{"meta":{"data_de_calculo":"2026-04-21T09:00:00.000Z","usuário":{"id":99,"calc_token":"...UUID...","username":"st-all-one"}}}},"finalResult":{"n":"96702579","d":"6400"},"strategy":"NBR5891","signature":"b99d38e3726589136134614d4d3734ed469c8a81261d88aba309c278151f1515"}
 */
 
 // == Reabertura do cálculo ==
-const calculoReaberto = await CalcAUY.hydrate(ASTSerializadaAuditavel, { salt: SALT });
+const calculoReaberto = await CalcAUY.hydrate(RastroAuditavel, { salt: SALT, encoder: ENCODER });
 
-const revisado = await calculoReaberto
+const aprovacao = await calculoReaberto
     .setMetadata("review", {
         status: "aprovado",
-        usuario: { id: 1, date: new Date().toISOString(), username: "One" },
+        usuario: { id: 1, date: "2026-04-21T10:00:00.000Z", username: "One" },
     })
-    .commit({ roundStrategy: JSON.parse(ASTSerializadaAuditavel).strategy });
+    .commit({ roundStrategy: JSON.parse(RastroAuditavel).strategy });
 
-console.log(revisado.toAuditTrace());
+const rastroAprovado = aprovacao.toAuditTrace();
+console.log(rastroAprovado);
 /*
-{"ast":{"kind":"operation","type":"mul","operands":[{"kind":"literal","value":{"n":"10000","d":"1"},"originalInput":"10000"},{"kind":"group","child":{"kind":"operation","type":"pow","operands":[{"kind":"group","child":{"kind":"operation","type":"add","operands":[{"kind":"literal","value":{"n":"1","d":"1"},"originalInput":"1"},{"kind":"literal","value":{"n":"59","d":"400"},"originalInput":"14.75%"}],"metadata":{"ref":"SELIC, mar/26"}}},{"kind":"literal","value":{"n":"3","d":"1"},"originalInput":"3"}]}}],"metadata":{"meta":{"data_de_calculo":"2026-04-19T20:45:53.017Z","usuário":{"id":99,"calc_token":"a5978a62-d6fa-4523-b1d5-6152e0a44757","username":"st-all-one"}},"review":{"status":"aprovado","usuario":{"id":1,"date":"2026-04-19T20:45:53.030Z","username":"One"}}}},"finalResult":{"n":"96702579","d":"6400"},"strategy":"NBR5891","signature":"a20b7f2deab09a1480d8c7cd65a8916a6e66d8ef142de935e3c49db2554defd2"}
+{"ast":{"kind":"operation","type":"mul","operands":[{"kind":"literal","value":{"n":"10000","d":"1"},"originalInput":"10000"},{"kind":"group","child":{"kind":"operation","type":"pow","operands":[{"kind":"group","child":{"kind":"operation","type":"add","operands":[{"kind":"literal","value":{"n":"1","d":"1"},"originalInput":"1"},{"kind":"literal","value":{"n":"59","d":"400"},"originalInput":"14.75%"}],"metadata":{"ref":"SELIC, mar/26"}}},{"kind":"literal","value":{"n":"3","d":"1"},"originalInput":"3"}]}}],"metadata":{"meta":{"data_de_calculo":"2026-04-21T09:00:00.000Z","usuário":{"id":99,"calc_token":"...UUID...","username":"st-all-one"}},"review":{"status":"aprovado","usuario":{"id":1,"date":"2026-04-21T10:00:00.000Z","username":"One"}}}},"finalResult":{"n":"96702579","d":"6400"},"strategy":"NBR5891","signature":"d7fd4aff41a764903c997e5def57eadc655cbaed166f6c93ab59939f327c2d46"}
 */
 ```
-> **OBS:**
-> Note que a `"signature"` mudou entre a versão **'original'** e a **'com revisao'**.
+> **NOTA:**
+> Note que a `"signature"` mudou entre a versão **'original'** e a **'aprovada'**.
 > Esse comportamento é essencial para criar uma [**Cadeia de Custódia**](https://pt.wikipedia.org/wiki/Cadeia_de_cust%C3%B3dia), podendo ser usado para rastrear e validar modificações.
 
+<details>
+<summary><b>🛡️ Defesa Ativa contra Manipulação</b></summary>
+
+```ts
+// == Tentativa de Fraude ==
+const fraude = JSON.parse(rastroAprovado);
+fraude["strategy"] = "TRUNCATE";
+
+try {
+    await CalcAUY.checkIntegrity(fraude, { salt: SALT, encoder: ENCODER });
+} catch (e) {
+    console.error(e);
+}
+/*
+CalcAUYError: Violação de integridade detectada: a assinatura não confere com o conteúdo.
+    at CalcAUY.checkIntegrity (file:///.../src/builder.ts:323:19)
+    at async file:... {
+  type: "https://github.com/st-all-one/calc-auy/blob/main/wiki/errors/integrity-critical-violation.md",
+  title: "integrity-critical-violation",
+  status: 500,
+  detail: "Violação de integridade detectada: a assinatura não confere com o conteúdo.",
+  instance: "urn:uuid:019db142-f59d-7606-9f20-6ebfa53759e0",
+  context: {
+    expected: "91e3f9b606fcf33f4c77dfa1d33e3faa889977558886005f922724dafd30cb1e",
+    received: "d7fd4aff41a764903c997e5def57eadc655cbaed166f6c93ab59939f327c2d46"
+  }
+}
+*/
+```
+
+> **NOTA:**
+> Embora tenha sido mostrada a alteração no item "`strategy`", qualquer alteração, em qualquer ponto do objeto serializado, seja um "`0`" a mais dentro da `AST` ou uma letra diferente em qualquer "`metadado`", invalidará a assinatura da mesma forma.
+> A integridade do objeto é total, ou tudo permanece idêntico, ou é considerado [violação crítica de integridade](./wiki/errors/integrity-critical-violation.md).
+> O método "`.hydrate`" também executa essa verificação antes de qualquer avaliação da `AST` em si.
+
+</details>
+
+
+## 🌐 Possibilidades de Uso
+
+A **`CalcAUY`** foi construída do zero para cenários onde a **prova do resultado** é tão importante quanto o valor final.
+
+- **🏦 Financeiro & Contábil**: Juros compostos, amortizações e rateios de centavos (LRA) com precisão atuarial.
+- **🏥 Saúde & Farmacologia**: Cálculos de dosagem exata (mg/kg) sem erros de arredondamento binário.
+- **🧪 Ciência & Dados**: Estequiometria química e conversão de unidades sem o "drift" do ponto flutuante.
+- **🏗️ Engenharias**: Cálculos de carga e tensões estruturais com rastro documental para certificações.
+- **⚖️ Jurídico**: Geração de memoriais de cálculo em LaTeX para anexar como prova em processos.
+- **🎮 Jogos & Simulações**: Física determinística e economia in-game perfeitamente sincronizada (Cross-platform).
+
+---
 
 ## 🎯 Qual problema a CalcAUY resolve?
 
-No desenvolvimento de softwares, o uso do padrão **IEEE 754** (`number/float`) introduz um risco sistêmico. Imprecisões binárias, como o clássico `0.1 + 0.2 !== 0.3`, não são meras curiosidades matemáticas; em escala, transformam-se em rombos financeiros, falhas de compliance e passivos jurídicos. Garantir a exatidão é o ponto de partida; **provar como o cálculo foi feito e a integridade dos dados** é o que garante segurança jurídica para o ecossistema.
+No desenvolvimento de softwares, o uso do padrão **IEEE 754** (`number/float`) introduz um risco sistêmico. Imprecisões binárias, como o clássico `0.1 + 0.2 !== 0.3`, não são meras curiosidades matemáticas; em escala, transformam-se em rombos financeiros, falhas de compliance e passivos jurídicos. Garantir a exatidão é o ponto de partida; **provar como o cálculo foi feito e a integridade da informação** é o que garante segurança jurídica para o ecossistema.
 
-A **`CalcAUY`** elimina esses riscos ao tratar cada operação como um **artefato auditável**, resolvendo a falta de transparência dos motores convencionais ao fornecer evidências de **todas as etapas** que compõem o resultado com **assinatura de integridade**, facilitando a conformidade técnica e jurídica da aplicação.
+A **`CalcAUY`** elimina esses riscos ao tratar cada operação como um **artefato auditável**, resolvendo a falta de transparência dos motores convencionais ao fornecer evidências de **todas as etapas** que compõem o resultado junto de uma **assinatura de integridade**, facilitando a conformidade técnica e jurídica da aplicação.
 
 O que torna isso possível é a implementação destes três pilares:
 
 ### 1. Integridade Matemática
 
-- **Aritmética Racional**: Operação baseada em frações exatas `(n/d)` utilizando `BigInt`, com simplificações via **Algoritmo de Euclides (MCD)** em cada etapa, garantindo precisão absoluta sem overhead.
+- **Aritmética Racional**: Operação baseada em frações verdadeiras `(n/d)` utilizando `BigInt`, com simplificações via **Algoritmo de Euclides (MCD)** em cada etapa, garantindo que o erro acumulado seja estruturalmente **zero**.
 
-- **Determinismo Lógico**: Implementação rigorosa de **precedência matemática** [`(PEMDAS/BODMAS)`](https://pt.wikipedia.org/wiki/Ordem_de_opera%C3%A7%C3%B5es) com **Associatividade à Direita** para exponenciação, garantindo que as operações respeitem a **intenção do cálculo** com consistência matemática.
+- **Determinismo Lógico**: Implementação rigorosa de **precedência matemática** [`(PEMDAS/BODMAS)`](https://pt.wikipedia.org/wiki/Ordem_de_opera%C3%A7%C3%B5es), garantindo que as operações respeitem a **intenção do cálculo** independente da plataforma de implantação.
 
-- **Conformidade Normativa**: Arredondametno padrão [`ABNT NBR 5891`](https://pt.wikipedia.org/wiki/Arredondamento#Norma_ABNT_NBR_5891) e rateio por [`Maior Resto`](https://en.wikipedia.org/wiki/Mathematics_of_apportionment), assegurando padrões atuariais e legais sem desvios acumulados.
+- **Conformidade Técnica**: Arredondamento padrão [`ABNT NBR 5891`](https://pt.wikipedia.org/wiki/Arredondamento#Norma_ABNT_NBR_5891) e rateio por [`Maior Resto`](https://en.wikipedia.org/wiki/Mathematics_of_apportionment), assegurando justiça matemática em distribuições decimais.
 
 ### 2. Auditabilidade Forense
 
-- **AST e Metadados**: Cada etapa do cálculo constrói uma **Árvore de Sintaxe Abstrata (AST) imutável**. Essa estrutura permite inserir metadados para contextualização profunda, com serialização customizada que garante a persistência de tipos complexos (como `BigInt`) em estruturas `JSON` estáveis.
+- **AST e Metadados**: Cada etapa do cálculo constrói uma **Árvore de Sintaxe Abstrata (AST) imutável**. Essa estrutura permite inserir metadados para contextualização de negócio que justificam o "porquê" de cada número, com parser para garantia de estabilidade na serialização para `JSON`.
 
 - **Selo Criptográfico**: Implementação de assinatura digital via `BLAKE3 e K-Sort (Canonical String)` com suporte a `Salt`. Isso assegura o **não-repúdio**: o cálculo torna-se um "lacre" inviolável onde a matemática e os metadados são fundidos em um único hash. Qualquer tentativa de fraude no banco de dados invalida a assinatura instantaneamente.
 
-- **Integridade**: A lib possui 4 utilitários para lidar com a persistência e garantia de integridade dos dados:
+- **Integridade**: Implementados 4 utilitários para lidar com a persistência e garantia de integridade:
     - `.hibernate()`: Serialização assinada para cálculos **não finalizados**, útil para criação de rascunhos.
     - `output.toAuditTrace()`: Serialização assinada para cálculos **finalizados**, com resultado racional definido.
-    - `.checkIntegrity(AST, { salt })`: Valida se um cálculo serializado é íntegro `bit-a-bit`.
-    - `.hydrate(AST, { salt })`: Analisa a integridade e reanima a árvore AST para continuidade do cálculo.
+    - `.checkIntegrity(AST, { salt, encoder })`: Valida se um cálculo serializado é íntegro `bit-a-bit`.
+    - `.hydrate(AST, { salt, encoder })`: Verifica a integridade e reanima a árvore AST para continuidade do cálculo.
 
-- **Outputs Multiformato**: Através de processadores de saída, a biblioteca traduz a lógica interna em representações úteis para fins técnicos, inclusivos e de auditoria.
-    - `toUnicode()`: Representação visual para interfaces de terminal (CLI).
-    - `toLaTeX() / toHTML()`: Documentação técnica para relatórios e exibição via [KaTeX](https://katex.org/).
-    - `toAuditTrace()`: JSON detalhado contendo o **"DNA do cálculo"** para auditoria profunda.
+### 3. Universalidade Sistêmica
 
-- **Extensividade**: Implementado um sistema de `Custom Output Processor` que permite estender o `Output` da biblioteca para novos formatos (Protobuf, XML, Excel) sem interferência no cálculo e metadados originais.
+- **Segurança Estrutural**: Construída sob o dogma de **Zero tolerânica a Ambiguidades**, a **`CalcAUY`** aplica o `Strict Mode` máximo do TypeScript junto a `Type Guards`, campos privados (`#`) e **`parsers`** rigorosos, garantindo que a integridade dos dados seja aplicada da codificação à execução, retornando erros no padrão [`RFC 7807`](https://datatracker.ietf.org/doc/html/rfc7807) diante de qualquer inconsistência.
 
-## 3. Universalidade Sistêmica (DX, Escalabilidade e Inclusão)
+- **Outputs Multiformato**: Processadores de saída que traduzem a lógica interna em representações úteis para fins técnicos, de auditoria e de inclusividade digital:
+    - `.toUnicode()`: Representação visual para interfaces de terminal (CLI).
+    - `.toLaTeX() / .toHTML()`: Documentação técnica para relatórios e exibição via [KaTeX](https://katex.org/).
+    - `.toVerbalA11y()` Para tradução da AST em linguagem natural em 8 idiomas para adesão às diretrizes [`WCAG`](https://www.w3.org/WAI/standards-guidelines/wcag/) e [`eMAG`](https://emag.governoeletronico.gov.br/), com possibilidade de extensão.
+    - `.toAuditTrace()`: JSON detalhado contendo o **"DNA do cálculo"** para auditoria profunda.
+    - `.toCustomOutput(processo)`: Método especial para estender o `output` para novos formatos (_protobuf, XML, Excel..._) sem interferência no resultado original.
 
-- **Tipagem Estrita**: Desenvolvida sob o `Strict Mode máximo` do TypeScript, a lib utiliza `Type Guards` e campos privados para garantir que a integridade dos dados seja mantida do código à transpilação.
-
-- **Segurança Estrutural**: Construída sob o dogma de **Zero tolerânica a Ambiguidades**, a **`CalcAUY`** aplica **parsers** rigorosos em todos os inputs, retornando erros no padrão [`RFC 7807`](https://datatracker.ietf.org/doc/html/rfc7807) diante de qualquer inconsistência; além de implementar táticas de contenção a ataques como `JSON Bombs` e `Stack Overflow`.
-
-- **Estabilidade**: Fornece o utilitário `ProcessBatchAUY(...)`, um motor de alta vazão projetado para processar volumes massivos _(1M+ registros)_ e fluxos contínuos (`Streaming`) sob complexidade `O(N)`. A arquitetura utiliza **Workers Lógicos** para paralelismo assíncrono e **Redutores** para economia de memória, garantindo a responsividade da aplicação via `scheduler.yield()`, o que previne o bloqueio do `Event Loop` mesmo durante picos de processamento intensivo.
-
-- **Matemática Semântica**: Fornece o método de output `.toVerbalA11y()` para tradução da AST em linguagem natural em 8 idiomas. A funcionalidade promove a inclusão e a transparência ao alinhar o sistema às diretrizes `WCAG/eMAG`, transformando a AST em informações legíveis para máquinas, especialistas e leitores de tela.
+- **Processamento Industrial**: Fornece o utilitário `ProcessBatchAUY(...)`, um motor de alta vazão projetado para processar volumes massivos _(1M+ registros)_ e fluxos contínuos (`Streaming`) sob complexidade `O(N)`, utilizando `workers lógicos`, `scheduler.yield()` e **redutores** para prevenir o bloqueio do `Event Loop` e consumo excessivo de memória durante processamentos intensivos.
 
 ## 🔍 Testes
 
