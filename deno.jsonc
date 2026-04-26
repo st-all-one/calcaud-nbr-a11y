@@ -1,11 +1,20 @@
 {
     "name": "@st-all-one/calc-auy",
     "version": "0.4.0",
-    "exports": "./mod.ts",
+    "exports": {
+        ".": "./mod.ts",
+        "./protobuffer": "./processor/protobuffer/processor.protobuffer.ts",
+        "./cbor": "./processor/cbor/processor.cbor.ts",
+        "./html": "./processor/html/processor.html.ts",
+        "./msgpack": "./processor/msgpack/processor.msgpack.ts",
+        "./image-buffer": "./processor/image-buffer/processor.image-buffer.ts",
+        "./persistence": "./processor/persistence/processor.persistence.ts"
+    },
     "license": "MPL-2.0",
     "publish": {
         "include": [
             "mod.ts",
+            "processor",
             "src",
             "deno.jsonc",
             "README.md",
@@ -15,16 +24,18 @@
     "tasks": {
         "fmt": "deno fmt --config=deno.jsonc ./src ./tests ./deno.jsonc",
         "lint": "deno lint --config=deno.jsonc ./src",
-        "demo": "deno serve --watch -A ./demo/server.ts",
-        "coverage:report": "deno task coverage && deno coverage ./tests/coverage-log --lcov > ./tests/coverage-log/coverage.lcov && genhtml -o ./tests/coverage-log ./tests/coverage-log/coverage.lcov",
-        "coverage:dev": "deno task coverage && deno coverage ./tests/coverage-log",
-        "coverage": "deno task test --reporter=dot --coverage=./coverage",
         "test": "deno test --allow-all tests/"
     },
     "workspace": [
         "./demo",
         "./tests",
-        "./mini-scripts"
+        "./mini-scripts",
+        "./processor/cbor",
+        "./processor/msgpack",
+        "./processor/protobuffer",
+        "./processor/html",
+        "./processor/image-buffer",
+        "./processor/persistence"
     ],
     "compilerOptions": {
         "lib": [
@@ -41,10 +52,11 @@
         "exactOptionalPropertyTypes": true
     },
     "imports": {
+        "@st-all-one/calc-auy": "./mod.ts",
         "@logtape": "jsr:@logtape/logtape@^2.0.5",
         "@std/crypto": "jsr:@std/crypto@^1.0.5",
         "@std/encoding": "jsr:@std/encoding@^1.0.10",
-        "@std/uuid": "jsr:@std/uuid@^1.1.1"
+        "@std/uuid": "jsr:@std/uuid@^1.1.1",
     },
     "nodeModulesDir": "auto",
     "vendor": true,

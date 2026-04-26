@@ -1,0 +1,39 @@
+-- Create by Stallone L. S. (@st-all-one) - 2026 - License: MPL-2.0
+--
+-- Copyright (c) 2026, Stallone L. S. (@st-all-one)
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+-- CalcAUY - SQL DDL Schema (SQLite)
+
+CREATE TABLE calcauy_audit_traces (
+    -- ID gerado pela aplicação (Recomendado UUID v7)
+    id TEXT PRIMARY KEY,
+
+    -- Lacre de Integridade (Hash BLAKE3) HEX
+    signature TEXT NOT NULL UNIQUE CHECK (length(signature) >= 32),
+
+    -- Jurisdição / Contexto de Origem
+    context_label TEXT NOT NULL,
+
+    -- Estratégia de arredondamento
+    round_strategy TEXT NOT NULL,
+
+    -- Resultado (String BigInt)
+    result_numerator TEXT NOT NULL,
+    result_denominator TEXT NOT NULL,
+
+    -- AST
+    ast TEXT NOT NULL CHECK (json_valid(ast)),
+
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices
+CREATE INDEX idx_calcauy_context ON calcauy_audit_traces (context_label);
+CREATE INDEX idx_calcauy_signature ON calcauy_audit_traces (signature);
+
+-- Índices sobre Expressões JSON (A alternativa ao GIN do Postgres)
+CREATE INDEX idx_calcauy_ast_kind ON calcauy_audit_traces (json_extract(ast, '$.kind'));
+CREATE INDEX idx_calcauy_ast_prev_sig ON calcauy_audit_traces (json_extract(ast, '$.metadata.previousSignature'));

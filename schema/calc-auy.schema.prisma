@@ -1,0 +1,51 @@
+// Create by Stallone L. S. (@st-all-one) - 2026 - License: MPL-2.0
+//
+// Copyright (c) 2026, Stallone L. S. (@st-all-one)
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+// CalcAUY - Prisma Schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql" // Otimizado para JSONB e índices GIN
+}
+
+/// Esta estrutura representa um fato matemático selado (Audit Trace)
+model AuditTrace {
+    /// Identificador interno (UUID v7 recomendado)
+    id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+    /// Lacre de Integridade (Hash BLAKE3).
+    /// Rigor: Deve possuir no mínimo 32 caracteres (Hex) e ser único globalmente
+    signature String @unique
+
+    /// Jurisdição / Contexto de Origem
+    contextLabel String @map("context_label")
+
+    /// Estratégia de arredondamento aplicada no momento do commit
+    roundStrategy String @map("round_strategy")
+
+    /// Numerador (BigInt stringified)
+    resultNumerator String @map("result_numerator")
+
+    /// Denominador (BigInt stringified)
+    resultDenominator String @map("result_denominator")
+
+    /// Árvore de Sintaxe Abstrata (AST) completa
+    ast Json
+
+    /// Carimbo de tempo do registro forense no banco de dados
+    createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+    // --- Índices de Performance ---
+    @@index([contextLabel], name: "idx_calcauy_context")
+    @@index([signature], name: "idx_calcauy_signature")
+    @@index([ast(ops: JsonbPathOps)], type: Gin, name: "idx_calcauy_ast_gin")
+    // Mapeamento para o nome físico da tabela
+    @@map("calcauy_audit_traces")
+}

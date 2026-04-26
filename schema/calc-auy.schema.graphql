@@ -1,0 +1,102 @@
+"""
+Create by Stallone L. S. (@st-all-one) - 2026 - License: MPL-2.0
+
+Copyright (c) 2026, Stallone L. S. (@st-all-one)
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/.
+"""
+
+"""
+CalcAUY - GraphQL Schema
+"""
+
+type RationalValue {
+  n: String!
+  d: String!
+}
+
+"""
+Escalar customizado para representar valores dinâmicos de metadados
+"""
+scalar MetadataMap
+
+enum OperationType {
+  add
+  sub
+  mul
+  div
+  pow
+  mod
+  divInt
+  crossContextAdd
+}
+
+enum NodeKind {
+  literal
+  operation
+  group
+  control
+}
+
+"""
+Interface para nós da AST.
+"""
+interface CalculationNode {
+  kind: NodeKind!
+  label: String
+  metadata: MetadataMap
+}
+
+type LiteralNode implements CalculationNode {
+  kind: NodeKind!
+  label: String
+  metadata: MetadataMap
+  value: RationalValue!
+  originalInput: String!
+}
+
+type OperationNode implements CalculationNode {
+  kind: NodeKind!
+  label: String
+  metadata: MetadataMap
+  type: OperationType!
+  operands: [CalculationNode!]!
+}
+
+type GroupNode implements CalculationNode {
+  kind: NodeKind!
+  label: String
+  metadata: MetadataMap
+  child: CalculationNode!
+  isRedundant: Boolean
+}
+
+type ControlNode implements CalculationNode {
+  kind: NodeKind!
+  label: String
+  metadata: MetadataMap
+  type: String!
+  child: CalculationNode!
+  previousContextLabel: String!
+  previousSignature: String!
+  previousRoundStrategy: String!
+}
+
+"""
+Estrutura final
+"""
+type AuditTrace {
+  ast: CalculationNode!
+  finalResult: RationalValue!
+  roundStrategy: String!
+  signature: String!
+  contextLabel: String!
+}
+
+type Query {
+  """
+  Recupera um rastro de auditoria específico pela sua AssSignature.
+  """
+  getAuditTrace(signature: ID!): AuditTrace
+}

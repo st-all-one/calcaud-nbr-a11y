@@ -1,0 +1,64 @@
+; Create by Stallone L. S. (@st-all-one) - 2026 - License: MPL-2.0
+;
+; Copyright (c) 2026, Stallone L. S. (@st-all-one)
+; This Source Code Form is subject to the terms of the Mozilla Public
+; License, v. 2.0. If a copy of the MPL was not distributed with this
+; file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+; CalcAUY - CDDL Schema
+
+calculation-node = literal-node / operation-node / group-node / control-node
+
+rational-value = {
+  n: tstr, ; BigInt Numerador
+  d: tstr  ; BigInt Denominador
+}
+
+metadata-value = tstr / number / bool / [ * metadata-value ] / { * tstr => metadata-value }
+
+base-node = (
+  ? label: tstr,
+  ? metadata: { * tstr => metadata-value }
+)
+
+literal-node = {
+  base-node,
+  kind: "literal",
+  value: rational-value,
+  originalInput: tstr
+}
+
+operation-node = {
+  base-node,
+  kind: "operation",
+  type: "add" / "sub" / "mul" / "div" / "pow" / "mod" / "divInt" / "crossContextAdd",
+  operands: [ + calculation-node ]
+}
+
+group-node = {
+  base-node,
+  kind: "group",
+  child: calculation-node,
+  ? isRedundant: bool
+}
+
+control-node = {
+  base-node,
+  kind: "control",
+  type: "reanimation_event",
+  metadata: {
+    previousContextLabel: tstr,
+    previousSignature: tstr,
+    previousRoundStrategy: tstr,
+    * tstr => metadata-value
+  },
+  child: calculation-node
+}
+
+serialized-calculation = {
+  ast: calculation-node,
+  signature: tstr,
+  contextLabel: tstr,
+  finalResult: rational-value,
+  roundStrategy: tstr
+}

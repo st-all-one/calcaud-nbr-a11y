@@ -1,0 +1,267 @@
+{
+    "openapi": "3.1.1",
+    "info": {
+        "title": "CalcAUY - OpenAPI Schema",
+        "description": "Estrutura de dados da CalcAUY",
+        "copyright": "Create by Stallone L. S. (@st-all-one) - 2026 - License: MPL-2.0",
+        "copyright_message": "Copyright (c) 2026, Stallone L. S. (@st-all-one) This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.",
+        "version": "1.0.0"
+    },
+    "components": {
+        "schemas": {
+            "RationalValue": {
+                "type": "object",
+                "description": "Representação (n/d) via BigInt stringified",
+                "required": [
+                    "n",
+                    "d"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "n": {
+                        "type": "string",
+                        "example": "150"
+                    },
+                    "d": {
+                        "type": "string",
+                        "example": "100"
+                    }
+                }
+            },
+            "MetadataValue": {
+                "description": "Metadados. Não permite null",
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "number"
+                    },
+                    {
+                        "type": "boolean"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MetadataValue"
+                        }
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/MetadataValue"
+                        }
+                    }
+                ]
+            },
+            "BaseNode": {
+                "type": "object",
+                "required": [
+                    "kind"
+                ],
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "literal",
+                            "operation",
+                            "group",
+                            "control"
+                        ]
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/MetadataValue"
+                        }
+                    }
+                }
+            },
+            "LiteralNode": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseNode"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "value",
+                            "originalInput"
+                        ],
+                        "properties": {
+                            "kind": {
+                                "const": "literal"
+                            },
+                            "value": {
+                                "$ref": "#/components/schemas/RationalValue"
+                            },
+                            "originalInput": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ]
+            },
+            "OperationNode": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseNode"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "operands"
+                        ],
+                        "properties": {
+                            "kind": {
+                                "const": "operation"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "add",
+                                    "sub",
+                                    "mul",
+                                    "div",
+                                    "pow",
+                                    "mod",
+                                    "divInt",
+                                    "crossContextAdd"
+                                ]
+                            },
+                            "operands": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/CalculationNode"
+                                },
+                                "minItems": 1
+                            }
+                        }
+                    }
+                ]
+            },
+            "GroupNode": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseNode"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "child"
+                        ],
+                        "properties": {
+                            "kind": {
+                                "const": "group"
+                            },
+                            "child": {
+                                "$ref": "#/components/schemas/CalculationNode"
+                            },
+                            "isRedundant": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                ]
+            },
+            "ControlNode": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseNode"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "child",
+                            "metadata"
+                        ],
+                        "properties": {
+                            "kind": {
+                                "const": "control"
+                            },
+                            "type": {
+                                "const": "reanimation_event"
+                            },
+                            "child": {
+                                "$ref": "#/components/schemas/CalculationNode"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "required": [
+                                    "previousContextLabel",
+                                    "previousSignature",
+                                    "previousRoundStrategy"
+                                ],
+                                "properties": {
+                                    "previousContextLabel": {
+                                        "type": "string"
+                                    },
+                                    "previousSignature": {
+                                        "type": "string"
+                                    },
+                                    "previousRoundStrategy": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            "CalculationNode": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/LiteralNode"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OperationNode"
+                    },
+                    {
+                        "$ref": "#/components/schemas/GroupNode"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ControlNode"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "kind"
+                }
+            },
+            "AuditTrace": {
+                "type": "object",
+                "required": [
+                    "ast",
+                    "finalResult",
+                    "roundStrategy",
+                    "signature",
+                    "contextLabel"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "ast": {
+                        "$ref": "#/components/schemas/CalculationNode",
+                        "description": "Árvore de Sintaxe Abstrata contendo o cálculo selado"
+                    },
+                    "finalResult": {
+                        "$ref": "#/components/schemas/RationalValue"
+                    },
+                    "roundStrategy": {
+                        "type": "string"
+                    },
+                    "signature": {
+                        "type": "string",
+                        "description": "Hash BLAKE3 do rastro, padrão HEX"
+                    },
+                    "contextLabel": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

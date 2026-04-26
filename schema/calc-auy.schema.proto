@@ -1,0 +1,95 @@
+// Create by Stallone L. S. (@st-all-one) - 2026 - License: MPL-2.0
+//
+// Copyright (c) 2026, Stallone L. S. (@st-all-one)
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+// CalcAUY - Protobuf Schema
+
+syntax = "proto3";
+
+package calcauy;
+
+// --- Enums ---
+enum OperationType {
+  OPERATION_TYPE_UNSPECIFIED = 0; // Padrão proto3
+  OPERATION_TYPE_ADD = 1;
+  OPERATION_TYPE_SUB = 2;
+  OPERATION_TYPE_MULT = 3;
+  OPERATION_TYPE_DIV = 4;
+  OPERATION_TYPE_POW = 5;
+  OPERATION_TYPE_MOD = 6;
+  OPERATION_TYPE_DIV_INT = 7;
+  OPERATION_TYPE_CROSS_CONTEXT_ADD = 8;
+}
+
+// --- Tipos Base ---
+message RationalValue {
+  string n = 1; // Numerador BigInt
+  string d = 2; // Denominador BigInt
+}
+
+message MetadataValue {
+  oneof value {
+    string string_val = 1;
+    double double_val = 2;
+    bool bool_val = 3;
+    MetadataList array_val = 4;
+    MetadataMap object_val = 5;
+  }
+}
+
+message MetadataList {
+  repeated MetadataValue items = 1;
+}
+
+message MetadataMap {
+  map<string, MetadataValue> fields = 1;
+}
+
+// --- AST ---
+message CalculationNode {
+  string kind = 1;
+  string label = 2;
+  map<string, MetadataValue> metadata = 3;
+
+  oneof node_type {
+    LiteralNode literal = 4;
+    OperationNode operation = 5;
+    GroupNode group = 6;
+    ControlNode control = 7;
+  }
+}
+
+message LiteralNode {
+  RationalValue value = 1;
+  string original_input = 2;
+}
+
+message OperationNode {
+  OperationType type = 1;
+  repeated CalculationNode operands = 2;
+}
+
+message GroupNode {
+  CalculationNode child = 1;
+  bool is_redundant = 2;
+}
+
+message ControlNode {
+  string type = 1;
+  string previous_context_label = 2;
+  string previous_signature = 3;
+  string previous_round_strategy = 4;
+  CalculationNode child = 5;
+}
+
+// --- Payload Consolidado de Saída (Audit Trace / Hibernação) ---
+message SerializedCalculation {
+  CalculationNode ast = 1;
+  string signature = 2;
+  string context_label = 3;
+  RationalValue final_result = 4;
+  string round_strategy = 5;
+}

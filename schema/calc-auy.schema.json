@@ -1,0 +1,255 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://github.com/st-all-one/calc-auy/tree/main/schema/calcauy.schema.json",
+    "title": "CalcAUY - JSON Schema",
+    "description": "Estrutura de dados da CalcAUY",
+    "type": "object",
+    "$defs": {
+        "NodeKind": {
+            "type": "string",
+            "enum": [
+                "literal",
+                "operation",
+                "group",
+                "control"
+            ]
+        },
+        "OperationType": {
+            "type": "string",
+            "enum": [
+                "add",
+                "sub",
+                "mul",
+                "div",
+                "pow",
+                "mod",
+                "divInt",
+                "crossContextAdd"
+            ]
+        },
+        "RationalValue": {
+            "type": "object",
+            "properties": {
+                "n": {
+                    "type": "string",
+                    "description": "Numerador (BigInt stringified)"
+                },
+                "d": {
+                    "type": "string",
+                    "description": "Denominador (BigInt stringified)"
+                }
+            },
+            "required": [
+                "n",
+                "d"
+            ],
+            "additionalProperties": false
+        },
+        "MetadataValue": {
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/MetadataValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/MetadataValue"
+                    }
+                }
+            ]
+        },
+        "BaseNode": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "$ref": "#/$defs/NodeKind"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/MetadataValue"
+                    }
+                }
+            },
+            "required": [
+                "kind"
+            ]
+        },
+        "LiteralNode": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/BaseNode"
+                },
+                {
+                    "properties": {
+                        "kind": {
+                            "const": "literal"
+                        },
+                        "value": {
+                            "$ref": "#/$defs/RationalValue"
+                        },
+                        "originalInput": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "value",
+                        "originalInput"
+                    ]
+                }
+            ]
+        },
+        "OperationNode": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/BaseNode"
+                },
+                {
+                    "properties": {
+                        "kind": {
+                            "const": "operation"
+                        },
+                        "type": {
+                            "$ref": "#/$defs/OperationType"
+                        },
+                        "operands": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/CalculationNode"
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "operands"
+                    ]
+                }
+            ]
+        },
+        "GroupNode": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/BaseNode"
+                },
+                {
+                    "properties": {
+                        "kind": {
+                            "const": "group"
+                        },
+                        "child": {
+                            "$ref": "#/$defs/CalculationNode"
+                        },
+                        "isRedundant": {
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "child"
+                    ]
+                }
+            ]
+        },
+        "ControlNode": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/BaseNode"
+                },
+                {
+                    "properties": {
+                        "kind": {
+                            "const": "control"
+                        },
+                        "type": {
+                            "const": "reanimation_event"
+                        },
+                        "metadata": {
+                            "type": "object",
+                            "properties": {
+                                "previousContextLabel": {
+                                    "type": "string"
+                                },
+                                "previousSignature": {
+                                    "type": "string"
+                                },
+                                "previousRoundStrategy": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "previousContextLabel",
+                                "previousSignature",
+                                "previousRoundStrategy"
+                            ]
+                        },
+                        "child": {
+                            "$ref": "#/$defs/CalculationNode"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "child",
+                        "metadata"
+                    ]
+                }
+            ]
+        },
+        "CalculationNode": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/LiteralNode"
+                },
+                {
+                    "$ref": "#/$defs/OperationNode"
+                },
+                {
+                    "$ref": "#/$defs/GroupNode"
+                },
+                {
+                    "$ref": "#/$defs/ControlNode"
+                }
+            ]
+        }
+    },
+    "properties": {
+        "ast": {
+            "$ref": "#/$defs/CalculationNode"
+        },
+        "finalResult": {
+            "$ref": "#/$defs/RationalValue"
+        },
+        "roundStrategy": {
+            "type": "string"
+        },
+        "signature": {
+            "type": "string",
+            "description": "Hash BLAKE3 do rastro"
+        },
+        "contextLabel": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "ast",
+        "finalResult",
+        "signature",
+        "contextLabel",
+        "roundStrategy"
+    ],
+    "additionalProperties": false
+}
