@@ -34,23 +34,23 @@ import { BIRTH_TICKET_MOCK } from "./core/constants.ts";
 const logger = getSubLogger("engine");
 
 /**
- * FinalizationRegistry para limpeza automática de chaves no cache global da AST.
+ * Automated cleanup registry for the global AST literal node cache.
  */
 const astCacheRegistry = new FinalizationRegistry<string>((key) => {
     globalLiteralNodeCache.delete(key);
 });
 
 /**
- * Hot Cache - Referências fortes para nós da AST mais frequentes.
+ * Hot Cache - Strong references for high-frequency AST nodes.
  */
 const hotLiteralNodeCache = new Map<string, LiteralNode>();
 const HOT_CACHE_LIMIT = 512;
 
 /**
- * Cache Global Inteligente para reuso de nós literais "limpos".
+ * Intelligent Global Cache for reusing "clean" literal nodes.
  *
- * **Engenharia:** Utiliza Referências Fracas para permitir que o GC libere
- * nós da AST que não pertencem mais a nenhuma árvore de cálculo ativa.
+ * Uses Weak References to allow the Garbage Collector to free AST nodes
+ * that are no longer part of any active calculation tree.
  */
 const globalLiteralNodeCache = new Map<string, WeakRef<LiteralNode>>();
 
@@ -61,10 +61,10 @@ export type InputValue<C extends string, P extends InstanceConfig = InstanceConf
     | CalcAUYLogic<C, P>;
 
 /**
- * CalcAUYLogic - Builder Fluído para Construção de Árvores de Cálculo (AST).
+ * CalcAUYLogic - Fluent Builder for `Abstract Syntax Tree (AST)` Construction.
  *
- * Esta classe utiliza o padrão Builder para acumular operações em uma estrutura de árvore
- * imutável. Agora possui isolamento estrito via Branding, Symbols e Literal Configuration.
+ * This class employs the Builder pattern to accumulate arithmetic operations into
+ * an immutable tree structure. It ensures strict isolation via branding and symbols.
  *
  * @class
  */
@@ -74,11 +74,11 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
     readonly #config: Required<InstanceConfig>;
     readonly #birthTime: string | null;
 
-    // Branding para IDE: Impede mistura de instâncias com labels ou configurações diferentes
+    // Branding for IDE: Prevents mixing instances with different labels or configurations
     // @ts-ignore: Branding field
-    private readonly __context!: Context;
+    readonly #__context!: Context;
     // @ts-ignore: Branding field
-    private readonly __config_brand!: Config;
+    readonly #__config_brand!: Config;
 
     /** @internal */
     constructor(
@@ -94,12 +94,64 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
     }
 
     /**
-     * Cria uma nova instância de CalcAUYLogic a partir de um valor inicial.
+     * Initializes a calculation from a numeric value, string, or another instance.
+     *
+     * @param value - The input value to start the calculation.
+     * @returns A new CalcAUYLogic instance.
+     *
+     * **Inputs allowed:**
+     * ```ts
+     * // String numbers
+     * "1230"        // 1230.00
+     * "1230.45"     // 1230.45
+     * "1_230.45"    // 1230.45
+     * "1_230.4_536" // 1230.4536
+     * "1e3"         // 100.00
+     * "100e-3"      // 0.10
+     *
+     * // Pure numbers
+     * 1230         // 1230.00
+     * 1230.45      // 1230.45
+     * 1_230.45     // 1230.45
+     * 1_230.4_536  // 1230.4536
+     * 1e3          // 100.00
+     * 100e-3       // 0.10
+     *
+     * // Percent numbers
+     * "14%"        // 14/100
+     * "-14%"       // -14/100
+     * "14.5%"      // 145/1000
+     * "-14.5%"     // -145/1000
+     *
+     * // Rational Numbers
+     * "3/7"        // 3/7 => 0.428571...
+     * "-3/7"       // -3/7 => -0.428571...
+     * "-3/-7"      // 3/7 => 0.428571...
+     *
+     * // Left-zero ommited notation
+     * ".53"        // 0.53
+     * "-.53"       // -0.53
+     * "+.53"       // 0.53
+     * ".5_3456"    // 0.53456
+     * ```
+     *
+     * @example Calc: Initial Principal
+     * ```ts
+     * const SafeBase = CalcAUY.create({
+     *     contextLabel: "calc",
+     *     salt: "secret-salt-2026",
+     *     encoder: "HEX",
+     *     roundStrategy: "NBR5891",
+     * });
+     *
+     * // String (recomended)
+     * const calc = SafeBase.from("1200.75");
+     * ```
      */
     public from(value: InputValue<Context, Config>): CalcAUYLogic<Context, Config> {
         if (value instanceof CalcAUYLogic) {
             this.validateInstance(value);
-            // Se a instância atual estiver vazia, assume a AST da instância recebida
+            // If the current instance is empty, adopt the AST of the received instance
             if (this.#ast === null) {
                 return new CalcAUYLogic<Context, Config>(value.#ast, this.#instanceId, this.#config, value.#birthTime);
             }
@@ -118,7 +170,7 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
             inputStr = value.toString();
         }
 
-        // Prioridade 1: Cache de Sessão (Escopado)
+        // Priority 1: Session Cache (Scoped)
         const session = getActiveSession();
         const sessionCached = session?.getExtra<LiteralNode>(inputStr);
         if (sessionCached) {
@@ -133,7 +185,7 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
             return this.op("add", value);
         }
 
-        // Prioridade 2: Hot Cache (Referências Fortes)
+        // Priority 2: Hot Cache (Strong References)
         const hotCached = hotLiteralNodeCache.get(inputStr);
         if (hotCached) {
             if (this.#ast === null) {
@@ -147,7 +199,7 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
             return this.op("add", value);
         }
 
-        // Prioridade 3: Cold Cache (WeakRef)
+        // Priority 3: Cold Cache (WeakRef)
         const globalRef = globalLiteralNodeCache.get(inputStr);
         const globalCached = globalRef?.deref();
         if (globalCached) {
@@ -190,7 +242,31 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
     }
 
     /**
-     * Analisa uma string contendo uma expressão matemática complexa.
+     * Parses a mathematical expression string into an AST.
+     *
+     * Note: The parser only accepts numeric literals and operators. To use dynamic
+     * variables, employ string interpolation.
+     *
+     * @param expression - The string expression (e.g., "10 + (5 * 2)").
+     * @returns A new CalcAUYLogic instance.
+     *
+     * @example Financial: Fixed Interest Formula
+     * ```ts
+     * const Finance = CalcAUY.create({ contextLabel: "loan-logic", salt: "bank-salt" });
+     *
+     * // Using a literal string for a standard fixed-rate formula
+     * const result = await Finance.parseExpression("1000 * (1 + 0.15)^3").commit();
+     * ```
+     *
+     * @example Healthcare: Dynamic BMI Calculation
+     * ```ts
+     * const Clinic = CalcAUY.create({ contextLabel: "diagnostics", salt: "lab-salt" });
+     * const weight = 85.5;
+     * const height = 1.82;
+     *
+     * // Using string interpolation to inject dynamic data into the formula
+     * const bmi = await Clinic.parseExpression(`${weight} / ${height}^2`).commit();
+     * ```
      */
     public parseExpression(expression: string): CalcAUYLogic<Context, Config> {
         const lexer: Lexer = new Lexer(expression);
@@ -207,24 +283,50 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
             );
         }
 
-        // Se já houver AST, adiciona a expressão à árvore atual
+        // If AST already exists, add the expression to the current tree
         return this.add(new CalcAUYLogic<Context, Config>(newNode, this.#instanceId, this.#config, this.#birthTime));
     }
 
     /**
-     * Retorna a configuração da instância atual (apenas leitura).
-     * @internal
-     */
-    public getContextConfig(): Required<InstanceConfig> {
-        return { ...this.#config };
-    }
-
-    /**
-     * Reconstrói um cálculo a partir de um estado salvo (JSON) e valida sua integridade.
+     * Reconstructs a calculation from a saved state and validates its integrity.
      *
-     * **Engenharia:** Permite opcionalmente informar um salt e encoder diferentes do
-     * atual da instância, possibilitando a hidratação segura de cálculos vindos de
-     * outros contextos isolados.
+     * @param ast - The signed audit trace or hibernation state.
+     * @param config - Optional security override for cross-context rehydration.
+     * @returns A rehydrated CalcAUYLogic instance.
+     *
+     * @example Didactic: Finalizing a Draft and Resuming for Audit
+     * ```ts
+     * const System = CalcAUY.create({ contextLabel: "workflow", salt: "k-123" });
+     *
+     * // Step 1: Initialize a calculation and save it as a signed draft (Hibernation)
+     * const draft = await System.from(5000).add(250).hibernate();
+     *
+     * // Step 2: Some time later, re-hydrate the draft to finish the work
+     * const resumed = await System.hydrate(draft);
+     * const result = await resumed.mult("10%").commit();
+     *
+     * console.log(result.toUnicode()); // roundₙᵦᵣ₋₅₈₉₁((5000 + 250) × 10%, 2) = 525.00
+     * ```
+     *
+     * @example Security: Automatic Integrity Breach Detection
+     * ```ts
+     * const Vault = CalcAUY.create({ contextLabel: "security", salt: "vault-salt" });
+     *
+     * try {
+     *   const signedData = JSON.parse(await Vault.from(100).hibernate());
+     *
+     *   // FRAUD ATTEMPT: Changing the value inside the signed Abstract Syntax Tree
+     *   signedData.ast.value.n = "999999";
+     *
+     *   // hydrate() validates the signature bit-by-bit before re-animating the calculation.
+     *   // This will throw a critical integrity violation error.
+     *   await Vault.hydrate(signedData);
+     * } catch (err) {
+     *   if (err instanceof CalcAUYError && err.title === "integrity-critical-violation") {
+     *     console.error("CRITICAL: Tampering detected! System trace is no longer valid.");
+     *   }
+     * }
+     * ```
      */
     public async hydrate(
         ast: CalculationNode | string | object,
@@ -234,15 +336,15 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
         const signature = payload.signature;
 
         if (!signature) {
-            throw new CalcAUYError("integrity-critical-violation", "Assinatura ausente na hidratação.");
+            throw new CalcAUYError("integrity-critical-violation", "Signature missing during hydration.");
         }
 
         const verificationSalt = config.salt ?? this.#config.salt;
         const verificationEncoder = config.encoder ?? this.#config.encoder;
 
-        // Decisão de Dados para Verificação:
-        // Se o payload contém resultado e estratégia, ele é um Audit Trace (Assinado como envelope)
-        // Se não, ele é um rastro de hibernação (Assinado como AST pura)
+        // Verification Data Decision:
+        // If the payload contains result and strategy, it is an Audit Trace (Signed as envelope)
+        // Otherwise, it is a hibernation trace (Signed as pure AST)
         const isAuditTrace = payload.finalResult !== undefined && payload.roundStrategy !== undefined;
         const dataToVerify = isAuditTrace
             ? {
@@ -254,16 +356,16 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
 
         const expectedHash = await generateSignature(dataToVerify, verificationSalt, verificationEncoder);
         if (signature !== expectedHash) {
-            throw new CalcAUYError("integrity-critical-violation", "Violação de integridade na hidratação.");
+            throw new CalcAUYError("integrity-critical-violation", "Integrity violation during hydration.");
         }
 
         const node: CalculationNode = payload.ast;
         validateASTNode(node);
 
-        // Extrai o birthTime original se disponível nos metadados da raiz
+        // Extract the original birthTime if available in the root metadata
         const originalBirthTime = node.metadata?.timestamp as string | undefined;
 
-        // Envolve em nó de controle (reanimação)
+        // Wrap in control node (reanimation event)
         const controlNode: ControlNode = {
             kind: "control",
             type: "reanimation_event",
@@ -275,8 +377,11 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
             child: node,
         };
 
+        // Automatic Grouping: Ensure hydrated calculations are treated as a single unit
+        const group: GroupNode = { kind: "group", child: controlNode };
+
         return new CalcAUYLogic<Context, Config>(
-            controlNode,
+            group,
             this.#instanceId,
             this.#config,
             originalBirthTime || null,
@@ -284,13 +389,45 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
     }
 
     /**
-     * Captura e serializa a árvore atual em uma string JSON pronta para persistência.
+     * Captures and serializes the current tree into a signed JSON string for persistence.
+     *
+     * @returns A signed JSON representation of the AST.
+     *
+     * @example Financial: Tax Compliance Workflow (Draft Stage)
+     * ```ts
+     * const Sales = CalcAUY.create({ contextLabel: "sales-tax", salt: "audit-secret" });
+     *
+     * // Build a complex calculation with business context and metadata
+     * const pendingCalculation = Sales.from(150000.75)
+     *     .add("1.5%") // Service fee
+     *     .setMetadata("ref", "Service invoice #992")
+     *     .mult(Sales.from(1).sub("0.12")) // Deducting tax exemption
+     *     .setMetadata("approved_by", "system-auto");
+     *
+     * // Hibernate the calculation as a signed draft for manager review
+     * const signedDraft = await pendingCalculation.hibernate();
+     * ```
+     *
+     * @example Healthcare: Multi-Stage Drug Calibration Protocol
+     * ```ts
+     * const Lab = CalcAUY.create({ contextLabel: "drug-calibration", salt: "lab-vault-01" });
+     *
+     * // Calculate dose based on body surface area (BSA) and kidney function
+     * const protocol = Lab.from(500) // Base dosage in mg
+     *     .mult(Lab.from(1.73).div(1.85)) // BSA correction factor
+     *     .setMetadata("patient_bsa", "1.85m²")
+     *     .group()
+     *     .mult("0.85"); // Kidney function adjustment factor
+     *
+     * // Save state to allow a second specialist to verify before final commitment
+     * const validationState = await protocol.hibernate();
+     * ```
      */
     public async hibernate(): Promise<string> {
         const root = this.assertAST();
 
-        // Injeta o carimbo de nascimento apenas no fechamento
-        // Otimização: Shallow copy do root para evitar structuredClone pesado em árvores imutáveis
+        // Inject the birth ticket only during closure
+        // Optimization: Shallow copy of the root to avoid heavy structuredClone in immutable trees
         const ast = this.#birthTime
             ? { ...root, metadata: { ...root.metadata, timestamp: this.#birthTime } } as CalculationNode
             : root;
@@ -305,14 +442,70 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
     }
 
     /**
-     * Incorpora um cálculo de uma instância externa (cross-context).
+     * Incorporates a calculation from an external instance (cross-context).
      *
-     * **Engenharia:** Este é o único portal seguro para unir cálculos de jurisdições diferentes.
-     * Ele valida a integridade, assina o dado externo e o carimba com um nó de controle.
-     * Pode ser usado como ponto de partida (substituindo o .from) ou para anexar a um cálculo existente.
+     * This method acts as a secure gateway to merge calculations from different
+     * jurisdictions or instances, validating integrity and preserving lineage.
+     *
+     * @param externalInstance - The external CalcAUYLogic instance or signed trace.
+     * @returns A new CalcAUYLogic instance with the external calculation attached.
+     *
+     * @example Financial: Corporate Consolidated Audit (Branch to HQ)
+     * ```ts
+     * // 1. Regional Branch Context (Independent security jurisdiction)
+     * const Branch = CalcAUY.create({ contextLabel: "branch-ny", salt: "branch-secret" });
+     * const branchSubtotal = Branch.from(1000000).sub(250000).setMetadata("dept", "sales");
+     *
+     * // 2. Corporate HQ Context (Master audit jurisdiction)
+     * const HQ = CalcAUY.create({ contextLabel: "corporate-hq", salt: "hq-master-salt" });
+     *
+     * // HQ incorporates the branch's signed subtotal without needing their salt.
+     * // fromExternalInstance validates the branch's signature and stamps its origin.
+     * const consolidation = await HQ.fromExternalInstance(branchSubtotal);
+     *
+     * // Now HQ adds corporate-level overheads to the branch's result
+     * const finalLedger = await consolidation.mult(HQ.from(1).add("2.5%").setMetadata("obs", "Security overhead")).commit();
+     *
+     * console,log(finalLedger.toMonetary({ locale: "en-US" })) // $768,750.00
+     * ```
+     *
+     * @example Legal: Appellate Chain of Custody (Lower Court to High Court)
+     * ```ts
+     * // 1. Lower Court Verdict (Original Signed Evidence)
+     * const Court_A = CalcAUY.create({ contextLabel: "regional-court", salt: "justice-key-1" });
+     * const basePenalty = Court_A.from(30).setMetadata("reason", "standard-theft");
+     * const verdict_A = await basePenalty.hibernate(); // Exported as signed JSON string
+     *
+     * // 2. High Court Review (Applying legal multipliers)
+     * const Court_B = CalcAUY.create({ contextLabel: "appellate-court", salt: "justice-key-2", sensitive: false });
+     *
+     * // The High Court imports the signed verdict from Court A.
+     * // The forensic lineage is preserved: Court B builds upon Court A's logic.
+     * const appealReview = await Court_B.fromExternalInstance(verdict_A);
+     *
+     * // High Court applies a recidivism multiplier based on the imported evidence
+     * const finalVerdict = await appealReview.mult(1.5).setMetadata("aggravator", "recidivism").commit();
+     * console.log(finalVerdict.toMermaidGraph({ locale: "fr-FR" }))
+     * // sequenceDiagram
+     * //     autonumber
+     * //     participant Ctx_regional_court as Contexte: regional-court
+     * //     participant Ctx_appellate_court as Contexte: appellate-court
+     * //
+     * //     activate Ctx_regional_court
+     * //     Note over Ctx_regional_court: 26-05-03 00:20 (UTC)<br/>Ingestion: 30<br/>[reason: standard-theft]
+     * //     activate Ctx_appellate_court
+     * //     Ctx_regional_court->>+Ctx_appellate_court: Passage (Sig: 8cc47c58...)
+     * //     deactivate Ctx_regional_court
+     * //     Note over Ctx_appellate_court: Événement: reanimation_event
+     * //     Note over Ctx_appellate_court: Ingestion: 1.5
+     * //     Ctx_appellate_court->>Ctx_appellate_court: Opération: mul<br/>[aggravator: recidivism]
+     * //     Note over Ctx_appellate_court: 26-05-03 00:20 (UTC)<br/>Clôture et Signature Finale<br/>Signature: (Sig: bad4ebc0...)
+     * //     deactivate Ctx_appellate_court
+     *
+     * ```
      */
     public async fromExternalInstance(
-        external: CalcAUYLogic<string, InstanceConfig> | string | object,
+        externalInstance: CalcAUYLogic<string, InstanceConfig> | string | object,
     ): Promise<CalcAUYLogic<Context, Config>> {
         let externalAST: CalculationNode;
         let externalSignature: string;
@@ -320,26 +513,26 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
         let externalStrategy = "";
         let externalBirthTime: string | null = null;
 
-        if (external instanceof CalcAUYLogic) {
-            // Instância "Viva": Fecha com assinatura imediata e valida
-            const hibernated = await external.hibernate();
+        if (externalInstance instanceof CalcAUYLogic) {
+            // Live Instance: Close with immediate signature and validate
+            const hibernated = await externalInstance.hibernate();
             const payload: SerializedCalculation = JSON.parse(hibernated);
             // deno-lint-ignore no-non-null-assertion
             externalAST = payload.ast!;
             externalSignature = payload.signature;
-            const extConfig = external.getContextConfig();
+            const extConfig = externalInstance.#config;
             externalContextLabel = extConfig.contextLabel;
             externalStrategy = extConfig.roundStrategy || "";
             externalBirthTime = (externalAST.metadata?.timestamp as string) || null;
         } else {
-            // Objeto ou JSON serializado
-            const payload: SerializedCalculation = typeof external === "string"
-                ? JSON.parse(external)
-                : external as SerializedCalculation;
+            // Object or serialized JSON
+            const payload: SerializedCalculation = typeof externalInstance === "string"
+                ? JSON.parse(externalInstance)
+                : externalInstance as SerializedCalculation;
             if (!payload.signature) {
                 throw new CalcAUYError(
                     "integrity-critical-violation",
-                    "Instância externa sem assinatura de integridade.",
+                    "External instance missing integrity signature.",
                 );
             }
             // deno-lint-ignore no-non-null-assertion
@@ -347,12 +540,12 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
             externalSignature = payload.signature;
             externalContextLabel = payload.contextLabel || "";
             externalStrategy = payload.roundStrategy || "";
-            // Validação estrutural básica
+            // Basic structural validation
             validateASTNode(externalAST);
             externalBirthTime = (externalAST.metadata?.timestamp as string) || null;
         }
 
-        // Carimbo de Jurisdição (Linhagem original preservada)
+        // Jurisdiction Stamp (Original lineage preserved)
         const controlNode: ControlNode = {
             kind: "control",
             type: "reanimation_event",
@@ -365,12 +558,14 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
         };
 
         if (this.#ast === null) {
-            // Se for o ponto de partida, herda o nascimento da instância externa ou gera um novo
+            // If it's the starting point, inherit the birth time from the external instance or generate a new one
             const birth = externalBirthTime || this.#generateBirthTime();
-            return new CalcAUYLogic<Context, Config>(controlNode, this.#instanceId, this.#config, birth);
+            // Automatic Grouping: Ensure external calculations are treated as a single unit
+            const group: GroupNode = { kind: "group", child: controlNode };
+            return new CalcAUYLogic<Context, Config>(group, this.#instanceId, this.#config, birth);
         }
 
-        // União via operação especial, envolvida em grupo por segurança
+        // Union via special operation, wrapped in a group for safety
         const group: GroupNode = { kind: "group", child: controlNode };
         const newAST = attachOp(this.assertAST(), "crossContextAdd", group);
 
@@ -378,7 +573,82 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
     }
 
     /**
-     * Anexa metadados de negócio ao nó atual da árvore.
+     * Attaches domain-specific metadata to the current calculation node.
+     *
+     * This is the core feature that enables forensic auditability. Metadata allows you to
+     * justify the `"why"` behind every number and operation, effectively creating a
+     * mathematical narrative that remains attached to the result forever.
+     *
+     * This method is particularly useful for ensuring the rationale behind each value,
+     * facilitating the continuous application of business rules with the assurance of
+     * having a valid justification within the result itself.
+     *
+     * Supports any JSON-serializable value: `string`, `number`, `boolean`, `object`, or `array`.
+     *
+     * @param key - The metadata identifier.
+     * @param value - The metadata value (JSON-compatible).
+     * @returns A new CalcAUYLogic instance with metadata attached to the latest node.
+     *
+     * @example Financial: Loan Projection with multi-layered justifications
+     * ```ts
+     * const Finance = CalcAUY.create({ contextLabel: "loan-engine", salt: "bank-secret" });
+     *
+     * const loan = Finance.from(50000)
+     *     .setMetadata("label", "Principal Amount")
+     *     .setMetadata("contract_id", "CNT-2026-X9")
+     *     .mult(
+     *         Finance.from(1).add("5.25%").setMetadata("index", "SELIC + 2% Spread")
+     *     )
+     *     .setMetadata("risk_adjustment", { score: 750, factor: 0.05 })
+     *     .add(150)
+     *     .setMetadata("operational_fees", ["Origination Fee", "Insurance Premium"])
+     *     .setMetadata("audit_trace", { ip: "10.0.0.1", user_id: "agent_42" });
+     *
+     * const finalTrace = await loan.commit();
+     * ```
+     *
+     * @example Legal: Tax Assessment with statutory grounding
+     * ```ts
+     * const Judiciary = CalcAUY.create({ contextLabel: "tax-litigation", salt: "justice-key" });
+     *
+     * const settlement = Judiciary.from(15000)
+     *     .setMetadata("subject", "Unpaid services indemnity")
+     *     .mult("5%")
+     *     .setMetadata("tax_logic", {
+     *         tax_name: "Service Tax (ISS)",
+     *         legal_basis: "Complementary Law No. 116/2003",
+     *         justification: "Article 1, §1 - Service provision within municipal limits"
+     *     })
+     *     .add(Judiciary.from(15000).mult("1%"))
+     *     .setMetadata("legal_basis", "Arrears Interest - Civil Code Art. 406")
+     *     .setMetadata("case_id", "STJ-2026-X88")
+     *     .setMetadata("status", "final_audit_pending");
+     * ```
+     *
+     * @example Healthcare: Pediatric ICU Weight-Based Dosage Safety
+     * ```ts
+     * const Hospital = CalcAUY.create({ contextLabel: "icu-safety", salt: "lab-vault" });
+     *
+     * const dose = Hospital.from(12.5)
+     *     .setMetadata("patient_weight_kg", 12.5)
+     *     .mult(0.15)
+     *     .setMetadata("dosage_guideline", "WHO Pediatric Standard v4.2")
+     *     .setMetadata("mg_per_kg", 0.15)
+     *     .mult(0.85)
+     *     .setMetadata("renal_correction", {
+     *         creatinine_clearance: "low",
+     *         adjustment_applied: 0.85
+     *     })
+     *     .setMetadata("drug_info", {
+     *         name: "Vancomycin",
+     *         lot: "EXP-2027-04",
+     *         verified_by: ["dr_smith", "nurse_ratched"]
+     *     });
+     *
+     * const output = await dose.commit();
+     * console.log(output.toAuditTrace());
+     * // This method  is particel
+     * ```
      */
     public setMetadata(key: string, value: MetadataValue): CalcAUYLogic<Context, Config> {
         validateMetadata(value);
@@ -399,7 +669,14 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
     }
 
     /**
-     * Envolve a expressão atual em um grupo (parênteses).
+     * Wraps the current expression in a group (parentheses).
+     *
+     * @returns A new CalcAUYLogic instance representing the grouped expression.
+     *
+     * @example Ensuring Priority for Tax Addition
+     * ```ts
+     * Finance.from(100).add(50).group().mult(2); // (100 + 50) * 2 = 300
+     * ```
      */
     public group(): CalcAUYLogic<Context, Config> {
         const ast = this.assertAST();
@@ -423,61 +700,327 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
 
     // --- Fluent Operations ---
 
+    /** Adds a value to the current calculation.
+     *
+     * **Inputs allowed:**
+     * ```ts
+     * // String numbers
+     * "1230"        // 1230.00
+     * "1230.45"     // 1230.45
+     * "1_230.45"    // 1230.45
+     * "1_230.4_536" // 1230.4536
+     * "1e3"         // 100.00
+     * "100e-3"      // 0.10
+     *
+     * // Pure numbers
+     * 1230         // 1230.00
+     * 1230.45      // 1230.45
+     * 1_230.45     // 1230.45
+     * 1_230.4_536  // 1230.4536
+     * 1e3          // 100.00
+     * 100e-3       // 0.10
+     *
+     * // Percent numbers
+     * "14%"        // 14/100
+     * "-14%"       // -14/100
+     * "14.5%"      // 145/1000
+     * "-14.5%"     // -145/1000
+     *
+     * // Rational Numbers
+     * "3/7"        // 3/7 => 0.428571...
+     * "-3/7"       // -3/7 => -0.428571...
+     * "-3/-7"      // 3/7 => 0.428571...
+     *
+     * // Left-zero ommited notation
+     * ".53"        // 0.53
+     * "-.53"       // -0.53
+     * "+.53"       // 0.53
+     * ".5_3456"    // 0.53456
+     * ```
+     */
     public add(value: InputValue<Context, Config>): CalcAUYLogic<Context, Config> {
         return this.op("add", value);
     }
+    /** Subtracts a value from the current calculation.
+     *
+     * **Inputs allowed:**
+     * ```ts
+     * // String numbers
+     * "1230"        // 1230.00
+     * "1230.45"     // 1230.45
+     * "1_230.45"    // 1230.45
+     * "1_230.4_536" // 1230.4536
+     * "1e3"         // 100.00
+     * "100e-3"      // 0.10
+     *
+     * // Pure numbers
+     * 1230         // 1230.00
+     * 1230.45      // 1230.45
+     * 1_230.45     // 1230.45
+     * 1_230.4_536  // 1230.4536
+     * 1e3          // 100.00
+     * 100e-3       // 0.10
+     *
+     * // Percent numbers
+     * "14%"        // 14/100
+     * "-14%"       // -14/100
+     * "14.5%"      // 145/1000
+     * "-14.5%"     // -145/1000
+     *
+     * // Rational Numbers
+     * "3/7"        // 3/7 => 0.428571...
+     * "-3/7"       // -3/7 => -0.428571...
+     * "-3/-7"      // 3/7 => 0.428571...
+     *
+     * // Left-zero ommited notation
+     * ".53"        // 0.53
+     * "-.53"       // -0.53
+     * "+.53"       // 0.53
+     * ".5_3456"    // 0.53456
+     * ```
+     */
     public sub(value: InputValue<Context, Config>): CalcAUYLogic<Context, Config> {
         return this.op("sub", value);
     }
+    /** Multiplies the current calculation by a value.
+     *
+     * **Inputs allowed:**
+     * ```ts
+     * // String numbers
+     * "1230"        // 1230.00
+     * "1230.45"     // 1230.45
+     * "1_230.45"    // 1230.45
+     * "1_230.4_536" // 1230.4536
+     * "1e3"         // 100.00
+     * "100e-3"      // 0.10
+     *
+     * // Pure numbers
+     * 1230         // 1230.00
+     * 1230.45      // 1230.45
+     * 1_230.45     // 1230.45
+     * 1_230.4_536  // 1230.4536
+     * 1e3          // 100.00
+     * 100e-3       // 0.10
+     *
+     * // Percent numbers
+     * "14%"        // 14/100
+     * "-14%"       // -14/100
+     * "14.5%"      // 145/1000
+     * "-14.5%"     // -145/1000
+     *
+     * // Rational Numbers
+     * "3/7"        // 3/7 => 0.428571...
+     * "-3/7"       // -3/7 => -0.428571...
+     * "-3/-7"      // 3/7 => 0.428571...
+     *
+     * // Left-zero ommited notation
+     * ".53"        // 0.53
+     * "-.53"       // -0.53
+     * "+.53"       // 0.53
+     * ".5_3456"    // 0.53456
+     * ```
+     */
     public mult(value: InputValue<Context, Config>): CalcAUYLogic<Context, Config> {
         return this.op("mul", value);
     }
+    /** Divides the current calculation by a value.
+     *
+     * **Inputs allowed:**
+     * ```ts
+     * // String numbers
+     * "1230"        // 1230.00
+     * "1230.45"     // 1230.45
+     * "1_230.45"    // 1230.45
+     * "1_230.4_536" // 1230.4536
+     * "1e3"         // 100.00
+     * "100e-3"      // 0.10
+     *
+     * // Pure numbers
+     * 1230         // 1230.00
+     * 1230.45      // 1230.45
+     * 1_230.45     // 1230.45
+     * 1_230.4_536  // 1230.4536
+     * 1e3          // 100.00
+     * 100e-3       // 0.10
+     *
+     * // Percent numbers
+     * "14%"        // 14/100
+     * "-14%"       // -14/100
+     * "14.5%"      // 145/1000
+     * "-14.5%"     // -145/1000
+     *
+     * // Rational Numbers
+     * "3/7"        // 3/7 => 0.428571...
+     * "-3/7"       // -3/7 => -0.428571...
+     * "-3/-7"      // 3/7 => 0.428571...
+     *
+     * // Left-zero ommited notation
+     * ".53"        // 0.53
+     * "-.53"       // -0.53
+     * "+.53"       // 0.53
+     * ".5_3456"    // 0.53456
+     * ```
+     */
     public div(value: InputValue<Context, Config>): CalcAUYLogic<Context, Config> {
         return this.op("div", value);
     }
+    /** Raises the current calculation to the power of a value.
+     *
+     * **Inputs allowed:**
+     * ```ts
+     * // String numbers
+     * "1230"        // 1230.00
+     * "1230.45"     // 1230.45
+     * "1_230.45"    // 1230.45
+     * "1_230.4_536" // 1230.4536
+     * "1e3"         // 100.00
+     * "100e-3"      // 0.10
+     *
+     * // Pure numbers
+     * 1230         // 1230.00
+     * 1230.45      // 1230.45
+     * 1_230.45     // 1230.45
+     * 1_230.4_536  // 1230.4536
+     * 1e3          // 100.00
+     * 100e-3       // 0.10
+     *
+     * // Percent numbers
+     * "14%"        // 14/100
+     * "-14%"       // -14/100
+     * "14.5%"      // 145/1000
+     * "-14.5%"     // -145/1000
+     *
+     * // Rational Numbers
+     * "3/7"        // 3/7 => 0.428571...
+     * "-3/7"       // -3/7 => -0.428571...
+     * "-3/-7"      // 3/7 => 0.428571...
+     *
+     * // Left-zero ommited notation
+     * ".53"        // 0.53
+     * "-.53"       // -0.53
+     * "+.53"       // 0.53
+     * ".5_3456"    // 0.53456
+     * ```
+     */
     public pow(value: InputValue<Context, Config>): CalcAUYLogic<Context, Config> {
         return this.op("pow", value);
     }
+    /** Calculates the remainder of division by a value.
+     *
+     * **Inputs allowed:**
+     * ```ts
+     * // String numbers
+     * "1230"        // 1230.00
+     * "1230.45"     // 1230.45
+     * "1_230.45"    // 1230.45
+     * "1_230.4_536" // 1230.4536
+     * "1e3"         // 100.00
+     * "100e-3"      // 0.10
+     *
+     * // Pure numbers
+     * 1230         // 1230.00
+     * 1230.45      // 1230.45
+     * 1_230.45     // 1230.45
+     * 1_230.4_536  // 1230.4536
+     * 1e3          // 100.00
+     * 100e-3       // 0.10
+     *
+     * // Percent numbers
+     * "14%"        // 14/100
+     * "-14%"       // -14/100
+     * "14.5%"      // 145/1000
+     * "-14.5%"     // -145/1000
+     *
+     * // Rational Numbers
+     * "3/7"        // 3/7 => 0.428571...
+     * "-3/7"       // -3/7 => -0.428571...
+     * "-3/-7"      // 3/7 => 0.428571...
+     *
+     * // Left-zero ommited notation
+     * ".53"        // 0.53
+     * "-.53"       // -0.53
+     * "+.53"       // 0.53
+     * ".5_3456"    // 0.53456
+     * ```
+     */
     public mod(value: InputValue<Context, Config>): CalcAUYLogic<Context, Config> {
         return this.op("mod", value);
     }
+    /** Performs integer division of the current calculation by a value.
+     *
+     * **Inputs allowed:**
+     * ```ts
+     * // String numbers
+     * "1230"        // 1230.00
+     * "1230.45"     // 1230.45
+     * "1_230.45"    // 1230.45
+     * "1_230.4_536" // 1230.4536
+     * "1e3"         // 100.00
+     * "100e-3"      // 0.10
+     *
+     * // Pure numbers
+     * 1230         // 1230.00
+     * 1230.45      // 1230.45
+     * 1_230.45     // 1230.45
+     * 1_230.4_536  // 1230.4536
+     * 1e3          // 100.00
+     * 100e-3       // 0.10
+     *
+     * // Percent numbers
+     * "14%"        // 14/100
+     * "-14%"       // -14/100
+     * "14.5%"      // 145/1000
+     * "-14.5%"     // -145/1000
+     *
+     * // Rational Numbers
+     * "3/7"        // 3/7 => 0.428571...
+     * "-3/7"       // -3/7 => -0.428571...
+     * "-3/-7"      // 3/7 => 0.428571...
+     *
+     * // Left-zero ommited notation
+     * ".53"        // 0.53
+     * "-.53"       // -0.53
+     * "+.53"       // 0.53
+     * ".5_3456"    // 0.53456
+     * ```
+     */
     public divInt(value: InputValue<Context, Config>): CalcAUYLogic<Context, Config> {
         return this.op("divInt", value);
     }
 
     /**
-     * Garante que a AST foi inicializada.
+     * Ensures the AST is initialized.
      * @private
      */
     private assertAST(): CalculationNode {
         if (this.#ast === null) {
             throw new CalcAUYError(
                 "invalid-syntax",
-                "O cálculo ainda não foi inicializado. Use .from() ou .parseExpression() como ponto de partida.",
+                "Calculation not initialized. Use .from() or .parseExpression() as a starting point.",
             );
         }
         return this.#ast;
     }
 
     /**
-     * Valida se a instância fornecida pertence ao mesmo contexto.
+     * Validates that the provided instance belongs to the same context.
      * @private
      */
     private validateInstance(other: CalcAUYLogic<string, InstanceConfig>): void {
         if (other.#instanceId !== this.#instanceId) {
             throw new CalcAUYError(
                 "instance-mismatch",
-                `Tentativa de misturar instâncias de contextos diferentes. Use 'fromExternalInstance' para integração cross-context.`,
+                `Attempted to mix instances from different contexts. Use 'fromExternalInstance' for cross-context integration.`,
                 {
                     currentContext: this.#config.contextLabel,
-                    otherContext: other.getContextConfig().contextLabel,
+                    otherContext: other.#config.contextLabel,
                 },
             );
         }
     }
 
     /**
-     * Gera o timestamp de nascimento seguindo as regras de mock.
+     * Generates birth timestamp following mock rules.
      * @private
      */
     #generateBirthTime(): string {
@@ -485,7 +1028,7 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
     }
 
     /**
-     * Helper centralizado para criação de nós base literais.
+     * Centralized helper for creating literal base nodes.
      * @private
      */
     #createBaseNode(input: string): LiteralNode {
@@ -498,7 +1041,7 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
     }
 
     /**
-     * Método interno para anexar operações na árvore.
+     * Internal method to attach operations to the tree.
      * @private
      */
     private op(type: OperationType, value: InputValue<Context, Config>): CalcAUYLogic<Context, Config> {
@@ -539,13 +1082,20 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
     }
 
     /**
-     * Finaliza a construção da árvore e inicia a fase de avaliação.
+     * Finalizes the tree construction and begins the evaluation phase.
+     *
+     * @returns A CalcAUYOutput container with results and audit traces.
+     *
+     * @example Committing a Finalized Transaction
+     * ```ts
+     * const result = await payment.commit();
+     * ```
      */
     public async commit(): Promise<CalcAUYOutput> {
         using _span = startSpan("commit", logger);
         const root = this.assertAST();
 
-        // Otimização: Shallow copy do root para injeção de timestamp, preservando a árvore original
+        // Optimization: Shallow copy of the root for timestamp injection, preserving the original tree
         const ast = this.#birthTime
             ? { ...root, metadata: { ...root.metadata, timestamp: this.#birthTime } } as CalculationNode
             : root;
@@ -553,7 +1103,7 @@ export class CalcAUYLogic<Context extends string, Config extends InstanceConfig 
         const roundStrategy: RoundingStrategy = this.#config.roundStrategy;
         const result: RationalNumber = evaluate(ast);
 
-        // Gera a assinatura de integridade do resultado consolidado (AST fixa + Resultado)
+        // Generate integrity signature for the consolidated result (Fixed AST + Result)
         const payload = {
             ast,
             finalResult: result.toJSON(),

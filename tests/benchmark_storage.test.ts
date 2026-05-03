@@ -69,7 +69,7 @@ async function runBenchmark(
     const rows = db.query("SELECT data FROM audit_bench");
     let count = 0;
     for (const [data] of rows) {
-        if (data) count++;
+        if (data) { count++; }
     }
     const endRead = performance.now();
 

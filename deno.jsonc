@@ -39,12 +39,7 @@
         "./processor/persistence"
     ],
     "compilerOptions": {
-        "lib": [
-            "dom",
-            "dom.iterable",
-            "dom.asynciterable",
-            "deno.ns"
-        ],
+        "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"],
         "strict": true,
         "noImplicitAny": true,
         "strictNullChecks": true,
@@ -58,7 +53,7 @@
         "@logtape": "jsr:@logtape/logtape@^2.0.5",
         "@std/crypto": "jsr:@std/crypto@^1.0.5",
         "@std/encoding": "jsr:@std/encoding@^1.0.10",
-        "@std/uuid": "jsr:@std/uuid@^1.1.1",
+        "@std/uuid": "jsr:@std/uuid@^1.1.1"
     },
     "nodeModulesDir": "auto",
     "vendor": true,
@@ -82,13 +77,9 @@
         "newLineKind": "lf"
     },
     "lint": {
-        "exclude": [
-            "!*.ts"
-        ],
+        "exclude": ["!*.ts"],
         "rules": {
-            "tags": [
-                "recommended"
-            ],
+            "tags": ["recommended"],
             "include": [
                 "default-param-last",
                 "eqeqeq",

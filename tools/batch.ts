@@ -6,8 +6,17 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { getSubLogger, startSpan } from "./logger.ts";
-import { createCacheSession } from "../core/rational.ts";
+/*
+  ====================================================================
+  DESABILITADO 2026-05-02
+
+  Este utilitário precisa de maior análise para integração em Streams
+  reais com implantação de Workers para processamento paralelo real
+  ====================================================================
+*/
+
+import { getSubLogger, startSpan } from "../src/utils/logger.ts";
+import { createCacheSession } from "../src/core/rational.ts";
 
 const logger = getSubLogger("batch");
 

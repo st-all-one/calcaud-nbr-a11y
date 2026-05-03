@@ -20,7 +20,6 @@ export type OutputOptions = {
     decimalPrecision?: number;
     locale?: CalcAUYLocale;
     currency?: CalcAUYCurrency;
-    roundStrategy?: RoundingStrategy;
     [key: string]: unknown;
 };
 

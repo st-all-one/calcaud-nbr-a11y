@@ -12,7 +12,7 @@ import { sanitizeObject } from "../utils/sanitizer.ts";
 
 const logger = getSubLogger("error");
 
-/** Categorias de erro suportadas pela engine. */
+/** Supported error categories by the engine. */
 export type ErrorCategory =
     | "invalid-syntax"
     | "unsupported-type"
@@ -24,7 +24,7 @@ export type ErrorCategory =
     | "instance-mismatch"
     | "math-overflow";
 
-/** Contexto técnico da falha para auditoria. */
+/** Technical context of the failure for auditing purposes. */
 export type ErrorContext = {
     operation?: string;
     rawInput?: unknown;
@@ -33,22 +33,25 @@ export type ErrorContext = {
 };
 
 /**
- * Erro customizado da CalcAUYLogic seguindo o padrão RFC 7807.
+ * CalcAUYError - Custom error class following `RFC 7807 (Problem Details)`.
+ *
+ * Provides a rich context for failures, including unique trace IDs (UUIDs)
+ * and technical metadata for auditability and debugging.
  *
  * @class
  */
 export class CalcAUYError extends Error {
-    /** URI que identifica o tipo do erro. */
+    /** URI identifying the error type. */
     public readonly type: string;
-    /** Resumo curto e legível por humanos. */
+    /** Short, human-readable summary of the error. */
     public readonly title: string;
-    /** Código de status HTTP sugerido. */
+    /** Suggested HTTP status code. */
     public readonly status: number;
-    /** Explicação detalhada da ocorrência. */
+    /** Detailed explanation of the specific error occurrence. */
     public readonly detail: string;
-    /** UUID único da ocorrência para correlação em logs. */
+    /** Unique occurrence UUID for log correlation. */
     public readonly instance: string;
-    /** Dados técnicos contextuais (AST, operação, input). */
+    /** Technical contextual data (AST, operation, input). */
     public readonly context: ErrorContext;
 
     public constructor(
@@ -81,7 +84,7 @@ export class CalcAUYError extends Error {
         this.status = statusMap[category];
         this.name = "CalcAUYError";
 
-        // Telemetria Sanitizada
+        // Sanitized Telemetry
         if (logger.isEnabledFor("error")) {
             logger.error("CalcAUYLogic Exception Triggered", {
                 error_type: this.type,
@@ -95,26 +98,19 @@ export class CalcAUYError extends Error {
     }
 
     /**
-     * Converte o erro para um objeto plano pronto para serialização JSON.
+     * Converts the error into a plain object ready for JSON serialization.
      *
-     * @example Exemplo Simples: Captura de Erro
+     * @returns A plain object representing the error details.
+     *
+     * @example Capturing an Invalid Syntax Error in Batch
      * ```ts
      * try {
-     *   CalcAUYLogic.from(10).div(0).commit();
+     *   await calc.parseExpression("10 ++ 5").commit();
      * } catch (err) {
      *   if (err instanceof CalcAUYError) {
-     *     console.error(err.title); // "Divisão por Zero Detectada"
+     *     sendToAudit(err.toJSON());
      *   }
      * }
-     * ```
-     *
-     * @example Resposta de API com Detalhes
-     * ```ts
-     * app.onError((err) => {
-     *   if (err instanceof CalcAUYError) {
-     *     return Response.json(err.toJSON(), { status: err.status });
-     *   }
-     * });
      * ```
      */
     public toJSON(): Record<string, unknown> {

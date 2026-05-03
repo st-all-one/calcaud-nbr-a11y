@@ -1,68 +1,77 @@
-# CalcAUY: Contexto de Engenharia e Desenvolvimento
+# CalcAUY: Arquitetura, Convenções e Guia de Desenvolvimento
 
-A **CalcAUY** (Audit + A11y) é uma engine de cálculo matemático de alta precisão baseada em Árvore de Sintaxe Abstrata (AST), desenvolvida em TypeScript para o ecossistema Deno. Ela foca em **auditabilidade forense**, **precisão racional absoluta** e **acessibilidade universal**.
+A **CalcAUY** (Audit + A11y) é uma infraestrutura aritmética de alta precisão baseada em Árvore de Sintaxe Abstrata (AST), desenvolvida em TypeScript para o ecossistema Deno. O projeto foca em **segurança jurídica**, **auditabilidade forense** e **acessibilidade universal (A11y)**.
 
 ## 🚀 Visão Geral do Projeto
 
--   **Objetivo:** Substituir `number` (IEEE 754) por um modelo de frações racionais (`n/d`) que suporta 50 casas decimais de precisão interna.
--   **Arquitetura:** AST Imutável. O cálculo é construído como uma árvore e só é "colapsado" (executado) no momento do `commit()`.
--   **Diferenciais:**
-    -   **Audit Trace:** Cada operação pode conter metadados de negócio (`setMetadata`).
-    -   **Acessibilidade (A11y):** Geração de traduções verbais da fórmula em múltiplos idiomas.
-    -   **Persistência (Hibernação):** Métodos `hibernate()` e `hydrate()` para salvar/retomar cálculos complexos via JSON.
-    -   **Rateio Exato:** Implementação do Algoritmo de Maior Resto (`toSlice`) para distribuição de centavos.
+-   **Objetivo:** Substituir o padrão impreciso `number` (IEEE 754) por um modelo de frações racionais (`n/d`) usando `BigInt`, garantindo precisão absoluta.
+-   **Arquitetura:** Baseada em uma AST imutável. O cálculo é construído como uma árvore e só é "colapsado" (executado) na fase de `commit()`.
+-   **Pilar de Segurança:** Cada etapa do cálculo é assinada criptograficamente (BLAKE3) para garantir a integridade do rastro de auditoria.
+-   **Inclusividade:** Geração nativa de traduções verbais da lógica matemática (A11y) em múltiplos idiomas.
+
+## 🏗️ Arquitetura e Fluxo de Trabalho
+
+### 1. Isolamento por Instâncias (Contextos)
+**Regra de Ouro:** Não existe estado global. Todo cálculo **deve** ser iniciado a partir de uma instância criada via `CalcAUY.create()`.
+
+```ts
+const Finance = CalcAUY.create({
+    contextLabel: "tax-calculation",
+    salt: "user-secret-salt",
+    roundStrategy: "NBR5891"
+});
+
+const builder = Finance.from(100).add(50);
+```
+
+### 2. Ciclo de Vida do Cálculo
+1.  **Input:** Ingestão de valores via `.from(value)` ou `.parseExpression(string)`.
+2.  **Build (Fluent API):** Construção da AST imutável (`.add()`, `.mult()`, `.pow()`, `.group()`).
+3.  **Enriquecimento:** Adição de metadados de negócio via `.setMetadata(key, value)`.
+4.  **Commit:** Fase de avaliação onde a estratégia de arredondamento é aplicada e a assinatura final é gerada.
+5.  **Output:** Geração de múltiplos formatos (LaTeX, Unicode, Verbal, Audit Trace, Slices).
+
+### 3. Persistência e Hibernação
+-   `.hibernate()`: Salva o estado atual da AST com assinatura de integridade para continuidade posterior.
+-   `.hydrate()`: Reconstrói uma instância de cálculo a partir de um JSON assinado, validando o rastro bit-a-bit.
 
 ## 🛠️ Stack Tecnológica
 
 -   **Runtime:** Deno
--   **Linguagem:** TypeScript (Strict Mode)
--   **Logging:** LogTape 2.0 (Zero dependências externas no core)
--   **Gerenciamento de Números:** BigInt nativo (através da classe `RationalNumber`)
+-   **Linguagem:** TypeScript (Strict Mode Máximo)
+-   **Criptografia:** `@std/crypto` (BLAKE3) para assinaturas.
+-   **Logging:** LogTape 2.0 (Zero dependências externas no core).
+-   **Matemática:** BigInt nativo encapsulado na classe `RationalNumber`.
 
-## 📜 Convenções de Desenvolvimento (Regras Absolutas)
+## 📜 Convenções de Desenvolvimento
 
-### 1. Padrão de Testes e Rigor (BDD)
--   **Estrutura:** Todo o código **deve** ser testado utilizando o padrão BDD (`describe` e `it`) da biblioteca padrão (`std`) do Deno.
--   **Estratégia de Evolução:** Os testes existentes devem ser substituídos o **MÍNIMO** possível. A prioridade é sempre a **incrementação** de novos casos de teste.
--   **Revisão:** A lógica de cada novo teste deve ser revisada ao menos uma vez para garantir que reflete o rigor matemático exigido pela especificação.
+### 1. Padrão de Testes (BDD)
+-   **Framework:** `@std/testing/bdd`.
+-   **Localização:** Todos os testes residem na pasta `tests/`.
+-   **Nota de Manutenção:** O projeto passou por uma migração de "Static Helpers" para "Instance-based". Muitos testes legados ainda usam a sintaxe `CalcAUY.from()`. **Novos testes e refatorações devem priorizar o uso de instâncias via `CalcAUY.create()`**.
 
-### 2. Natureza Agnóstica e Portabilidade
--   **Zero Dependências:** O core da biblioteca deve permanecer agnóstico de runtime, sem dependências externas (exceto `logtape` para telemetria).
--   **Universalidade:** O código deve ser capaz de ser executado em qualquer ambiente (Deno, Node.js, Bun) e diretamente no **Browser/Front-end** sem necessidade de polyfills complexos.
-
-### 3. Imutabilidade e Segurança
--   Todas as classes (`CalcAUY`, `RationalNumber`, nós da AST) **devem** ser imutáveis.
--   Utilize `#private` fields para garantir segurança em runtime e encapsulamento rigoroso.
--   O motor de execução deve ser puro e livre de efeitos colaterais.
-
-### 2. Ciclo de Vida do Cálculo
-Toda implementação de nova funcionalidade deve respeitar as 4 fases:
-1.  **Input:** Ingestão controlada (strings ou números seguros).
-2.  **Build:** Fluent API para construção da AST (com auto-agrupamento).
-3.  **Commit:** Fase de execução onde a estratégia de arredondamento (ex: NBR-5891) é aplicada.
-4.  **Output:** Geração de múltiplos formatos (LaTeX, Monetary, Verbal, Image).
+### 2. Imutabilidade e Encapsulamento
+-   Nenhum nó da AST ou estado interno deve ser mutável.
+-   Utilize `#private` fields para encapsulamento rigoroso de segredos e lógica interna.
+-   O motor de execução (`src/ast/engine.ts`) deve ser puro.
 
 ### 3. Performance e Memória
--   **MDC (GCD):** Todas as operações em `RationalNumber` devem aplicar o Máximo Divisor Comum imediatamente para simplificar frações e evitar estouro de memória com BigInts gigantes.
-
-### 4. Telemetry e Erros
--   Logs: Engine (Debug), Output (Info).
--   Erros: Seguir RFC 7807 (Problem Details) com contexto completo da operação falha.
+-   **Simplificação de Frações:** Toda operação em `RationalNumber` aplica o MDC (Máximo Divisor Comum) imediatamente para manter as frações no menor tamanho possível.
+-   **AST Cache:** O builder utiliza `WeakRef` e `FinalizationRegistry` para reutilizar nós literais idênticos e otimizar o uso de memória em cálculos massivos.
 
 ## 🏗️ Comandos Principais (Deno)
 
--   **Formatação:** `deno task fmt`
+-   **Executar Testes:** `deno task test`
+-   **Formatação de Código:** `deno task fmt`
 -   **Linting:** `deno task lint`
--   **Testes:** `deno task test`
--   **Cobertura:** `deno task coverage:dev`
 
 ## 📂 Estrutura de Pastas
 
--   `specs/`: Especificações técnicas numeradas (00 a 14). **Leia antes de implementar.**
--   `src/`: Código fonte (Engine, Parser, Output Helpers).
--   `tests/`: Testes unitários e de integração (BDD).
--   `docs/`: Documentação de alto nível e panorama.
--   `old_project/`: Referência legada (apenas para análise de contexto).
+-   `src/`: Núcleo da engine (Builder, Parser, Engine, Core).
+-   `processor/`: Processadores de saída customizados (HTML, Protobuf, CBOR, etc.).
+-   `tests/`: Testes unitários, de integração e stress tests (BDD).
+-   `wiki/`: Documentação técnica detalhada e especificações.
+-   `schema/`: Definições formais do rastro de auditoria (JSON Schema, Proto, SQL).
 
 ---
-**Importante:** Qualquer modificação na lógica matemática deve ser validada contra os testes de arredondamento fiscal e rastro de auditoria.
+**Importante:** Qualquer modificação na lógica aritmética deve ser validada contra os testes de arredondamento fiscal (`tests/nbr5891.test.ts`) e integridade criptográfica.

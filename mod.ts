@@ -1,8 +1,8 @@
 /**
- * # CalcAUY - Engine de Cálculo Auditável e Acessível
+ * # CalcAUY - Auditable and Accessible Calculation Infrastructure
  *
- * A CalcAUY é uma biblioteca de alta precisão projetada para sistemas que exigem
- * **integridade matemática absoluta** e **rastro de auditoria**.
+ * CalcAUY is a high-precision library designed for systems that require
+ * **absolute mathematical integrity** and **audit trail**.
  *
  * @module
  */
@@ -10,7 +10,6 @@
 import type * as InternalTypes from "./internal-types.ts";
 
 export { CalcAUY } from "./src/main.ts";
-export { type BatchOptions, ProcessBatchAUY } from "./src/utils/batch.ts";
 export { CalcAUYError } from "./src/core/errors.ts";
 export type { CalcAUYOutput } from "./src/output.ts";
 
